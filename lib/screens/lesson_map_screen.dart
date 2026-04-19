@@ -1,50 +1,43 @@
 import 'package:flutter/material.dart';
+import '../models/lesson.dart';
 
 class LessonMapScreen extends StatelessWidget {
-  final VoidCallback onStart;
+  final List<Lesson> lessons;
+  final void Function(Lesson lesson) onStartLesson;
 
   const LessonMapScreen({
     super.key,
-    required this.onStart,
+    required this.lessons,
+    required this.onStartLesson,
   });
 
   @override
   Widget build(BuildContext context) {
-    final lessons = [
-      const LessonMapItem(
-        title: '挨拶の基本',
-        description: 'こんにちは、ありがとう、さようなら',
-        stars: 3,
-        maxStars: 3,
-        locked: false,
-        completed: true,
-        color1: Color(0xFF3B82F6),
-        color2: Color(0xFF2563EB),
-        icon: Icons.check,
-      ),
-      const LessonMapItem(
-        title: '自己紹介',
-        description: '名前、年齢、出身地',
-        stars: 2,
-        maxStars: 3,
-        locked: false,
-        completed: false,
-        color1: Color(0xFFA855F7),
-        color2: Color(0xFF7C3AED),
-        icon: Icons.check,
-      ),
-      const LessonMapItem(
-        title: '日常の言葉',
-        description: 'はい、いいえ、お願いします',
-        stars: 0,
-        maxStars: 3,
-        locked: true,
-        completed: false,
-        color1: Color(0xFFEC4899),
-        color2: Color(0xFFDB2777),
-        icon: Icons.pan_tool_alt_rounded,
-      ),
-    ];
+    final lessonItems = lessons.map((lesson) {
+      return LessonMapItem(
+        title: lesson.title,
+        description: lesson.description,
+        stars: lesson.stars,
+        maxStars: lesson.maxStars,
+        locked: lesson.locked,
+        completed: lesson.completed,
+        color1: lesson.id == 1
+            ? const Color(0xFF3B82F6)
+            : lesson.id == 2
+                ? const Color(0xFFA855F7)
+                : const Color(0xFFEC4899),
+        color2: lesson.id == 1
+            ? const Color(0xFF2563EB)
+            : lesson.id == 2
+                ? const Color(0xFF7C3AED)
+                : const Color(0xFFDB2777),
+        icon: lesson.id == 1
+            ? Icons.front_hand_rounded
+            : lesson.id == 2
+                ? Icons.person_rounded
+                : Icons.pan_tool_alt_rounded,
+      );
+    }).toList();
 
     return Container(
       width: double.infinity,
@@ -140,13 +133,15 @@ class LessonMapScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 56),
 
-                    for (int i = 0; i < lessons.length; i++) ...[
+                    for (int i = 0; i < lessonItems.length; i++) ...[
                       _LessonRow(
-                        item: lessons[i],
+                        item: lessonItems[i],
                         alignLeft: i % 2 == 0,
-                        onTap: lessons[i].locked ? null : onStart,
+                        onTap: lessons[i].locked
+                            ? null
+                            : () => onStartLesson(lessons[i]),
                       ),
-                      if (i != lessons.length - 1)
+                      if (i != lessonItems.length - 1)
                         const SizedBox(height: 42),
                     ],
 
@@ -276,11 +271,11 @@ class _LessonCard extends StatelessWidget {
         ? const Color(0xFF4ADE80)
         : item.locked
             ? const Color(0xFFE5E7EB)
-            : const Color(0xFF4ADE80);
+            : const Color(0xFFE5E7EB);
 
     final cardColor = item.locked
         ? Colors.white.withOpacity(0.72)
-        : Colors.white.withOpacity(0.9);
+        : Colors.white.withOpacity(0.90);
 
     return Container(
       decoration: BoxDecoration(
@@ -389,7 +384,7 @@ class _LessonIconBox extends StatelessWidget {
             color: item.color1.withOpacity(0.35),
             blurRadius: 16,
             offset: const Offset(0, 8),
-          )
+          ),
         ],
       ),
       child: Icon(

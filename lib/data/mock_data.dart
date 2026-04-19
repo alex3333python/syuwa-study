@@ -1,0 +1,88 @@
+import '../models/lesson.dart';
+import '../models/question.dart';
+
+final List<Lesson> mockLessons = [
+  Lesson(
+    id: 1,
+    levelId: 1,
+    title: '挨拶の基本',
+    description: 'こんにちは、ありがとう、さようなら',
+    completed: true,
+    locked: false,
+    stars: 3,
+    maxStars: 3,
+    questions: const [
+      Question(
+        id: 1,
+        type: 'text-to-image',
+        question: '「こんにちは」の手話はどれですか？',
+        signDescription: '相手に挨拶する時の基本的な表現',
+        options: ['こんにちは', 'ありがとう', 'さようなら', 'おはよう'],
+        correctAnswer: 0,
+      ),
+      Question(
+        id: 2,
+        type: 'text-to-image',
+        question: '「ありがとう」の手話はどれですか？',
+        signDescription: '感謝の気持ちを表す表現',
+        options: ['すみません', 'ありがとう', 'ごめんなさい', 'お願いします'],
+        correctAnswer: 1,
+      ),
+      Question(
+        id: 3,
+        type: 'text-to-image',
+        question: '「さようなら」の手話はどれですか？',
+        signDescription: '別れの際の挨拶',
+        options: ['また明日', 'いってきます', 'さようなら', 'おやすみ'],
+        correctAnswer: 2,
+      ),
+    ],
+  ),
+  Lesson(
+    id: 2,
+    levelId: 1,
+    title: '自己紹介',
+    description: '名前、年齢、出身地',
+    completed: false,
+    locked: false,
+    stars: 2,
+    maxStars: 3,
+    questions: const [
+      Question(
+        id: 4,
+        type: 'text-to-image',
+        question: '「私の名前は〜です」に近い内容はどれですか？',
+        signDescription: '自己紹介で使う基本表現',
+        options: ['名前', 'ありがとう', '学校', '明日'],
+        correctAnswer: 0,
+      ),
+      Question(
+        id: 5,
+        type: 'text-to-image',
+        question: '自己紹介でよく使う項目はどれですか？',
+        signDescription: '基本情報を伝えるときに使います',
+        options: ['年齢', '天気', '料理', '旅行'],
+        correctAnswer: 0,
+      ),
+      Question(
+        id: 6,
+        type: 'text-to-image',
+        question: '出身地を伝えるときに関係あるのはどれですか？',
+        signDescription: 'どこから来たかを伝える表現',
+        options: ['出身地', 'スポーツ', '音楽', '動物'],
+        correctAnswer: 0,
+      ),
+    ],
+  ),
+  Lesson(
+    id: 3,
+    levelId: 1,
+    title: '日常の言葉',
+    description: 'はい、いいえ、お願いします',
+    completed: false,
+    locked: true,
+    stars: 0,
+    maxStars: 3,
+    questions: const [],
+  ),
+];
