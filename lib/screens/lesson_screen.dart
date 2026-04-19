@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
+import '../models/lesson.dart';
+import '../models/question.dart';
 
 class LessonScreen extends StatefulWidget {
-  final void Function(int stars) onComplete;
+  final Lesson lesson;
+  final void Function({
+    required int stars,
+    required int correctAnswers,
+    required int totalQuestions,
+  }) onComplete;
   final VoidCallback onClose;
 
   const LessonScreen({
     super.key,
+    required this.lesson,
     required this.onComplete,
     required this.onClose,
   });
@@ -20,62 +28,46 @@ class _LessonScreenState extends State<LessonScreen> {
   bool showFeedback = false;
   int correctCount = 0;
 
-  final List<Map<String, Object>> questions = [
-    {
-      'question': '「こんにちは」の手話はどれですか？',
-      'description': '相手に挨拶する時の基本的な表現',
-      'options': ['こんにちは', 'ありがとう', 'さようなら', 'おはよう'],
-      'correctAnswer': 0,
-    },
-    {
-      'question': '「ありがとう」の手話はどれですか？',
-      'description': '感謝の気持ちを表す表現',
-      'options': ['すみません', 'ありがとう', 'ごめんなさい', 'お願いします'],
-      'correctAnswer': 1,
-    },
-    {
-      'question': '「さようなら」の手話はどれですか？',
-      'description': '別れの際の挨拶',
-      'options': ['また明日', 'いってきます', 'さようなら', 'おやすみ'],
-      'correctAnswer': 2,
-    },
-  ];
+  Question get currentQuestion => widget.lesson.questions[currentQuestionIndex];
 
   void handleAnswerSelect(int answerIndex) {
     if (showFeedback) return;
 
-    final currentQuestion = questions[currentQuestionIndex];
-    final correctAnswer = currentQuestion['correctAnswer'] as int;
-
     setState(() {
       selectedAnswer = answerIndex;
       showFeedback = true;
-      if (answerIndex == correctAnswer) {
+
+      if (answerIndex == currentQuestion.correctAnswer) {
         correctCount++;
       }
     });
   }
 
   void handleNext() {
-    if (currentQuestionIndex < questions.length - 1) {
+    if (currentQuestionIndex < widget.lesson.questions.length - 1) {
       setState(() {
         currentQuestionIndex++;
         selectedAnswer = null;
         showFeedback = false;
       });
     } else {
-      final stars = ((correctCount / questions.length) * 3).ceil();
-      widget.onComplete(stars);
+      final totalQuestions = widget.lesson.questions.length;
+      final stars = ((correctCount / totalQuestions) * 3).ceil();
+
+      widget.onComplete(
+        stars: stars,
+        correctAnswers: correctCount,
+        totalQuestions: totalQuestions,
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentQuestion = questions[currentQuestionIndex];
-    final options = currentQuestion['options'] as List<String>;
-    final correctAnswer = currentQuestion['correctAnswer'] as int;
+    final options = currentQuestion.options;
+    final correctAnswer = currentQuestion.correctAnswer;
     final isCorrect = selectedAnswer == correctAnswer;
-    final progress = (currentQuestionIndex + 1) / questions.length;
+    final progress = (currentQuestionIndex + 1) / widget.lesson.questions.length;
 
     return Column(
       children: [
@@ -103,7 +95,7 @@ class _LessonScreenState extends State<LessonScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              Text('${currentQuestionIndex + 1} / ${questions.length}'),
+              Text('${currentQuestionIndex + 1} / ${widget.lesson.questions.length}'),
             ],
           ),
         ),
@@ -113,13 +105,13 @@ class _LessonScreenState extends State<LessonScreen> {
             child: Column(
               children: [
                 Text(
-                  currentQuestion['question'] as String,
+                  currentQuestion.question,
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  currentQuestion['description'] as String,
+                  currentQuestion.signDescription,
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.grey),
                 ),
@@ -207,7 +199,11 @@ class _LessonScreenState extends State<LessonScreen> {
                 const SizedBox(width: 12),
                 FilledButton(
                   onPressed: handleNext,
-                  child: Text(currentQuestionIndex < questions.length - 1 ? '次へ' : '完了'),
+                  child: Text(
+                    currentQuestionIndex < widget.lesson.questions.length - 1
+                        ? '次へ'
+                        : '完了',
+                  ),
                 ),
               ],
             ),
