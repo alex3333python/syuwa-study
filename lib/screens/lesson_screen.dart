@@ -1,3 +1,10 @@
+/*
+[lesson_screen.dart]
+
+pur: レッスン画面に特化したUIを構築する．
+
+*/
+
 import 'package:flutter/material.dart';
 import '../models/lesson.dart';
 import '../models/question.dart';
@@ -131,7 +138,7 @@ class _LessonScreenState extends State<LessonScreen> {
 
                       Color bgColor = Colors.white;
                       Color borderColor = const Color(0xFFE5E7EB);
-
+                      // 正解，不正解の表示，解説
                       if (showFeedback) {
                         if (isSelected && isCorrect) {
                           bgColor = const Color(0xFFDCFCE7);

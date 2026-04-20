@@ -1,3 +1,9 @@
+/*
+[lesson.dart]
+
+pur: 
+*/
+
 import 'question.dart';
 
 class Lesson {
