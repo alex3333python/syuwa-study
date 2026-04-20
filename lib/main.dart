@@ -183,6 +183,63 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Future<void> resetProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // ① 保存データを全削除
+    await prefs.clear();
+
+    // ② アプリ内の状態を初期値に戻す
+    setState(() {
+      for (int i = 0; i < mockLessons.length; i++) {
+        final l = mockLessons[i];
+
+        mockLessons[i] = Lesson(
+          id: l.id,
+          levelId: l.levelId,
+          title: l.title,
+          description: l.description,
+          completed: false,
+          locked: i == 0 ? false : true, // 1つ目だけ解放
+          stars: 0,
+          maxStars: l.maxStars,
+          questions: l.questions,
+        );
+      }
+
+      xp = 0;
+      streak = 0;
+
+      // 画面もマップに戻すと分かりやすい
+      currentScreen = 'map';
+      selectedLesson = null;
+    });
+  }
+
+  Future<void> confirmAndReset() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('進捗をリセット'),
+        content: const Text('すべての学習データを削除します。よろしいですか？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('キャンセル'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('リセット'),
+          ),
+        ],
+      ),
+    );
+
+    if (ok == true) {
+      await resetProgress();
+    }
+  }
+
   void goHome() {
     setState(() {
       currentScreen = 'map';
@@ -225,7 +282,11 @@ class _HomePageState extends State<HomePage> {
       body: SafeArea(
         child: Column(
           children: [
-            Header(streak: streak, xp: xp),
+            Header(
+              streak: streak, 
+              xp: xp,
+              onReset: confirmAndReset,
+            ),
             Expanded(child: body),
           ],
         ),

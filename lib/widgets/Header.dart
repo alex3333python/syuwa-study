@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class Header extends StatelessWidget {
   final int streak;
   final int xp;
+  final VoidCallback onReset;
 
   const Header({
     super.key,
     required this.streak,
     required this.xp,
+    required this.onReset,
   });
 
   @override
@@ -82,6 +84,12 @@ class Header extends StatelessWidget {
                     color: Color(0xFFA16207),
                   ),
                 ),
+              ),
+              const SizedBox(width: 10),
+              IconButton(
+                tooltip: 'リセット',
+                icon: const Icon(Icons.refresh),
+                onPressed: onReset,
               ),
             ],
           ),
