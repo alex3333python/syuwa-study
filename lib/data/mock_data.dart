@@ -7,9 +7,9 @@ final List<Lesson> mockLessons = [
     levelId: 1,
     title: '挨拶の基本',
     description: 'こんにちは、ありがとう、さようなら',
-    completed: true,
+    completed: false,
     locked: false,
-    stars: 3,
+    stars: 0,
     maxStars: 3,
     questions: const [
       Question(
@@ -44,8 +44,8 @@ final List<Lesson> mockLessons = [
     title: '自己紹介',
     description: '名前、年齢、出身地',
     completed: false,
-    locked: false,
-    stars: 2,
+    locked: true,
+    stars: 0,
     maxStars: 3,
     questions: const [
       Question(

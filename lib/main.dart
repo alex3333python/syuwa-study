@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'data/mock_data.dart';
 import 'models/lesson.dart';
 import 'screens/completion_screen.dart';
@@ -6,7 +7,8 @@ import 'screens/lesson_map_screen.dart';
 import 'screens/lesson_screen.dart';
 import 'widgets/header.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
@@ -35,10 +37,17 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
+  @override
+  void initState() {
+    super.initState();
+    loadProgress();
+  }
   // streak and experience level(xp)
   String currentScreen = 'map';
   int streak = 0;
   int xp = 0;
+  bool isLoading = true;
 
   Lesson? selectedLesson;
 
@@ -53,13 +62,13 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void completeLesson({
+  Future<void> completeLesson({
     required int stars,
     required int correctAnswers,
     required int totalQuestions,
-  }) {
+  }) async {
     if (selectedLesson != null) {
-      updateLessonProgress(
+      await updateLessonProgress(
         lesson: selectedLesson!,
         stars: stars,
       );
@@ -72,41 +81,35 @@ class _HomePageState extends State<HomePage> {
       xp += stars * 10;
       currentScreen = 'completion';
     });
+
+    await saveProgress();
   }
 
-  void updateLessonProgress({
+  Future<void> updateLessonProgress({
     required Lesson lesson,
     required int stars,
-  }) {
+  }) async {
     setState(() {
-      // 対象レッスンを見つける
       final index = mockLessons.indexWhere((l) => l.id == lesson.id);
       if (index == -1) return;
 
       final current = mockLessons[index];
-
-      // 星は「最大値を採用」
       final newStars = stars > current.stars ? stars : current.stars;
 
-      // 新しいLessonを作り直す（イミュータブル更新）
-      final updatedLesson = Lesson(
+      mockLessons[index] = Lesson(
         id: current.id,
         levelId: current.levelId,
         title: current.title,
         description: current.description,
-        completed: true, // ← クリア
+        completed: true,
         locked: false,
         stars: newStars,
         maxStars: current.maxStars,
         questions: current.questions,
       );
 
-      mockLessons[index] = updatedLesson;
-
-      // 次のレッスンを解放
       if (index + 1 < mockLessons.length) {
         final next = mockLessons[index + 1];
-
         if (next.locked) {
           mockLessons[index + 1] = Lesson(
             id: next.id,
@@ -114,13 +117,63 @@ class _HomePageState extends State<HomePage> {
             title: next.title,
             description: next.description,
             completed: next.completed,
-            locked: false, // ← 解放
+            locked: false,
             stars: next.stars,
             maxStars: next.maxStars,
             questions: next.questions,
           );
         }
       }
+    });
+
+    await saveProgress();
+  }
+
+  Future<void> saveProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    for (final lesson in mockLessons) {
+      await prefs.setBool('lesson_${lesson.id}_completed', lesson.completed);
+      await prefs.setInt('lesson_${lesson.id}_stars', lesson.stars);
+      await prefs.setBool('lesson_${lesson.id}_locked', lesson.locked);
+    }
+
+    await prefs.setInt('user_xp', xp);
+  }
+
+  Future<void> loadProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    for (int i = 0; i < mockLessons.length; i++) {
+      final lesson = mockLessons[i];
+
+      final completed =
+          prefs.getBool('lesson_${lesson.id}_completed') ?? lesson.completed;
+      final stars =
+          prefs.getInt('lesson_${lesson.id}_stars') ?? lesson.stars;
+      final locked =
+          prefs.getBool('lesson_${lesson.id}_locked') ?? lesson.locked;
+
+      mockLessons[i] = Lesson(
+        id: lesson.id,
+        levelId: lesson.levelId,
+        title: lesson.title,
+        description: lesson.description,
+        completed: completed,
+        locked: locked,
+        stars: stars,
+        maxStars: lesson.maxStars,
+        questions: lesson.questions,
+      );
+    }
+
+    final savedXp = prefs.getInt('user_xp');
+
+    setState(() {
+      if (savedXp != null) {
+        xp = savedXp;
+      }
+      isLoading = false;
     });
   }
   void restartLesson() {
@@ -138,6 +191,13 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }  
     Widget body;
 
     if (currentScreen == 'map') {
