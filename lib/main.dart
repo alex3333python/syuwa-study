@@ -12,7 +12,7 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
+  // icon
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -35,9 +35,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  // streak and experience level(xp)
   String currentScreen = 'map';
-  int streak = 7;
-  int xp = 1250;
+  int streak = 0;
+  int xp = 0;
 
   Lesson? selectedLesson;
 
