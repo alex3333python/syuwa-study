@@ -58,6 +58,13 @@ class _HomePageState extends State<HomePage> {
     required int correctAnswers,
     required int totalQuestions,
   }) {
+    if (selectedLesson != null) {
+      updateLessonProgress(
+        lesson: selectedLesson!,
+        stars: stars,
+      );
+    }
+
     setState(() {
       resultStars = stars;
       resultCorrectAnswers = correctAnswers;
@@ -67,6 +74,55 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void updateLessonProgress({
+    required Lesson lesson,
+    required int stars,
+  }) {
+    setState(() {
+      // 対象レッスンを見つける
+      final index = mockLessons.indexWhere((l) => l.id == lesson.id);
+      if (index == -1) return;
+
+      final current = mockLessons[index];
+
+      // 星は「最大値を採用」
+      final newStars = stars > current.stars ? stars : current.stars;
+
+      // 新しいLessonを作り直す（イミュータブル更新）
+      final updatedLesson = Lesson(
+        id: current.id,
+        levelId: current.levelId,
+        title: current.title,
+        description: current.description,
+        completed: true, // ← クリア
+        locked: false,
+        stars: newStars,
+        maxStars: current.maxStars,
+        questions: current.questions,
+      );
+
+      mockLessons[index] = updatedLesson;
+
+      // 次のレッスンを解放
+      if (index + 1 < mockLessons.length) {
+        final next = mockLessons[index + 1];
+
+        if (next.locked) {
+          mockLessons[index + 1] = Lesson(
+            id: next.id,
+            levelId: next.levelId,
+            title: next.title,
+            description: next.description,
+            completed: next.completed,
+            locked: false, // ← 解放
+            stars: next.stars,
+            maxStars: next.maxStars,
+            questions: next.questions,
+          );
+        }
+      }
+    });
+  }
   void restartLesson() {
     if (selectedLesson == null) return;
     setState(() {
