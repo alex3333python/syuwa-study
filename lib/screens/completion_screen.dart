@@ -4,6 +4,7 @@ class CompletionScreen extends StatelessWidget {
   final int stars;
   final int totalQuestions;
   final int correctAnswers;
+  final int xpGained; // ←追加
   final VoidCallback onRestart;
   final VoidCallback onHome;
 
@@ -12,6 +13,7 @@ class CompletionScreen extends StatelessWidget {
     required this.stars,
     required this.totalQuestions,
     required this.correctAnswers,
+    required this.xpGained, // ←追加
     required this.onRestart,
     required this.onHome,
   });
@@ -84,6 +86,42 @@ class CompletionScreen extends StatelessWidget {
                     ),
                   );
                 }),
+              ),
+              const SizedBox(height: 8),
+              TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0.8, end: 1.0),
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeOutBack,
+                builder: (context, scale, child) {
+                  return Transform.scale(
+                    scale: scale,
+                    child: child,
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF60A5FA), Color(0xFF8B5CF6)],
+                    ),
+                    borderRadius: BorderRadius.circular(999),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x22000000),
+                        blurRadius: 12,
+                        offset: Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    '+$xpGained XP',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 24),
               Container(
