@@ -15,6 +15,9 @@ class Question {
   final int correctAnswer;
   final String? imageUrl;
 
+  // text-to-image 用
+  final List<String>? optionImageUrls;
+
   const Question({
     required this.id,
     required this.type,
@@ -23,5 +26,6 @@ class Question {
     required this.options,
     required this.correctAnswer,
     this.imageUrl,
+    this.optionImageUrls,
   });
 }

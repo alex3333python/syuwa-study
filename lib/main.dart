@@ -240,6 +240,23 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void goToNextLesson() {
+    if (selectedLesson == null) return;
+
+    final index = mockLessons.indexWhere((l) => l.id == selectedLesson!.id);
+
+    if (index != -1 && index + 1 < mockLessons.length) {
+      final nextLesson = mockLessons[index + 1];
+
+      if (!nextLesson.locked) {
+        setState(() {
+          selectedLesson = nextLesson;
+          currentScreen = 'lesson';
+        });
+      }
+    }
+  }
+
   void goHome() {
     setState(() {
       currentScreen = 'map';
@@ -275,6 +292,7 @@ class _HomePageState extends State<HomePage> {
         correctAnswers: resultCorrectAnswers,
         onRestart: restartLesson,
         onHome: goHome,
+        onNextLesson: goToNextLesson, 
       );
     }
 

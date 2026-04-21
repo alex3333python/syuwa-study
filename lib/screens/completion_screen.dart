@@ -6,6 +6,7 @@ class CompletionScreen extends StatelessWidget {
   final int correctAnswers;
   final VoidCallback onRestart;
   final VoidCallback onHome;
+  final VoidCallback? onNextLesson;
 
   const CompletionScreen({
     super.key,
@@ -14,6 +15,7 @@ class CompletionScreen extends StatelessWidget {
     required this.correctAnswers,
     required this.onRestart,
     required this.onHome,
+    required this.onNextLesson,
   });
 
   @override
@@ -136,6 +138,25 @@ class CompletionScreen extends StatelessWidget {
                   ),
                 ],
               ),
+              if (onNextLesson != null) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    onPressed: onNextLesson,
+                    child: const Text(
+                      '次のレッスンへ',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

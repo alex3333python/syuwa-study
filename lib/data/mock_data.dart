@@ -14,9 +14,10 @@ final List<Lesson> mockLessons = [
     questions: const [
       Question(
         id: 1,
-        type: 'text-to-image',
+        type: 'image-to-text',
         question: '「こんにちは」の手話はどれですか？',
         signDescription: '相手に挨拶する時の基本的な表現',
+        imageUrl: 'https://picsum.photos/400/250',
         options: ['こんにちは', 'ありがとう', 'さようなら', 'おはよう'],
         correctAnswer: 0,
       ),
@@ -25,12 +26,18 @@ final List<Lesson> mockLessons = [
         type: 'text-to-image',
         question: '「ありがとう」の手話はどれですか？',
         signDescription: '感謝の気持ちを表す表現',
-        options: ['すみません', 'ありがとう', 'ごめんなさい', 'お願いします'],
+        options: ['A', 'B', 'C', 'D'],
+        optionImageUrls: [
+          'https://picsum.photos/seed/a/300/200',
+          'https://picsum.photos/seed/b/300/200',
+          'https://picsum.photos/seed/c/300/200',
+          'https://picsum.photos/seed/d/300/200',
+        ],
         correctAnswer: 1,
       ),
       Question(
         id: 3,
-        type: 'text-to-image',
+        type: 'image-to-text',
         question: '「さようなら」の手話はどれですか？',
         signDescription: '別れの際の挨拶',
         options: ['また明日', 'いってきます', 'さようなら', 'おやすみ'],
