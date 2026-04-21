@@ -273,6 +273,7 @@ class _HomePageState extends State<HomePage> {
         stars: resultStars,
         totalQuestions: resultTotalQuestions,
         correctAnswers: resultCorrectAnswers,
+        xpGained: resultStars * 10,
         onRestart: restartLesson,
         onHome: goHome,
       );
