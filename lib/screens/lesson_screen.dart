@@ -84,6 +84,7 @@ class _LessonScreenState extends State<LessonScreen> {
           currentIndex: currentQuestionIndex + 1,
           totalCount: widget.lesson.questions.length,
           onClose: widget.onClose,
+<<<<<<< HEAD
         ),
         Expanded(
           child: SingleChildScrollView(
@@ -586,6 +587,374 @@ class _FeedbackBar extends StatelessWidget {
         isCorrect ? const Color(0xFF166534) : const Color(0xFF991B1B);
     final buttonColor =
         isCorrect ? const Color(0xFF16A34A) : const Color(0xFFDC2626);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+      decoration: BoxDecoration(
+        color: bgColor,
+        border: Border(
+          top: BorderSide(color: borderColor, width: 2),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 900),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isCorrect ? '正解です！' : '不正解です',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: titleColor,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        isCorrect
+                            ? '素晴らしい！その調子で進みましょう'
+                            : '正解は「$correctText」です',
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: titleColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: buttonColor,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 28,
+                      vertical: 18,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                  ),
+                  onPressed: onNext,
+                  child: Text(
+                    isLastQuestion ? '完了' : '次へ',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+=======
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 900),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 8),
+                    Text(
+                      currentQuestion.question,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      currentQuestion.signDescription,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+
+                    // 画像をあとで入れたくなったとき用の枠
+                    if (currentQuestion.imageUrl != null) ...[
+                      Container(
+                        height: 220,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F4F6),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(24),
+                          child: Image.network(
+                            currentQuestion.imageUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Center(
+                                child: Text(
+                                  '画像を表示できません',
+                                  style: TextStyle(color: Color(0xFF6B7280)),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                    ],
+
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isWide = constraints.maxWidth >= 700;
+
+                        return GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: options.length,
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: isWide ? 2 : 1,
+                            mainAxisSpacing: 16,
+                            crossAxisSpacing: 16,
+                            childAspectRatio: isWide ? 2.3 : 4.0,
+                          ),
+                          itemBuilder: (context, index) {
+                            final isSelected = selectedAnswer == index;
+                            final isCorrectOption = index == correctAnswer;
+
+                            Color backgroundColor = Colors.white;
+                            Color borderColor = const Color(0xFFE5E7EB);
+                            Color textColor = const Color(0xFF111827);
+                            IconData? trailingIcon;
+                            Color? trailingColor;
+
+                            if (showFeedback) {
+                              if (isSelected && isCorrect) {
+                                backgroundColor = const Color(0xFFECFDF5);
+                                borderColor = const Color(0xFF22C55E);
+                                textColor = const Color(0xFF166534);
+                                trailingIcon = Icons.check_circle;
+                                trailingColor = const Color(0xFF16A34A);
+                              } else if (isSelected && !isCorrect) {
+                                backgroundColor = const Color(0xFFFEF2F2);
+                                borderColor = const Color(0xFFEF4444);
+                                textColor = const Color(0xFF991B1B);
+                                trailingIcon = Icons.cancel;
+                                trailingColor = const Color(0xFFDC2626);
+                              } else if (isCorrectOption) {
+                                backgroundColor = const Color(0xFFECFDF5);
+                                borderColor = const Color(0xFF22C55E);
+                                textColor = const Color(0xFF166534);
+                                trailingIcon = Icons.check_circle;
+                                trailingColor = const Color(0xFF16A34A);
+                              } else {
+                                backgroundColor = const Color(0xFFF9FAFB);
+                                borderColor = const Color(0xFFE5E7EB);
+                                textColor = const Color(0xFF9CA3AF);
+                              }
+                            }
+
+                            return _AnswerCard(
+                              text: options[index],
+                              backgroundColor: backgroundColor,
+                              borderColor: borderColor,
+                              textColor: textColor,
+                              trailingIcon: trailingIcon,
+                              trailingColor: trailingColor,
+                              onTap: showFeedback ? null : () => handleAnswerSelect(index),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 220),
+          child: showFeedback
+              ? _FeedbackBar(
+                  key: ValueKey(currentQuestionIndex),
+                  isCorrect: isCorrect,
+                  correctText: options[correctAnswer],
+                  isLastQuestion:
+                      currentQuestionIndex == widget.lesson.questions.length - 1,
+                  onNext: handleNext,
+                )
+              : const SizedBox.shrink(),
+        ),
+      ],
+>>>>>>> fa5f00a27039f22f6f9a6781a0b6363688fb0a3b
+    );
+  }
+}
+
+class _LessonTopBar extends StatelessWidget {
+  final double progress;
+  final int currentIndex;
+  final int totalCount;
+  final VoidCallback onClose;
+
+  const _LessonTopBar({
+    required this.progress,
+    required this.currentIndex,
+    required this.totalCount,
+    required this.onClose,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: Color(0xFFE5E7EB)),
+        ),
+        color: Colors.white,
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: onClose,
+            icon: const Icon(Icons.close_rounded),
+          ),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(999),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 12,
+                backgroundColor: const Color(0xFFE5E7EB),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  Color(0xFF8B5CF6),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            '$currentIndex / $totalCount',
+            style: const TextStyle(
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF6B7280),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AnswerCard extends StatelessWidget {
+  final String text;
+  final Color backgroundColor;
+  final Color borderColor;
+  final Color textColor;
+  final IconData? trailingIcon;
+  final Color? trailingColor;
+  final VoidCallback? onTap;
+
+  const _AnswerCard({
+    required this.text,
+    required this.backgroundColor,
+    required this.borderColor,
+    required this.textColor,
+    required this.trailingIcon,
+    required this.trailingColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(22),
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: borderColor, width: 2),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0F000000),
+                blurRadius: 12,
+                offset: Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  text,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: textColor,
+                  ),
+                ),
+              ),
+              if (trailingIcon != null)
+                Icon(
+                  trailingIcon,
+                  color: trailingColor,
+                  size: 26,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedbackBar extends StatelessWidget {
+  final bool isCorrect;
+  final String correctText;
+  final bool isLastQuestion;
+  final Future<void> Function() onNext;
+
+  const _FeedbackBar({
+    super.key,
+    required this.isCorrect,
+    required this.correctText,
+    required this.isLastQuestion,
+    required this.onNext,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bgColor = isCorrect
+        ? const Color(0xFFF0FDF4)
+        : const Color(0xFFFEF2F2);
+    final borderColor = isCorrect
+        ? const Color(0xFFBBF7D0)
+        : const Color(0xFFFECACA);
+    final titleColor = isCorrect
+        ? const Color(0xFF166534)
+        : const Color(0xFF991B1B);
+    final buttonColor = isCorrect
+        ? const Color(0xFF16A34A)
+        : const Color(0xFFDC2626);
 
     return Container(
       width: double.infinity,
