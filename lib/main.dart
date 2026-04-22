@@ -49,6 +49,7 @@ class _HomePageState extends State<HomePage> {
   int xp = 0;
   bool isLoading = true;
 
+  DateTime? lastPlayedDate;
   Lesson? selectedLesson;
 
   int resultStars = 0;
@@ -79,6 +80,7 @@ class _HomePageState extends State<HomePage> {
       resultCorrectAnswers = correctAnswers;
       resultTotalQuestions = totalQuestions;
       xp += stars * 10;
+      updateStreak();
       currentScreen = 'completion';
     });
 
@@ -129,6 +131,39 @@ class _HomePageState extends State<HomePage> {
     await saveProgress();
   }
 
+  void updateStreak() {
+    final now = DateTime.now();
+
+    final today = DateTime(now.year, now.month, now.day);
+
+    if (lastPlayedDate == null) {
+      streak = 1;
+      lastPlayedDate = today;
+      return;
+    }
+
+    final lastDay = DateTime(
+      lastPlayedDate!.year,
+      lastPlayedDate!.month,
+      lastPlayedDate!.day,
+    );
+
+    final difference = today.difference(lastDay).inDays;
+
+    if (difference == 0) {
+      // 今日すでに学習済み
+      return;
+    } else if (difference == 1) {
+      // 昨日も学習していた
+      streak += 1;
+    } else {
+      // 途切れたので1日目から
+      streak = 1;
+    }
+
+    lastPlayedDate = today;
+  }
+
   Future<void> saveProgress() async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -139,6 +174,14 @@ class _HomePageState extends State<HomePage> {
     }
 
     await prefs.setInt('user_xp', xp);
+    await prefs.setInt('user_streak', streak);
+
+    if (lastPlayedDate != null) {
+      await prefs.setString(
+        'last_played_date',
+        lastPlayedDate!.toIso8601String(),
+      );
+    }   
   }
 
   Future<void> loadProgress() async {
@@ -168,11 +211,24 @@ class _HomePageState extends State<HomePage> {
     }
 
     final savedXp = prefs.getInt('user_xp');
+    final savedStreak = prefs.getInt('user_streak');
+    final savedLastPlayed = prefs.getString('last_played_date');
+
+
 
     setState(() {
       if (savedXp != null) {
         xp = savedXp;
       }
+
+      if (savedStreak != null) {
+        streak = savedStreak;
+      }
+
+      if (savedLastPlayed != null) {
+        lastPlayedDate = DateTime.tryParse(savedLastPlayed);
+      }
+      
       isLoading = false;
     });
   }
@@ -208,7 +264,6 @@ class _HomePageState extends State<HomePage> {
       }
 
       xp = 0;
-      streak = 0;
 
       // 画面もマップに戻すと分かりやすい
       currentScreen = 'map';
