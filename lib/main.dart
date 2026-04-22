@@ -311,6 +311,18 @@ class _HomePageState extends State<HomePage> {
       }
     }
   }
+  VoidCallback? getNextLessonAction() {
+    if (selectedLesson == null) return null;
+
+    final index = mockLessons.indexWhere((l) => l.id == selectedLesson!.id);
+    if (index == -1) return null;
+    if (index + 1 >= mockLessons.length) return null;
+
+    final nextLesson = mockLessons[index + 1];
+    if (nextLesson.locked) return null;
+
+    return goToNextLesson;
+  }
 
   void goHome() {
     setState(() {
@@ -346,9 +358,10 @@ class _HomePageState extends State<HomePage> {
         totalQuestions: resultTotalQuestions,
         correctAnswers: resultCorrectAnswers,
         xpGained: resultStars * 10,
+        streak: streak,
         onRestart: restartLesson,
         onHome: goHome,
-        onNextLesson: goToNextLesson, 
+        onNextLesson: getNextLessonAction(),
       );
     }
 
