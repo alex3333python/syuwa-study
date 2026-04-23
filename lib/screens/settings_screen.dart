@@ -8,6 +8,7 @@ class SettingsScreen extends StatelessWidget {
   final VoidCallback onReset;
   final VoidCallback onBack;
   final VoidCallback onOpenRecords;
+  final double levelProgress;
 
   const SettingsScreen({
     super.key,
@@ -18,6 +19,7 @@ class SettingsScreen extends StatelessWidget {
     required this.level,
     required this.onOpenRecords,
     required this.xpToNextLevel,
+    required this.levelProgress,
   });
 
   @override
@@ -82,6 +84,29 @@ class SettingsScreen extends StatelessWidget {
                     title: '現在のレベル',
                     value: 'Lv.$level',
                   ),
+                  const SizedBox(height: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'レベル進捗',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(999),
+                        child: LinearProgressIndicator(
+                          value: levelProgress.clamp(0, 1),
+                          minHeight: 10,
+                          backgroundColor: const Color(0xFFE5E7EB),
+                          valueColor: const AlwaysStoppedAnimation(Color(0xFF6366F1)),
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 12),
                   _InfoTile(
                     icon: Icons.bolt_rounded,
@@ -111,7 +136,27 @@ class SettingsScreen extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 20),
-
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      onPressed: onOpenRecords,
+                      icon: const Icon(Icons.insights_rounded),
+                      label: const Text(
+                        '学習記録を見る',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(

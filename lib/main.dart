@@ -31,6 +31,8 @@ class MyApp extends StatelessWidget {
   }
 }
 
+
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -80,6 +82,13 @@ class _HomePageState extends State<HomePage> {
   int resultStars = 0;
   int resultCorrectAnswers = 0;
   int resultTotalQuestions = 0;
+
+  double get levelProgress {
+  final currentLevelXp = getNextLevelXp(currentLevel - 1);
+  final nextLevelXp = getNextLevelXp(currentLevel);
+
+  return (xp - currentLevelXp) / (nextLevelXp - currentLevelXp);
+}
 
   void startLesson(Lesson lesson) {
     setState(() {
@@ -395,6 +404,7 @@ class _HomePageState extends State<HomePage> {
       streak: streak,
       level: currentLevel,
       xpToNextLevel: xpToNextLevel, 
+      levelProgress: levelProgress,
       onReset: confirmAndReset,
       onOpenRecords: goToRecords,
       onBack: goHome,
