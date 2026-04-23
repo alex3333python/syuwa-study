@@ -48,6 +48,29 @@ class _HomePageState extends State<HomePage> {
   String currentScreen = 'map';
   int streak = 0;
   int xp = 0;
+  int getLevelFromXp(int xp) {
+    if (xp >= 800) return 5;
+    if (xp >= 500) return 4;
+    if (xp >= 250) return 3;
+    if (xp >= 100) return 2;
+    return 1;
+  }
+  int get currentLevel => getLevelFromXp(xp);
+  int getNextLevelXp(int level) {
+    switch (level) {
+      case 1:
+        return 100;
+      case 2:
+        return 250;
+      case 3:
+        return 500;
+      case 4:
+        return 800;
+      default:
+        return 1200;
+    }
+  }
+  int get xpToNextLevel => getNextLevelXp(currentLevel) - xp;
   bool isLoading = true;
 
   DateTime? lastPlayedDate;
@@ -363,6 +386,7 @@ class _HomePageState extends State<HomePage> {
     body = SettingsScreen(
       xp: xp,
       streak: streak,
+      level: currentLevel,
       onReset: confirmAndReset,
       onBack: goHome,
     );
@@ -386,6 +410,7 @@ class _HomePageState extends State<HomePage> {
             Header(
               streak: streak, 
               xp: xp,
+              level: currentLevel,
               onSettingsTap: goToSettings,
             ),
             Expanded(child: body),

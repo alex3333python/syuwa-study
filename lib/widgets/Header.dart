@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 class Header extends StatelessWidget {
   final int streak;
   final int xp;
+  final int level;
   final VoidCallback onSettingsTap;
 
   const Header({
     super.key,
     required this.streak,
     required this.xp,
+    required this.level,
     required this.onSettingsTap,
   });
 
@@ -86,6 +88,21 @@ class Header extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEEF2FF),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  'Lv.$level',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF4338CA),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
               IconButton(
                 tooltip: '設定',
                 icon: const Icon(Icons.settings_rounded),

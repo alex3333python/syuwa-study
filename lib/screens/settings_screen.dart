@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class SettingsScreen extends StatelessWidget {
   final int xp;
   final int streak;
+  final int level;
   final VoidCallback onReset;
   final VoidCallback onBack;
 
@@ -12,6 +13,7 @@ class SettingsScreen extends StatelessWidget {
     required this.streak,
     required this.onReset,
     required this.onBack,
+    required this.level,
   });
 
   @override
@@ -70,7 +72,13 @@ class SettingsScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 12),
-
+                  _InfoTile(
+                    icon: Icons.workspace_premium_rounded,
+                    iconColor: const Color(0xFF4338CA),
+                    title: '現在のレベル',
+                    value: 'Lv.$level',
+                  ),
+                  const SizedBox(height: 12),
                   _InfoTile(
                     icon: Icons.bolt_rounded,
                     iconColor: const Color(0xFFF59E0B),
