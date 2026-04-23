@@ -6,6 +6,7 @@ class SettingsScreen extends StatelessWidget {
   final int level;
   final VoidCallback onReset;
   final VoidCallback onBack;
+  final VoidCallback onOpenRecords;
 
   const SettingsScreen({
     super.key,
@@ -14,6 +15,7 @@ class SettingsScreen extends StatelessWidget {
     required this.onReset,
     required this.onBack,
     required this.level,
+    required this.onOpenRecords,
   });
 
   @override

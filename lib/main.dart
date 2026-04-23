@@ -7,6 +7,7 @@ import 'screens/lesson_map_screen.dart';
 import 'screens/lesson_screen.dart';
 import 'widgets/header.dart';
 import 'screens/settings_screen.dart';
+import 'screens/records_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -360,6 +361,12 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void goToRecords() {
+    setState(() {
+      currentScreen = 'records';
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -388,7 +395,16 @@ class _HomePageState extends State<HomePage> {
       streak: streak,
       level: currentLevel,
       onReset: confirmAndReset,
+      onOpenRecords: goToRecords,
       onBack: goHome,
+    );
+  } else if (currentScreen == 'records') {
+    body = RecordsScreen(
+      xp: xp,
+      streak: streak,
+      level: currentLevel,
+      lessons: mockLessons,
+      onBack: goToSettings,
     );
   } else {
     body = CompletionScreen(
