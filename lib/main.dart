@@ -394,6 +394,7 @@ class _HomePageState extends State<HomePage> {
       xp: xp,
       streak: streak,
       level: currentLevel,
+      xpToNextLevel: xpToNextLevel, 
       onReset: confirmAndReset,
       onOpenRecords: goToRecords,
       onBack: goHome,

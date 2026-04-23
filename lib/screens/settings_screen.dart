@@ -4,6 +4,7 @@ class SettingsScreen extends StatelessWidget {
   final int xp;
   final int streak;
   final int level;
+  final int xpToNextLevel;
   final VoidCallback onReset;
   final VoidCallback onBack;
   final VoidCallback onOpenRecords;
@@ -16,6 +17,7 @@ class SettingsScreen extends StatelessWidget {
     required this.onBack,
     required this.level,
     required this.onOpenRecords,
+    required this.xpToNextLevel,
   });
 
   @override
@@ -86,6 +88,12 @@ class SettingsScreen extends StatelessWidget {
                     iconColor: const Color(0xFFF59E0B),
                     title: '現在のXP',
                     value: '$xp XP',
+                  ),
+                  _InfoTile(
+                    icon: Icons.trending_up_rounded,
+                    iconColor: const Color(0xFF10B981),
+                    title: '次のレベルまで',
+                    value: '$xpToNextLevel XP',
                   ),
                   const SizedBox(height: 12),
                   _InfoTile(
