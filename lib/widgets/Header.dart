@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 class Header extends StatelessWidget {
   final int streak;
   final int xp;
-  final VoidCallback onReset;
+  final VoidCallback onSettingsTap;
 
   const Header({
     super.key,
     required this.streak,
     required this.xp,
-    required this.onReset,
+    required this.onSettingsTap,
   });
 
   @override
@@ -85,11 +85,11 @@ class Header extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 6),
               IconButton(
-                tooltip: 'リセット',
-                icon: const Icon(Icons.refresh),
-                onPressed: onReset,
+                tooltip: '設定',
+                icon: const Icon(Icons.settings_rounded),
+                onPressed: onSettingsTap,
               ),
             ],
           ),

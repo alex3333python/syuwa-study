@@ -6,6 +6,7 @@ import 'screens/completion_screen.dart';
 import 'screens/lesson_map_screen.dart';
 import 'screens/lesson_screen.dart';
 import 'widgets/header.dart';
+import 'screens/settings_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -85,6 +86,12 @@ class _HomePageState extends State<HomePage> {
     });
 
     await saveProgress();
+  }
+
+  void goToSettings() {
+    setState(() {
+      currentScreen = 'settings';
+    });
   }
 
   Future<void> updateLessonProgress({
@@ -342,28 +349,35 @@ class _HomePageState extends State<HomePage> {
     Widget body;
 
     if (currentScreen == 'map') {
-      body = LessonMapScreen(
-        lessons: mockLessons,
-        onStartLesson: startLesson,
-      );
-    } else if (currentScreen == 'lesson' && selectedLesson != null) {
-      body = LessonScreen(
-        lesson: selectedLesson!,
-        onComplete: completeLesson,
-        onClose: goHome,
-      );
-    } else {
-      body = CompletionScreen(
-        stars: resultStars,
-        totalQuestions: resultTotalQuestions,
-        correctAnswers: resultCorrectAnswers,
-        xpGained: resultStars * 10,
-        streak: streak,
-        onRestart: restartLesson,
-        onHome: goHome,
-        onNextLesson: getNextLessonAction(),
-      );
-    }
+    body = LessonMapScreen(
+      lessons: mockLessons,
+      onStartLesson: startLesson,
+    );
+  } else if (currentScreen == 'lesson' && selectedLesson != null) {
+    body = LessonScreen(
+      lesson: selectedLesson!,
+      onComplete: completeLesson,
+      onClose: goHome,
+    );
+  } else if (currentScreen == 'settings') {
+    body = SettingsScreen(
+      xp: xp,
+      streak: streak,
+      onReset: confirmAndReset,
+      onBack: goHome,
+    );
+  } else {
+    body = CompletionScreen(
+      stars: resultStars,
+      totalQuestions: resultTotalQuestions,
+      correctAnswers: resultCorrectAnswers,
+      xpGained: resultStars * 10,
+      streak: streak,
+      onRestart: restartLesson,
+      onHome: goHome,
+      onNextLesson: getNextLessonAction(),
+    );
+  }
 
     return Scaffold(
       body: SafeArea(
@@ -372,7 +386,7 @@ class _HomePageState extends State<HomePage> {
             Header(
               streak: streak, 
               xp: xp,
-              onReset: confirmAndReset,
+              onSettingsTap: goToSettings,
             ),
             Expanded(child: body),
           ],
