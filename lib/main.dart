@@ -51,6 +51,7 @@ class _HomePageState extends State<HomePage> {
   String currentScreen = 'map';
   int streak = 0;
   int xp = 0;
+  int previousLevel = 1;
   int getLevelFromXp(int xp) {
     if (xp >= 800) return 5;
     if (xp >= 500) return 4;
@@ -110,12 +111,33 @@ class _HomePageState extends State<HomePage> {
     }
 
     setState(() {
+      previousLevel = currentLevel; 
       resultStars = stars;
       resultCorrectAnswers = correctAnswers;
       resultTotalQuestions = totalQuestions;
       xp += stars * 10;
       updateStreak();
       currentScreen = 'completion';
+
+      final newLevel = currentLevel;
+
+      if (newLevel > previousLevel) {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text('レベルアップ！'),
+              content: Text('Lv.$newLevel になりました！🎉'),
+              actions: [
+                FilledButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+        });
+      }
     });
 
     await saveProgress();
