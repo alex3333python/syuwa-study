@@ -9,6 +9,8 @@ class SettingsScreen extends StatelessWidget {
   final VoidCallback onBack;
   final VoidCallback onOpenRecords;
   final double levelProgress;
+  final int weakQuestionCount;
+  final VoidCallback? onWeakReview;
 
   const SettingsScreen({
     super.key,
@@ -20,6 +22,8 @@ class SettingsScreen extends StatelessWidget {
     required this.onOpenRecords,
     required this.xpToNextLevel,
     required this.levelProgress,
+    required this.weakQuestionCount,
+    required this.onWeakReview,
   });
 
   @override
@@ -78,12 +82,73 @@ class SettingsScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  _InfoTile(
-                    icon: Icons.workspace_premium_rounded,
-                    iconColor: const Color(0xFF4338CA),
-                    title: '現在のレベル',
-                    value: 'Lv.$level',
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF9FAFB),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 42,
+                              height: 42,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF4338CA).withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.workspace_premium_rounded,
+                                color: Color(0xFF4338CA),
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Text(
+                              'Lv.$level',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF111827),
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              '$xp XP',
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF111827),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(999),
+                          child: LinearProgressIndicator(
+                            value: levelProgress.clamp(0, 1),
+                            minHeight: 10,
+                            backgroundColor: const Color(0xFFE5E7EB),
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                              Color(0xFF6366F1),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '次のレベルまで $xpToNextLevel XP',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF6B7280),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(height: 10),
                   const SizedBox(height: 8),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,18 +173,6 @@ class SettingsScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  _InfoTile(
-                    icon: Icons.bolt_rounded,
-                    iconColor: const Color(0xFFF59E0B),
-                    title: '現在のXP',
-                    value: '$xp XP',
-                  ),
-                  _InfoTile(
-                    icon: Icons.trending_up_rounded,
-                    iconColor: const Color(0xFF10B981),
-                    title: '次のレベルまで',
-                    value: '$xpToNextLevel XP',
-                  ),
                   const SizedBox(height: 12),
                   _InfoTile(
                     icon: Icons.local_fire_department_rounded,
@@ -128,19 +181,13 @@ class SettingsScreen extends StatelessWidget {
                     value: '$streak 日',
                   ),
                   const SizedBox(height: 12),
-                  const _InfoTile(
-                    icon: Icons.info_outline_rounded,
-                    iconColor: Color(0xFF8B5CF6),
-                    title: 'アプリ情報',
-                    value: '手話アカデミー v0.1',
-                  ),
 
                   const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(
                       style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        padding: const EdgeInsets.symmetric(vertical: 13),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -157,12 +204,37 @@ class SettingsScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFFF97316),
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      onPressed: weakQuestionCount == 0 ? null : onWeakReview,
+                      icon: const Icon(Icons.replay_rounded),
+                      label: Text(
+                        weakQuestionCount == 0
+                            ? '苦手問題はありません'
+                            : '苦手問題を復習（$weakQuestionCount問）',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(
                       style: FilledButton.styleFrom(
                         backgroundColor: const Color(0xFFDC2626),
-                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        padding: const EdgeInsets.symmetric(vertical: 13),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),

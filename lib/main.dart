@@ -85,6 +85,7 @@ class _HomePageState extends State<HomePage> {
   int resultCorrectAnswers = 0;
   int resultTotalQuestions = 0;
   List<Question> resultWrongQuestions = [];
+  List<int> weakQuestionIds = [];
 
   double get levelProgress {
   final currentLevelXp = getNextLevelXp(currentLevel - 1);
@@ -119,6 +120,13 @@ class _HomePageState extends State<HomePage> {
       resultCorrectAnswers = correctAnswers;
       resultTotalQuestions = totalQuestions;
       resultWrongQuestions = wrongQuestions;
+
+      for (final question in wrongQuestions) {
+        if (!weakQuestionIds.contains(question.id)) {
+          weakQuestionIds.add(question.id);
+        }
+      }
+
       xp += stars * 10;
       updateStreak();
       currentScreen = 'completion';
@@ -241,6 +249,10 @@ class _HomePageState extends State<HomePage> {
 
     await prefs.setInt('user_xp', xp);
     await prefs.setInt('user_streak', streak);
+    await prefs.setStringList(
+      'weak_question_ids',
+      weakQuestionIds.map((id) => id.toString()).toList(),
+    );
 
     if (lastPlayedDate != null) {
       await prefs.setString(
@@ -279,6 +291,7 @@ class _HomePageState extends State<HomePage> {
     final savedXp = prefs.getInt('user_xp');
     final savedStreak = prefs.getInt('user_streak');
     final savedLastPlayed = prefs.getString('last_played_date');
+    final savedWeakIds = prefs.getStringList('weak_question_ids');
 
 
 
@@ -293,6 +306,10 @@ class _HomePageState extends State<HomePage> {
 
       if (savedLastPlayed != null) {
         lastPlayedDate = DateTime.tryParse(savedLastPlayed);
+      }
+
+      if (savedWeakIds != null) {
+        weakQuestionIds = savedWeakIds.map((id) => int.parse(id)).toList();
       }
       
       isLoading = false;
@@ -377,6 +394,39 @@ class _HomePageState extends State<HomePage> {
       }
     }
   }
+
+  List<Question> getWeakQuestions() {
+    final allQuestions = mockLessons
+        .expand((lesson) => lesson.questions)
+        .toList();
+
+    return allQuestions
+        .where((question) => weakQuestionIds.contains(question.id))
+        .toList();
+  }
+
+  void startWeakReview() {
+    final weakQuestions = getWeakQuestions();
+
+    if (weakQuestions.isEmpty) return;
+
+    setState(() {
+      selectedLesson = Lesson(
+        id: -2,
+        levelId: -1,
+        title: '苦手問題の復習',
+        description: '過去に間違えた問題を復習しましょう',
+        completed: false,
+        locked: false,
+        stars: 0,
+        maxStars: 3,
+        questions: weakQuestions,
+      );
+
+      currentScreen = 'lesson';
+    });
+  }
+
   VoidCallback? getNextLessonAction() {
     if (selectedLesson == null) return null;
 
@@ -454,6 +504,8 @@ class _HomePageState extends State<HomePage> {
       onReset: confirmAndReset,
       onOpenRecords: goToRecords,
       onBack: goHome,
+      weakQuestionCount: getWeakQuestions().length,
+      onWeakReview: getWeakQuestions().isEmpty ? null : startWeakReview,
     );
   } else if (currentScreen == 'records') {
     body = RecordsScreen(
