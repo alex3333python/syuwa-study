@@ -9,6 +9,8 @@ class CompletionScreen extends StatelessWidget {
   final VoidCallback onRestart;
   final VoidCallback onHome;
   final VoidCallback? onNextLesson;
+  final int wrongQuestionCount;
+  final VoidCallback? onReview;
 
   const CompletionScreen({
     super.key,
@@ -20,6 +22,8 @@ class CompletionScreen extends StatelessWidget {
     required this.onRestart,
     required this.onHome,
     required this.onNextLesson,
+    required this.wrongQuestionCount,
+    required this.onReview,
   });
 
   @override
@@ -227,8 +231,32 @@ class CompletionScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 18),
+
+                  if (onReview != null && wrongQuestionCount > 0) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFFF97316),
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        onPressed: onReview,
+                        icon: const Icon(Icons.replay_rounded),
+                        label: Text(
+                          '間違えた問題を復習（$wrongQuestionCount問）',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
 
                   if (onNextLesson != null) ...[
                     SizedBox(

@@ -8,6 +8,7 @@ import 'screens/lesson_screen.dart';
 import 'widgets/header.dart';
 import 'screens/settings_screen.dart';
 import 'screens/records_screen.dart';
+import 'models/question.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,6 +84,7 @@ class _HomePageState extends State<HomePage> {
   int resultStars = 0;
   int resultCorrectAnswers = 0;
   int resultTotalQuestions = 0;
+  List<Question> resultWrongQuestions = [];
 
   double get levelProgress {
   final currentLevelXp = getNextLevelXp(currentLevel - 1);
@@ -102,6 +104,7 @@ class _HomePageState extends State<HomePage> {
     required int stars,
     required int correctAnswers,
     required int totalQuestions,
+    required List<Question> wrongQuestions,
   }) async {
     if (selectedLesson != null) {
       await updateLessonProgress(
@@ -115,6 +118,7 @@ class _HomePageState extends State<HomePage> {
       resultStars = stars;
       resultCorrectAnswers = correctAnswers;
       resultTotalQuestions = totalQuestions;
+      resultWrongQuestions = wrongQuestions;
       xp += stars * 10;
       updateStreak();
       currentScreen = 'completion';
@@ -386,6 +390,26 @@ class _HomePageState extends State<HomePage> {
     return goToNextLesson;
   }
 
+  void startReview() {
+    if (resultWrongQuestions.isEmpty) return;
+
+    setState(() {
+      selectedLesson = Lesson(
+        id: -1,
+        levelId: -1,
+        title: '復習',
+        description: '間違えた問題をもう一度確認しましょう',
+        completed: false,
+        locked: false,
+        stars: 0,
+        maxStars: 3,
+        questions: resultWrongQuestions,
+      );
+
+      currentScreen = 'lesson';
+    });
+  }
+
   void goHome() {
     setState(() {
       currentScreen = 'map';
@@ -446,9 +470,11 @@ class _HomePageState extends State<HomePage> {
       correctAnswers: resultCorrectAnswers,
       xpGained: resultStars * 10,
       streak: streak,
+      wrongQuestionCount: resultWrongQuestions.length,
       onRestart: restartLesson,
       onHome: goHome,
       onNextLesson: getNextLessonAction(),
+      onReview: resultWrongQuestions.isEmpty ? null : startReview,
     );
   }
 
