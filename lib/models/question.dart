@@ -14,6 +14,7 @@ class Question {
   final List<String> options;
   final int correctAnswer;
   final String? imageUrl;
+  final String? videoUrl;
 
   // text-to-image 用
   final List<String>? optionImageUrls;
@@ -27,5 +28,6 @@ class Question {
     required this.correctAnswer,
     this.imageUrl,
     this.optionImageUrls,
+    this.videoUrl,
   });
 }
