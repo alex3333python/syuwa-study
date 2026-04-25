@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/lesson.dart';
 import '../models/question.dart';
+import '../widgets/sign_video_player.dart';
 
 class LessonScreen extends StatefulWidget {
   final Lesson lesson;
@@ -116,16 +117,16 @@ class _LessonScreenState extends State<LessonScreen> {
                     ),
                     const SizedBox(height: 28),
 
-                    if (question.type == 'image-to-text' &&
+                    if (question.videoUrl != null) ...[
+                      SignVideoPlayer(videoUrl: question.videoUrl!),
+                      const SizedBox(height: 28),
+                    ] else if (question.type == 'image-to-text' &&
                         question.imageUrl != null) ...[
                       _QuestionImage(imageUrl: question.imageUrl!),
                       const SizedBox(height: 28),
-                      _buildTextOptions(
-                        options: options,
-                        correctAnswer: correctAnswer,
-                        isCorrect: isCorrect,
-                      ),
-                    ] else if (question.type == 'text-to-image' &&
+                    ],
+
+                    if (question.type == 'text-to-image' &&
                         question.optionImageUrls != null &&
                         question.optionImageUrls!.length == options.length) ...[
                       _buildImageOptions(
