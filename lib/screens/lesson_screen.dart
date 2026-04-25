@@ -9,6 +9,7 @@ class LessonScreen extends StatefulWidget {
     required int correctAnswers,
     required int totalQuestions,
     required List<Question> wrongQuestions,
+    required List<Question> correctQuestions,
   }) onComplete;
   final VoidCallback onClose;
 
@@ -29,6 +30,7 @@ class _LessonScreenState extends State<LessonScreen> {
   bool showFeedback = false;
   int correctCount = 0;
   List<Question> wrongQuestions = [];
+  List<Question> correctQuestions = [];
 
   Question get currentQuestion => widget.lesson.questions[currentQuestionIndex];
 
@@ -41,6 +43,7 @@ class _LessonScreenState extends State<LessonScreen> {
 
       if (answerIndex == currentQuestion.correctAnswer) {
         correctCount++;
+        correctQuestions.add(currentQuestion);
       }else {
         wrongQuestions.add(currentQuestion);
       }
@@ -63,6 +66,7 @@ class _LessonScreenState extends State<LessonScreen> {
         correctAnswers: correctCount,
         totalQuestions: totalQuestions,
         wrongQuestions: wrongQuestions,
+        correctQuestions: correctQuestions,
       );
     }
   }

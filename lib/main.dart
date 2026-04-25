@@ -77,6 +77,7 @@ class _HomePageState extends State<HomePage> {
   }
   int get xpToNextLevel => getNextLevelXp(currentLevel) - xp;
   bool isLoading = true;
+  bool isWeakReviewMode = false;
 
   DateTime? lastPlayedDate;
   Lesson? selectedLesson;
@@ -97,6 +98,7 @@ class _HomePageState extends State<HomePage> {
   void startLesson(Lesson lesson) {
     setState(() {
       selectedLesson = lesson;
+      isWeakReviewMode = false;
       currentScreen = 'lesson';
     });
   }
@@ -106,6 +108,7 @@ class _HomePageState extends State<HomePage> {
     required int correctAnswers,
     required int totalQuestions,
     required List<Question> wrongQuestions,
+    required List<Question> correctQuestions,
   }) async {
     if (selectedLesson != null) {
       await updateLessonProgress(
@@ -121,9 +124,15 @@ class _HomePageState extends State<HomePage> {
       resultTotalQuestions = totalQuestions;
       resultWrongQuestions = wrongQuestions;
 
-      for (final question in wrongQuestions) {
-        if (!weakQuestionIds.contains(question.id)) {
-          weakQuestionIds.add(question.id);
+      if (isWeakReviewMode) {
+        for (final question in correctQuestions) {
+          weakQuestionIds.remove(question.id);
+        }
+      } else {
+        for (final question in wrongQuestions) {
+          if (!weakQuestionIds.contains(question.id)) {
+            weakQuestionIds.add(question.id);
+          }
         }
       }
 
@@ -407,6 +416,7 @@ class _HomePageState extends State<HomePage> {
 
   void startWeakReview() {
     final weakQuestions = getWeakQuestions();
+    isWeakReviewMode = true;
 
     if (weakQuestions.isEmpty) return;
 
@@ -462,6 +472,7 @@ class _HomePageState extends State<HomePage> {
 
   void goHome() {
     setState(() {
+      isWeakReviewMode = false;
       currentScreen = 'map';
     });
   }
