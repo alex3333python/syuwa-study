@@ -162,6 +162,24 @@ class _HomePageState extends State<HomePage> {
     });
 
     await saveProgress();
+
+    if (isWeakReviewMode && weakQuestionIds.isEmpty) {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('復習クリア！'),
+            content: const Text('すべての苦手問題を克服しました 🎉'),
+            actions: [
+              FilledButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      });
+    }
   }
 
   void goToSettings() {
