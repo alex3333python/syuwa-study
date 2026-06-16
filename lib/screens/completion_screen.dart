@@ -6,10 +6,10 @@ class CompletionScreen extends StatelessWidget {
   final int correctAnswers;
   final int xpGained;
   final int streak;
+  final int wrongQuestionCount;
   final VoidCallback onRestart;
   final VoidCallback onHome;
   final VoidCallback? onNextLesson;
-  final int wrongQuestionCount;
   final VoidCallback? onReview;
 
   const CompletionScreen({
@@ -19,16 +19,21 @@ class CompletionScreen extends StatelessWidget {
     required this.correctAnswers,
     required this.xpGained,
     required this.streak,
+    required this.wrongQuestionCount,
     required this.onRestart,
     required this.onHome,
     required this.onNextLesson,
-    required this.wrongQuestionCount,
     required this.onReview,
   });
 
   @override
   Widget build(BuildContext context) {
-    final percentage = ((correctAnswers / totalQuestions) * 100).round();
+    final percentage = totalQuestions == 0
+        ? 0
+        : ((correctAnswers / totalQuestions) * 100).round();
+
+    final hasReview = onReview != null && wrongQuestionCount > 0;
+    final hasNextLesson = onNextLesson != null;
 
     return Container(
       width: double.infinity,
@@ -45,13 +50,11 @@ class CompletionScreen extends StatelessWidget {
       ),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxWidth: 400,
-          ),
+          constraints: const BoxConstraints(maxWidth: 390),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             child: Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(28),
@@ -66,32 +69,39 @@ class CompletionScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    width: 72,
-                    height: 72,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [Color(0xFFFACC15), Color(0xFFF97316)],
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.75, end: 1.0),
+                    duration: const Duration(milliseconds: 450),
+                    curve: Curves.easeOutBack,
+                    builder: (context, scale, child) {
+                      return Transform.scale(scale: scale, child: child);
+                    },
+                    child: Container(
+                      width: 70,
+                      height: 70,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [Color(0xFFFACC15), Color(0xFFF97316)],
+                        ),
                       ),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        '🏆',
-                        style: TextStyle(fontSize: 30),
+                      child: const Center(
+                        child: Text('🏆', style: TextStyle(fontSize: 30)),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 14),
+
+                  const SizedBox(height: 12),
 
                   const Text(
                     'レッスン完了！',
                     style: TextStyle(
-                      fontSize: 26,
+                      fontSize: 25,
                       fontWeight: FontWeight.bold,
+                      color: Color(0xFF111827),
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   const Text(
                     'お疲れ様でした',
                     style: TextStyle(
@@ -100,146 +110,93 @@ class CompletionScreen extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(3, (index) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 3),
-                        child: Text(
-                          index < stars ? '⭐' : '☆',
-                          style: const TextStyle(fontSize: 28),
+                      return TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0.0, end: 1.0),
+                        duration: Duration(milliseconds: 350 + index * 90),
+                        curve: Curves.easeOutBack,
+                        builder: (context, scale, child) {
+                          return Transform.scale(scale: scale, child: child);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 3),
+                          child: Text(
+                            index < stars ? '⭐' : '☆',
+                            style: const TextStyle(fontSize: 28),
+                          ),
                         ),
                       );
                     }),
                   ),
 
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 12),
 
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      TweenAnimationBuilder<double>(
-                        tween: Tween(begin: 0.85, end: 1.0),
-                        duration: const Duration(milliseconds: 350),
-                        curve: Curves.easeOutBack,
-                        builder: (context, scale, child) {
-                          return Transform.scale(
-                            scale: scale,
-                            child: child,
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF60A5FA), Color(0xFF8B5CF6)],
-                            ),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            '+$xpGained XP',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
+                      Expanded(
+                        child: _RewardChip(
+                          text: '+$xpGained XP',
+                          icon: '⚡',
+                          backgroundColor: const Color(0xFFEEF2FF),
+                          textColor: const Color(0xFF4338CA),
                         ),
                       ),
                       const SizedBox(width: 10),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFF7ED),
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(
-                            color: const Color(0xFFF59E0B),
-                            width: 1.2,
-                          ),
-                        ),
-                        child: Text(
-                          streak <= 1 ? '🔥 今日からスタート！' : '🔥 $streak日連続！',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFFC2410C),
-                          ),
+                      Expanded(
+                        child: _RewardChip(
+                          text: streak <= 1 ? '今日開始' : '$streak日連続',
+                          icon: '🔥',
+                          backgroundColor: const Color(0xFFFFF7ED),
+                          textColor: const Color(0xFFC2410C),
                         ),
                       ),
                     ],
                   ),
 
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 14),
 
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF9FAFB),
                       borderRadius: BorderRadius.circular(18),
                     ),
-                    child: Column(
+                    child: Row(
                       children: [
-                        Row(
-                          children: [
-                            const Expanded(
-                              child: Text(
-                                '正解率',
-                                style: TextStyle(
-                                  color: Color(0xFF6B7280),
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              '$percentage%',
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                        Expanded(
+                          child: _ResultMiniBlock(
+                            label: '正解率',
+                            value: '$percentage%',
+                          ),
                         ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            const Expanded(
-                              child: Text(
-                                '正解数',
-                                style: TextStyle(
-                                  color: Color(0xFF6B7280),
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              '$correctAnswers / $totalQuestions',
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                        Container(
+                          width: 1,
+                          height: 42,
+                          color: const Color(0xFFE5E7EB),
+                        ),
+                        Expanded(
+                          child: _ResultMiniBlock(
+                            label: '正解数',
+                            value: '$correctAnswers / $totalQuestions',
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 18),
 
-                  if (onReview != null && wrongQuestionCount > 0) ...[
+                  const SizedBox(height: 16),
+
+                  if (hasReview) ...[
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton.icon(
                         style: FilledButton.styleFrom(
                           backgroundColor: const Color(0xFFF97316),
-                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -255,15 +212,15 @@ class CompletionScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                   ],
 
-                  if (onNextLesson != null) ...[
+                  if (hasNextLesson) ...[
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton(
                         style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -278,7 +235,7 @@ class CompletionScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                   ],
 
                   Row(
@@ -286,7 +243,7 @@ class CompletionScreen extends StatelessWidget {
                       Expanded(
                         child: OutlinedButton(
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            padding: const EdgeInsets.symmetric(vertical: 13),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
@@ -302,7 +259,7 @@ class CompletionScreen extends StatelessWidget {
                       Expanded(
                         child: OutlinedButton(
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            padding: const EdgeInsets.symmetric(vertical: 13),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
@@ -322,6 +279,76 @@ class CompletionScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _RewardChip extends StatelessWidget {
+  final String text;
+  final String icon;
+  final Color backgroundColor;
+  final Color textColor;
+
+  const _RewardChip({
+    required this.text,
+    required this.icon,
+    required this.backgroundColor,
+    required this.textColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 10),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Center(
+        child: Text(
+          '$icon $text',
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+            color: textColor,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ResultMiniBlock extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _ResultMiniBlock({
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 13,
+            color: Color(0xFF6B7280),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 19,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF111827),
+          ),
+        ),
+      ],
     );
   }
 }
