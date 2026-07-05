@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import '../models/app_language.dart';
 import '../models/lesson.dart';
 import '../models/question.dart';
 import '../widgets/sign_video_player.dart';
+import '../widgets/tappable_sentence.dart';
 
 class LessonScreen extends StatefulWidget {
   final Lesson lesson;
@@ -11,14 +13,17 @@ class LessonScreen extends StatefulWidget {
     required int totalQuestions,
     required List<Question> wrongQuestions,
     required List<Question> correctQuestions,
-  }) onComplete;
+  })
+  onComplete;
   final VoidCallback onClose;
+  final AppLanguage selectedLanguage;
 
   const LessonScreen({
     super.key,
     required this.lesson,
     required this.onComplete,
     required this.onClose,
+    this.selectedLanguage = AppLanguage.japanese,
   });
 
   @override
@@ -32,6 +37,7 @@ class _LessonScreenState extends State<LessonScreen> {
   int correctCount = 0;
   List<Question> wrongQuestions = [];
   List<Question> correctQuestions = [];
+  QuestionPromptMode promptMode = QuestionPromptMode.schoolJa;
 
   Question get currentQuestion => widget.lesson.questions[currentQuestionIndex];
 
@@ -45,7 +51,7 @@ class _LessonScreenState extends State<LessonScreen> {
       if (answerIndex == currentQuestion.correctAnswer) {
         correctCount++;
         correctQuestions.add(currentQuestion);
-      }else {
+      } else {
         wrongQuestions.add(currentQuestion);
       }
     });
@@ -78,7 +84,9 @@ class _LessonScreenState extends State<LessonScreen> {
     final options = question.options;
     final correctAnswer = question.correctAnswer;
     final isCorrect = selectedAnswer == correctAnswer;
-    final progress = (currentQuestionIndex + 1) / widget.lesson.questions.length;
+    final progress =
+        (currentQuestionIndex + 1) / widget.lesson.questions.length;
+    final prompt = question.promptFor(widget.selectedLanguage, promptMode);
 
     return Column(
       children: [
@@ -98,7 +106,28 @@ class _LessonScreenState extends State<LessonScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      question.question,
+                      widget.lesson.title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _PromptModeSelector(
+                      selectedMode: promptMode,
+                      selectedLanguage: widget.selectedLanguage,
+                      onChanged: (mode) {
+                        setState(() {
+                          promptMode = mode;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    TappableSentence(
+                      text: prompt,
+                      language: widget.selectedLanguage,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 28,
@@ -106,15 +135,17 @@ class _LessonScreenState extends State<LessonScreen> {
                         color: Color(0xFF111827),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Text(
-                      question.signDescription,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF6B7280),
+                    if (question.signDescription.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      Text(
+                        question.signDescription,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF6B7280),
+                        ),
                       ),
-                    ),
+                    ],
                     const SizedBox(height: 28),
 
                     if (question.videoUrl != null) ...[
@@ -155,8 +186,12 @@ class _LessonScreenState extends State<LessonScreen> {
                   key: ValueKey(currentQuestionIndex),
                   isCorrect: isCorrect,
                   correctText: options[correctAnswer],
+                  explanationText: question.explanationFor(
+                    widget.selectedLanguage,
+                  ),
                   isLastQuestion:
-                      currentQuestionIndex == widget.lesson.questions.length - 1,
+                      currentQuestionIndex ==
+                      widget.lesson.questions.length - 1,
                   onNext: handleNext,
                 )
               : const SizedBox.shrink(),
@@ -299,6 +334,44 @@ class _LessonScreenState extends State<LessonScreen> {
   }
 }
 
+class _PromptModeSelector extends StatelessWidget {
+  final QuestionPromptMode selectedMode;
+  final AppLanguage selectedLanguage;
+  final ValueChanged<QuestionPromptMode> onChanged;
+
+  const _PromptModeSelector({
+    required this.selectedMode,
+    required this.selectedLanguage,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SegmentedButton<QuestionPromptMode>(
+      segments: [
+        const ButtonSegment(
+          value: QuestionPromptMode.schoolJa,
+          label: Text('学校日本語'),
+          icon: Icon(Icons.school_rounded),
+        ),
+        const ButtonSegment(
+          value: QuestionPromptMode.easyJa,
+          label: Text('やさしい日本語'),
+          icon: Icon(Icons.lightbulb_outline_rounded),
+        ),
+        ButtonSegment(
+          value: QuestionPromptMode.native,
+          label: Text(selectedLanguage.label),
+          icon: const Icon(Icons.translate_rounded),
+        ),
+      ],
+      selected: {selectedMode},
+      onSelectionChanged: (values) => onChanged(values.first),
+      showSelectedIcon: false,
+    );
+  }
+}
+
 class _AnswerStyle {
   final Color backgroundColor;
   final Color borderColor;
@@ -333,17 +406,12 @@ class _LessonTopBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Color(0xFFE5E7EB)),
-        ),
+        border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB))),
         color: Colors.white,
       ),
       child: Row(
         children: [
-          IconButton(
-            onPressed: onClose,
-            icon: const Icon(Icons.close_rounded),
-          ),
+          IconButton(onPressed: onClose, icon: const Icon(Icons.close_rounded)),
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(999),
@@ -458,11 +526,7 @@ class _AnswerCard extends StatelessWidget {
                 ),
               ),
               if (trailingIcon != null)
-                Icon(
-                  trailingIcon,
-                  color: trailingColor,
-                  size: 26,
-                ),
+                Icon(trailingIcon, color: trailingColor, size: 26),
             ],
           ),
         ),
@@ -550,11 +614,7 @@ class _ImageAnswerCard extends StatelessWidget {
                     ),
                   ),
                   if (trailingIcon != null)
-                    Icon(
-                      trailingIcon,
-                      color: trailingColor,
-                      size: 24,
-                    ),
+                    Icon(trailingIcon, color: trailingColor, size: 24),
                 ],
               ),
             ],
@@ -568,6 +628,7 @@ class _ImageAnswerCard extends StatelessWidget {
 class _FeedbackBar extends StatelessWidget {
   final bool isCorrect;
   final String correctText;
+  final String explanationText;
   final bool isLastQuestion;
   final Future<void> Function() onNext;
 
@@ -575,29 +636,32 @@ class _FeedbackBar extends StatelessWidget {
     super.key,
     required this.isCorrect,
     required this.correctText,
+    required this.explanationText,
     required this.isLastQuestion,
     required this.onNext,
   });
 
   @override
   Widget build(BuildContext context) {
-    final bgColor =
-        isCorrect ? const Color(0xFFF0FDF4) : const Color(0xFFFEF2F2);
-    final borderColor =
-        isCorrect ? const Color(0xFFBBF7D0) : const Color(0xFFFECACA);
-    final titleColor =
-        isCorrect ? const Color(0xFF166534) : const Color(0xFF991B1B);
-    final buttonColor =
-        isCorrect ? const Color(0xFF16A34A) : const Color(0xFFDC2626);
+    final bgColor = isCorrect
+        ? const Color(0xFFF0FDF4)
+        : const Color(0xFFFEF2F2);
+    final borderColor = isCorrect
+        ? const Color(0xFFBBF7D0)
+        : const Color(0xFFFECACA);
+    final titleColor = isCorrect
+        ? const Color(0xFF166534)
+        : const Color(0xFF991B1B);
+    final buttonColor = isCorrect
+        ? const Color(0xFF16A34A)
+        : const Color(0xFFDC2626);
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
       decoration: BoxDecoration(
         color: bgColor,
-        border: Border(
-          top: BorderSide(color: borderColor, width: 2),
-        ),
+        border: Border(top: BorderSide(color: borderColor, width: 2)),
       ),
       child: SafeArea(
         top: false,
@@ -621,12 +685,11 @@ class _FeedbackBar extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         isCorrect
-                            ? '素晴らしい！その調子で進みましょう'
-                            : '正解は「$correctText」です',
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: titleColor,
-                        ),
+                            ? (explanationText.isEmpty
+                                  ? 'その調子で進みましょう。'
+                                  : explanationText)
+                            : '正解は「$correctText」です。${explanationText.isEmpty ? '' : explanationText}',
+                        style: TextStyle(fontSize: 15, color: titleColor),
                       ),
                     ],
                   ),

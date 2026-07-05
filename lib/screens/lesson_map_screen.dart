@@ -24,18 +24,18 @@ class LessonMapScreen extends StatelessWidget {
         color1: lesson.id == 1
             ? const Color(0xFF3B82F6)
             : lesson.id == 2
-                ? const Color(0xFFA855F7)
-                : const Color(0xFFEC4899),
+            ? const Color(0xFFA855F7)
+            : const Color(0xFFEC4899),
         color2: lesson.id == 1
             ? const Color(0xFF2563EB)
             : lesson.id == 2
-                ? const Color(0xFF7C3AED)
-                : const Color(0xFFDB2777),
+            ? const Color(0xFF7C3AED)
+            : const Color(0xFFDB2777),
         icon: lesson.id == 1
-            ? Icons.front_hand_rounded
+            ? Icons.fact_check_rounded
             : lesson.id == 2
-                ? Icons.person_rounded
-                : Icons.pan_tool_alt_rounded,
+            ? Icons.call_split_rounded
+            : Icons.calculate_rounded,
       );
     }).toList();
 
@@ -46,11 +46,7 @@ class LessonMapScreen extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFEFF6FF),
-            Color(0xFFF5F3FF),
-            Color(0xFFFDF2F8),
-          ],
+          colors: [Color(0xFFEFF6FF), Color(0xFFF5F3FF), Color(0xFFFDF2F8)],
         ),
       ),
       child: Stack(
@@ -87,7 +83,7 @@ class LessonMapScreen extends StatelessWidget {
                         vertical: 14,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.88),
+                        color: Colors.white.withValues(alpha: 0.88),
                         borderRadius: BorderRadius.circular(999),
                         boxShadow: const [
                           BoxShadow(
@@ -101,13 +97,13 @@ class LessonMapScreen extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            Icons.front_hand_rounded,
+                            Icons.calculate_rounded,
                             color: Color(0xFFA855F7),
                             size: 28,
                           ),
                           SizedBox(width: 10),
                           Text(
-                            '手話の旅',
+                            '学習マップ',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -125,11 +121,8 @@ class LessonMapScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 18),
                     const Text(
-                      '一歩ずつ、手話の世界を冒険しよう',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF6B7280),
-                      ),
+                      '算数と学校日本語を、ひとつずつ確認しましょう。',
+                      style: TextStyle(fontSize: 16, color: Color(0xFF6B7280)),
                     ),
                     const SizedBox(height: 56),
 
@@ -151,7 +144,7 @@ class LessonMapScreen extends StatelessWidget {
                       width: 360,
                       padding: const EdgeInsets.all(28),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.92),
+                        color: Colors.white.withValues(alpha: 0.92),
                         borderRadius: BorderRadius.circular(28),
                         border: Border.all(
                           color: const Color(0xFFE9D5FF),
@@ -174,7 +167,7 @@ class LessonMapScreen extends StatelessWidget {
                           ),
                           SizedBox(height: 14),
                           Text(
-                            'もっと学習を続けよう！',
+                            '次の単元も準備中',
                             style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
@@ -183,7 +176,7 @@ class LessonMapScreen extends StatelessWidget {
                           ),
                           SizedBox(height: 8),
                           Text(
-                            '新しいレベルが近日公開予定',
+                            '診断結果に合わせて練習を増やしていきます。',
                             style: TextStyle(
                               fontSize: 15,
                               color: Color(0xFF6B7280),
@@ -244,14 +237,10 @@ class _LessonRow extends StatelessWidget {
     final card = _LessonCard(item: item, onTap: onTap);
 
     return Row(
-      mainAxisAlignment:
-          alignLeft ? MainAxisAlignment.start : MainAxisAlignment.end,
-      children: [
-        SizedBox(
-          width: 390,
-          child: card,
-        ),
-      ],
+      mainAxisAlignment: alignLeft
+          ? MainAxisAlignment.start
+          : MainAxisAlignment.end,
+      children: [SizedBox(width: 390, child: card)],
     );
   }
 }
@@ -260,22 +249,19 @@ class _LessonCard extends StatelessWidget {
   final LessonMapItem item;
   final VoidCallback? onTap;
 
-  const _LessonCard({
-    required this.item,
-    required this.onTap,
-  });
+  const _LessonCard({required this.item, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final borderColor = item.completed
         ? const Color(0xFF4ADE80)
         : item.locked
-            ? const Color(0xFFE5E7EB)
-            : const Color(0xFFE5E7EB);
+        ? const Color(0xFFE5E7EB)
+        : const Color(0xFFE5E7EB);
 
     final cardColor = item.locked
-        ? Colors.white.withOpacity(0.72)
-        : Colors.white.withOpacity(0.90);
+        ? Colors.white.withValues(alpha: 0.72)
+        : Colors.white.withValues(alpha: 0.90);
 
     return Container(
       decoration: BoxDecoration(
@@ -298,10 +284,7 @@ class _LessonCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: cardColor,
               borderRadius: BorderRadius.circular(28),
-              border: Border.all(
-                color: borderColor,
-                width: 2,
-              ),
+              border: Border.all(color: borderColor, width: 2),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -366,8 +349,8 @@ class _LessonIconBox extends StatelessWidget {
     final iconData = item.locked
         ? Icons.lock_rounded
         : item.completed
-            ? Icons.check_rounded
-            : item.icon;
+        ? Icons.check_rounded
+        : item.icon;
 
     return Container(
       width: 64,
@@ -381,17 +364,13 @@ class _LessonIconBox extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: item.color1.withOpacity(0.35),
+            color: item.color1.withValues(alpha: 0.35),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: Icon(
-        iconData,
-        color: Colors.white,
-        size: 34,
-      ),
+      child: Icon(iconData, color: Colors.white, size: 34),
     );
   }
 }
@@ -413,7 +392,11 @@ class _ActionBadge extends StatelessWidget {
         child: const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.lock_outline_rounded, size: 18, color: Color(0xFF6B7280)),
+            Icon(
+              Icons.lock_outline_rounded,
+              size: 18,
+              color: Color(0xFF6B7280),
+            ),
             SizedBox(width: 6),
             Text(
               'ロック中',
@@ -437,7 +420,11 @@ class _ActionBadge extends StatelessWidget {
         child: const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.emoji_events_outlined, size: 18, color: Color(0xFF15803D)),
+            Icon(
+              Icons.emoji_events_outlined,
+              size: 18,
+              color: Color(0xFF15803D),
+            ),
             SizedBox(width: 6),
             Text(
               '復習する',
@@ -466,10 +453,7 @@ class _ActionBadge extends StatelessWidget {
           SizedBox(width: 6),
           Text(
             '始める',
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
+            style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white),
           ),
         ],
       ),
@@ -540,11 +524,7 @@ class _BlurCircle extends StatelessWidget {
             color: color,
             shape: BoxShape.circle,
             boxShadow: [
-              BoxShadow(
-                color: color,
-                blurRadius: 100,
-                spreadRadius: 25,
-              ),
+              BoxShadow(color: color, blurRadius: 100, spreadRadius: 25),
             ],
           ),
         ),

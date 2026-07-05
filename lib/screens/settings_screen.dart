@@ -32,11 +32,7 @@ class SettingsScreen extends StatelessWidget {
       width: double.infinity,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Color(0xFFEFF6FF),
-            Color(0xFFF5F3FF),
-            Color(0xFFFDF2F8),
-          ],
+          colors: [Color(0xFFEFF6FF), Color(0xFFF5F3FF), Color(0xFFFDF2F8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -97,7 +93,9 @@ class SettingsScreen extends StatelessWidget {
                               width: 42,
                               height: 42,
                               decoration: BoxDecoration(
-                                color: const Color(0xFF4338CA).withOpacity(0.12),
+                                color: const Color(
+                                  0xFF4338CA,
+                                ).withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Icon(
@@ -167,7 +165,9 @@ class SettingsScreen extends StatelessWidget {
                           value: levelProgress.clamp(0, 1),
                           minHeight: 10,
                           backgroundColor: const Color(0xFFE5E7EB),
-                          valueColor: const AlwaysStoppedAnimation(Color(0xFF6366F1)),
+                          valueColor: const AlwaysStoppedAnimation(
+                            Color(0xFF6366F1),
+                          ),
                         ),
                       ),
                     ],
@@ -287,7 +287,7 @@ class _InfoTile extends StatelessWidget {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.12),
+              color: iconColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: iconColor),
@@ -296,10 +296,7 @@ class _InfoTile extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style: const TextStyle(
-                fontSize: 15,
-                color: Color(0xFF6B7280),
-              ),
+              style: const TextStyle(fontSize: 15, color: Color(0xFF6B7280)),
             ),
           ),
           Text(

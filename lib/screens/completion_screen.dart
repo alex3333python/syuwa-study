@@ -39,11 +39,7 @@ class CompletionScreen extends StatelessWidget {
       width: double.infinity,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Color(0xFFEFF6FF),
-            Color(0xFFF5F3FF),
-            Color(0xFFFDF2F8),
-          ],
+          colors: [Color(0xFFEFF6FF), Color(0xFFF5F3FF), Color(0xFFFDF2F8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -104,10 +100,7 @@ class CompletionScreen extends StatelessWidget {
                   const SizedBox(height: 4),
                   const Text(
                     'お疲れ様でした',
-                    style: TextStyle(
-                      color: Color(0xFF6B7280),
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Color(0xFF6B7280), fontSize: 14),
                   ),
 
                   const SizedBox(height: 14),
@@ -323,10 +316,7 @@ class _ResultMiniBlock extends StatelessWidget {
   final String label;
   final String value;
 
-  const _ResultMiniBlock({
-    required this.label,
-    required this.value,
-  });
+  const _ResultMiniBlock({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -334,10 +324,7 @@ class _ResultMiniBlock extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 13,
-            color: Color(0xFF6B7280),
-          ),
+          style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
         ),
         const SizedBox(height: 4),
         Text(

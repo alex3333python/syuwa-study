@@ -4,10 +4,7 @@ import 'package:video_player/video_player.dart';
 class SignVideoPlayer extends StatefulWidget {
   final String videoUrl;
 
-  const SignVideoPlayer({
-    super.key,
-    required this.videoUrl,
-  });
+  const SignVideoPlayer({super.key, required this.videoUrl});
 
   @override
   State<SignVideoPlayer> createState() => _SignVideoPlayerState();
@@ -108,9 +105,7 @@ class _SignVideoPlayerState extends State<SignVideoPlayer> {
           color: const Color(0xFF111827),
           borderRadius: BorderRadius.circular(24),
         ),
-        child: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: const Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -138,7 +133,7 @@ class _SignVideoPlayerState extends State<SignVideoPlayer> {
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.45),
+                    color: Colors.black.withValues(alpha: 0.45),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(

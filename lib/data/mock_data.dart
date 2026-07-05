@@ -1,127 +1,106 @@
+import '../logic/question_generator.dart';
+import '../models/app_language.dart';
 import '../models/lesson.dart';
 import '../models/question.dart';
+import 'diagnostic_questions.dart';
 
 final List<Lesson> mockLessons = [
-  Lesson(
+  const Lesson(
     id: 1,
     levelId: 1,
-    title: '挨拶の基本',
-    description: 'こんにちは、ありがとう、さようなら',
+    type: LessonType.diagnosis,
+    title: '算数チェック',
+    description: '算数の考え方と、学校日本語のつまずきを分けて見ます。',
     completed: false,
     locked: false,
     stars: 0,
     maxStars: 3,
-    questions: const [
-      Question(
-        id: 1,
-        type: 'image-to-text',
-        question: 'この手話はどれですか？',
-        signDescription: '動画を見て正しい意味を選びましょう',
-        videoUrl: 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
-        options: ['こんにちは', 'ありがとう', 'さようなら', 'おはよう'],
-        correctAnswer: 0,
-      ),
-      Question(
-        id: 2,
-        type: 'text-to-image',
-        question: '「ありがとう」の手話はどれですか？',
-        signDescription: '画像を見て正しいものを選びましょう',
-        options: ['A', 'B', 'C', 'D'],
-        optionImageUrls: [
-          'https://picsum.photos/seed/thanks_a/300/200',
-          'https://picsum.photos/seed/thanks_b/300/200',
-          'https://picsum.photos/seed/thanks_c/300/200',
-          'https://picsum.photos/seed/thanks_d/300/200',
-        ],
-        correctAnswer: 1,
-      ),
-      Question(
-        id: 3,
-        type: 'image-to-text',
-        question: 'この手話はどれですか？',
-        signDescription: '別れの挨拶を選びましょう',
-        imageUrl: 'https://picsum.photos/seed/bye_sign/400/250',
-        options: ['また明日', 'いってきます', 'さようなら', 'おやすみ'],
-        correctAnswer: 2,
-      ),
-    ],
+    questions: diagnosticQuestions,
   ),
   Lesson(
     id: 2,
     levelId: 1,
-    title: '自己紹介',
-    description: '名前、年齢、出身地',
+    type: LessonType.practice,
+    title: 'わり算の文章題',
+    description: '「同じ数ずつ分ける」を使って、わり算の文章題を練習します。',
     completed: false,
     locked: true,
     stars: 0,
     maxStars: 3,
-    questions: const [
+    questions: QuestionGenerator.divisionWordProblems(),
+  ),
+  const Lesson(
+    id: 3,
+    levelId: 1,
+    type: LessonType.practice,
+    title: 'かけ算の文章題',
+    description: '「1人に3まいずつ」などの言葉から、かけ算を選ぶ練習です。',
+    completed: false,
+    locked: true,
+    stars: 0,
+    maxStars: 3,
+    questions: [
       Question(
-        id: 4,
-        type: 'image-to-text',
-        question: 'この手話はどれですか？',
-        signDescription: '自己紹介でよく使う単語です',
-        imageUrl: 'https://picsum.photos/seed/name_sign/400/250',
-        options: ['名前', 'ありがとう', '学校', '明日'],
-        correctAnswer: 0,
-      ),
-      Question(
-        id: 5,
-        type: 'text-to-image',
-        question: '「年齢」に対応する手話はどれですか？',
-        signDescription: '画像を見て正しいものを選びましょう',
-        options: ['A', 'B', 'C', 'D'],
-        optionImageUrls: [
-          'https://picsum.photos/seed/age_a/300/200',
-          'https://picsum.photos/seed/age_b/300/200',
-          'https://picsum.photos/seed/age_c/300/200',
-          'https://picsum.photos/seed/age_d/300/200',
-        ],
-        correctAnswer: 0,
-      ),
-      Question(
-        id: 6,
-        type: 'image-to-text',
-        question: 'この手話はどれですか？',
-        signDescription: 'どこから来たかを伝える表現です',
-        imageUrl: 'https://picsum.photos/seed/hometown_sign/400/250',
-        options: ['出身地', 'スポーツ', '音楽', '動物'],
-        correctAnswer: 0,
+        id: 3001,
+        type: 'multiple-choice',
+        unitId: 'multiplication',
+        promptSchoolJa: '5人に、1人4まいずつ紙を配ります。紙は全部で何まい必要ですか。',
+        promptEasyJa: '5人います。ひとりに4まい紙をあげます。ぜんぶで何まいですか。',
+        promptNative: {
+          AppLanguage.portuguese:
+              'Há 5 crianças. Cada uma recebe 4 folhas. Quantas folhas ao todo?',
+          AppLanguage.tagalog:
+              'May 5 na bata. Bawat isa ay bibigyan ng 4 na papel. Ilang papel lahat?',
+          AppLanguage.vietnamese:
+              'Có 5 bạn. Mỗi bạn nhận 4 tờ giấy. Tất cả là bao nhiêu tờ?',
+        },
+        choices: ['9', '20', '45', '54'],
+        correctAnswer: 1,
+        explanationEasyJa: '4まいが5人分なので、4 x 5 = 20です。',
+        explanationNative: {
+          AppLanguage.portuguese:
+              'São 4 folhas para cada uma das 5 crianças: 4 x 5 = 20.',
+          AppLanguage.tagalog: '4 na papel para sa 5 bata: 4 x 5 = 20.',
+          AppLanguage.vietnamese: 'Mỗi bạn 4 tờ, có 5 bạn: 4 x 5 = 20.',
+        },
+        tags: ['multiplication', 'word_problem', 'school_japanese_each'],
       ),
     ],
   ),
-  Lesson(
-    id: 3,
+  const Lesson(
+    id: 4,
     levelId: 1,
-    title: '日常の言葉',
-    description: 'はい、いいえ、お願いします',
+    type: LessonType.practice,
+    title: 'ちがいを求める問題',
+    description: '「より長い」「残り」など、ひき算につながる言葉を確認します。',
     completed: false,
     locked: true,
     stars: 0,
     maxStars: 3,
-    questions: const [
+    questions: [
       Question(
-        id: 7,
-        type: 'image-to-text',
-        question: 'この手話はどれですか？',
-        signDescription: '肯定の意味を持つ表現です',
-        imageUrl: 'https://picsum.photos/seed/yes_sign/400/250',
-        options: ['はい', 'いいえ', 'たぶん', 'わからない'],
+        id: 4001,
+        type: 'multiple-choice',
+        unitId: 'comparison',
+        promptSchoolJa: '赤いリボンは42cm、青いリボンは35cmです。赤は青より何cm長いですか。',
+        promptEasyJa: '赤は42cmです。青は35cmです。赤のほうが何cm長いですか。',
+        promptNative: {
+          AppLanguage.portuguese:
+              'A fita vermelha tem 42 cm e a azul tem 35 cm. Quantos cm a vermelha é mais longa?',
+          AppLanguage.tagalog:
+              'Ang pulang laso ay 42 cm at ang asul ay 35 cm. Ilang cm ang mas mahaba ang pula?',
+          AppLanguage.vietnamese:
+              'Ruy băng đỏ dài 42 cm, ruy băng xanh dài 35 cm. Đỏ dài hơn bao nhiêu cm?',
+        },
+        choices: ['7', '13', '77', '87'],
         correctAnswer: 0,
-      ),
-      Question(
-        id: 8,
-        type: 'text-to-image',
-        question: '「お願いします」の手話はどれですか？',
-        signDescription: '画像を見て選んでください',
-        options: ['A', 'B', 'C', 'D'],
-        optionImageUrls: [
-          'https://picsum.photos/seed/please_a/300/200',
-          'https://picsum.photos/seed/please_b/300/200',
-          'https://picsum.photos/seed/please_c/300/200',
-          'https://picsum.photos/seed/please_d/300/200',
-        ],
-        correctAnswer: 2,
+        explanationEasyJa: '「より何cm長い」は、ちがいを求めます。42 - 35 = 7です。',
+        explanationNative: {
+          AppLanguage.portuguese: 'A pergunta pede a diferença: 42 - 35 = 7.',
+          AppLanguage.tagalog: 'Hinahanap ang diperensya: 42 - 35 = 7.',
+          AppLanguage.vietnamese: 'Câu hỏi tìm hiệu: 42 - 35 = 7.',
+        },
+        tags: ['comparison', 'subtraction', 'school_japanese_more_than'],
       ),
     ],
   ),

@@ -1,33 +1,68 @@
-/*
-[question.dart]
-
-pur:
-
-
-*/
+import 'app_language.dart';
 
 class Question {
   final int id;
   final String type;
+  final String unitId;
+  final String promptSchoolJa;
+  final String promptEasyJa;
+  final Map<AppLanguage, String> promptNative;
+  final List<String> choices;
+  final String explanationEasyJa;
+  final Map<AppLanguage, String> explanationNative;
+  final List<String> tags;
+
+  // Legacy fields kept so the old sign-language screens can be migrated gradually.
   final String question;
   final String signDescription;
-  final List<String> options;
   final int correctAnswer;
   final String? imageUrl;
   final String? videoUrl;
-
-  // text-to-image 用
   final List<String>? optionImageUrls;
 
   const Question({
     required this.id,
     required this.type,
-    required this.question,
-    required this.signDescription,
-    required this.options,
+    this.unitId = '',
+    this.promptSchoolJa = '',
+    this.promptEasyJa = '',
+    this.promptNative = const {},
+    List<String>? choices,
+    List<String>? options,
     required this.correctAnswer,
+    this.explanationEasyJa = '',
+    this.explanationNative = const {},
+    this.tags = const [],
+    this.question = '',
+    this.signDescription = '',
     this.imageUrl,
     this.optionImageUrls,
     this.videoUrl,
-  });
+  }) : choices = choices ?? options ?? const [];
+
+  List<String> get options => choices;
+
+  String promptFor(AppLanguage language, QuestionPromptMode mode) {
+    switch (mode) {
+      case QuestionPromptMode.schoolJa:
+        return promptSchoolJa.isNotEmpty ? promptSchoolJa : question;
+      case QuestionPromptMode.easyJa:
+        return promptEasyJa.isNotEmpty ? promptEasyJa : promptSchoolJa;
+      case QuestionPromptMode.native:
+        if (language == AppLanguage.japanese) {
+          return promptEasyJa.isNotEmpty ? promptEasyJa : promptSchoolJa;
+        }
+        return promptNative[language] ??
+            (promptEasyJa.isNotEmpty ? promptEasyJa : promptSchoolJa);
+    }
+  }
+
+  String explanationFor(AppLanguage language) {
+    if (language == AppLanguage.japanese) {
+      return explanationEasyJa;
+    }
+    return explanationNative[language] ?? explanationEasyJa;
+  }
 }
+
+enum QuestionPromptMode { schoolJa, easyJa, native }

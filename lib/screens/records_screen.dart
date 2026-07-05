@@ -21,18 +21,20 @@ class RecordsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final completedLessons = lessons.where((lesson) => lesson.completed).length;
     final totalLessons = lessons.length;
-    final totalStars = lessons.fold<int>(0, (sum, lesson) => sum + lesson.stars);
-    final maxStars = lessons.fold<int>(0, (sum, lesson) => sum + lesson.maxStars);
+    final totalStars = lessons.fold<int>(
+      0,
+      (sum, lesson) => sum + lesson.stars,
+    );
+    final maxStars = lessons.fold<int>(
+      0,
+      (sum, lesson) => sum + lesson.maxStars,
+    );
 
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Color(0xFFEFF6FF),
-            Color(0xFFF5F3FF),
-            Color(0xFFFDF2F8),
-          ],
+          colors: [Color(0xFFEFF6FF), Color(0xFFF5F3FF), Color(0xFFFDF2F8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -172,7 +174,7 @@ class _SummaryCard extends StatelessWidget {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.12),
+              color: iconColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: iconColor),
@@ -181,10 +183,7 @@ class _SummaryCard extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style: const TextStyle(
-                fontSize: 15,
-                color: Color(0xFF6B7280),
-              ),
+              style: const TextStyle(fontSize: 15, color: Color(0xFF6B7280)),
             ),
           ),
           Text(
@@ -224,21 +223,21 @@ class _LessonProgressTile extends StatelessWidget {
               color: lesson.locked
                   ? const Color(0xFFE5E7EB)
                   : lesson.completed
-                      ? const Color(0xFFDCFCE7)
-                      : const Color(0xFFDBEAFE),
+                  ? const Color(0xFFDCFCE7)
+                  : const Color(0xFFDBEAFE),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               lesson.locked
                   ? Icons.lock_rounded
                   : lesson.completed
-                      ? Icons.check_rounded
-                      : Icons.play_arrow_rounded,
+                  ? Icons.check_rounded
+                  : Icons.play_arrow_rounded,
               color: lesson.locked
                   ? const Color(0xFF6B7280)
                   : lesson.completed
-                      ? const Color(0xFF15803D)
-                      : const Color(0xFF2563EB),
+                  ? const Color(0xFF15803D)
+                  : const Color(0xFF2563EB),
             ),
           ),
           const SizedBox(width: 14),

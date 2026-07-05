@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'data/mock_data.dart';
+import 'logic/diagnosis_engine.dart';
+import 'models/app_language.dart';
 import 'models/lesson.dart';
 import 'screens/completion_screen.dart';
+import 'screens/diagnosis_result_screen.dart';
+import 'screens/language_select_screen.dart';
 import 'screens/lesson_map_screen.dart';
 import 'screens/lesson_screen.dart';
 import 'widgets/header.dart';
@@ -22,7 +26,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: '手話アカデミー',
+      title: '多言語算数学習',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -32,8 +36,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -42,12 +44,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   @override
   void initState() {
     super.initState();
     loadProgress();
   }
+
   // streak and experience level(xp)
   String currentScreen = 'map';
   int streak = 0;
@@ -60,6 +62,7 @@ class _HomePageState extends State<HomePage> {
     if (xp >= 100) return 2;
     return 1;
   }
+
   int get currentLevel => getLevelFromXp(xp);
   int getNextLevelXp(int level) {
     switch (level) {
@@ -75,9 +78,12 @@ class _HomePageState extends State<HomePage> {
         return 1200;
     }
   }
+
   int get xpToNextLevel => getNextLevelXp(currentLevel) - xp;
   bool isLoading = true;
   bool isWeakReviewMode = false;
+  AppLanguage selectedLanguage = AppLanguage.japanese;
+  DiagnosisResult? diagnosisResult;
 
   DateTime? lastPlayedDate;
   Lesson? selectedLesson;
@@ -89,11 +95,11 @@ class _HomePageState extends State<HomePage> {
   List<int> weakQuestionIds = [];
 
   double get levelProgress {
-  final currentLevelXp = getNextLevelXp(currentLevel - 1);
-  final nextLevelXp = getNextLevelXp(currentLevel);
+    final currentLevelXp = getNextLevelXp(currentLevel - 1);
+    final nextLevelXp = getNextLevelXp(currentLevel);
 
-  return (xp - currentLevelXp) / (nextLevelXp - currentLevelXp);
-}
+    return (xp - currentLevelXp) / (nextLevelXp - currentLevelXp);
+  }
 
   void startLesson(Lesson lesson) {
     setState(() {
@@ -111,18 +117,21 @@ class _HomePageState extends State<HomePage> {
     required List<Question> correctQuestions,
   }) async {
     if (selectedLesson != null) {
-      await updateLessonProgress(
-        lesson: selectedLesson!,
-        stars: stars,
-      );
+      await updateLessonProgress(lesson: selectedLesson!, stars: stars);
     }
 
+    final isDiagnosis = selectedLesson?.type == LessonType.diagnosis;
+    final nextDiagnosisResult = isDiagnosis
+        ? DiagnosisEngine.analyze(wrongQuestions)
+        : null;
+
     setState(() {
-      previousLevel = currentLevel; 
+      previousLevel = currentLevel;
       resultStars = stars;
       resultCorrectAnswers = correctAnswers;
       resultTotalQuestions = totalQuestions;
       resultWrongQuestions = wrongQuestions;
+      diagnosisResult = nextDiagnosisResult;
 
       if (isWeakReviewMode) {
         for (final question in correctQuestions) {
@@ -138,12 +147,13 @@ class _HomePageState extends State<HomePage> {
 
       xp += stars * 10;
       updateStreak();
-      currentScreen = 'completion';
+      currentScreen = isDiagnosis ? 'diagnosis_result' : 'completion';
 
       final newLevel = currentLevel;
 
       if (newLevel > previousLevel) {
         Future.delayed(const Duration(milliseconds: 300), () {
+          if (!mounted) return;
           showDialog(
             context: context,
             builder: (_) => AlertDialog(
@@ -165,6 +175,7 @@ class _HomePageState extends State<HomePage> {
 
     if (isWeakReviewMode && weakQuestionIds.isEmpty) {
       Future.delayed(const Duration(milliseconds: 300), () {
+        if (!mounted) return;
         showDialog(
           context: context,
           builder: (_) => AlertDialog(
@@ -188,6 +199,16 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Future<void> selectLanguage(AppLanguage language) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selected_language', language.storageValue);
+
+    setState(() {
+      selectedLanguage = language;
+      currentScreen = 'map';
+    });
+  }
+
   Future<void> updateLessonProgress({
     required Lesson lesson,
     required int stars,
@@ -202,6 +223,7 @@ class _HomePageState extends State<HomePage> {
       mockLessons[index] = Lesson(
         id: current.id,
         levelId: current.levelId,
+        type: current.type,
         title: current.title,
         description: current.description,
         completed: true,
@@ -217,6 +239,7 @@ class _HomePageState extends State<HomePage> {
           mockLessons[index + 1] = Lesson(
             id: next.id,
             levelId: next.levelId,
+            type: next.type,
             title: next.title,
             description: next.description,
             completed: next.completed,
@@ -286,7 +309,7 @@ class _HomePageState extends State<HomePage> {
         'last_played_date',
         lastPlayedDate!.toIso8601String(),
       );
-    }   
+    }
   }
 
   Future<void> loadProgress() async {
@@ -297,14 +320,14 @@ class _HomePageState extends State<HomePage> {
 
       final completed =
           prefs.getBool('lesson_${lesson.id}_completed') ?? lesson.completed;
-      final stars =
-          prefs.getInt('lesson_${lesson.id}_stars') ?? lesson.stars;
+      final stars = prefs.getInt('lesson_${lesson.id}_stars') ?? lesson.stars;
       final locked =
           prefs.getBool('lesson_${lesson.id}_locked') ?? lesson.locked;
 
       mockLessons[i] = Lesson(
         id: lesson.id,
         levelId: lesson.levelId,
+        type: lesson.type,
         title: lesson.title,
         description: lesson.description,
         completed: completed,
@@ -319,8 +342,7 @@ class _HomePageState extends State<HomePage> {
     final savedStreak = prefs.getInt('user_streak');
     final savedLastPlayed = prefs.getString('last_played_date');
     final savedWeakIds = prefs.getStringList('weak_question_ids');
-
-
+    final savedLanguage = prefs.getString('selected_language');
 
     setState(() {
       if (savedXp != null) {
@@ -338,10 +360,17 @@ class _HomePageState extends State<HomePage> {
       if (savedWeakIds != null) {
         weakQuestionIds = savedWeakIds.map((id) => int.parse(id)).toList();
       }
-      
+
+      if (savedLanguage != null) {
+        selectedLanguage = AppLanguageLabel.fromStorageValue(savedLanguage);
+      } else {
+        currentScreen = 'language';
+      }
+
       isLoading = false;
     });
   }
+
   void restartLesson() {
     if (selectedLesson == null) return;
     setState(() {
@@ -354,6 +383,7 @@ class _HomePageState extends State<HomePage> {
 
     // ① 保存データを全削除
     await prefs.clear();
+    await prefs.setString('selected_language', selectedLanguage.storageValue);
 
     // ② アプリ内の状態を初期値に戻す
     setState(() {
@@ -363,6 +393,7 @@ class _HomePageState extends State<HomePage> {
         mockLessons[i] = Lesson(
           id: l.id,
           levelId: l.levelId,
+          type: l.type,
           title: l.title,
           description: l.description,
           completed: false,
@@ -442,6 +473,7 @@ class _HomePageState extends State<HomePage> {
       selectedLesson = Lesson(
         id: -2,
         levelId: -1,
+        type: LessonType.practice,
         title: '苦手問題の復習',
         description: '過去に間違えた問題を復習しましょう',
         completed: false,
@@ -475,6 +507,7 @@ class _HomePageState extends State<HomePage> {
       selectedLesson = Lesson(
         id: -1,
         levelId: -1,
+        type: LessonType.practice,
         title: '復習',
         description: '間違えた問題をもう一度確認しましょう',
         completed: false,
@@ -495,6 +528,41 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Future<void> startRecommendedLesson(Lesson lesson) async {
+    final index = mockLessons.indexWhere((l) => l.id == lesson.id);
+    if (index == -1) return;
+
+    setState(() {
+      final current = mockLessons[index];
+      mockLessons[index] = Lesson(
+        id: current.id,
+        levelId: current.levelId,
+        type: current.type,
+        title: current.title,
+        description: current.description,
+        completed: current.completed,
+        locked: false,
+        stars: current.stars,
+        maxStars: current.maxStars,
+        questions: current.questions,
+      );
+      selectedLesson = mockLessons[index];
+      isWeakReviewMode = false;
+      currentScreen = 'lesson';
+    });
+
+    await saveProgress();
+  }
+
+  List<Lesson> getRecommendedLessons() {
+    final result = diagnosisResult;
+    if (result == null) return const [];
+
+    return mockLessons
+        .where((lesson) => result.recommendedLessonIds.contains(lesson.id))
+        .toList();
+  }
+
   void goToRecords() {
     setState(() {
       currentScreen = 'records';
@@ -504,67 +572,75 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }  
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     Widget body;
 
-    if (currentScreen == 'map') {
-    body = LessonMapScreen(
-      lessons: mockLessons,
-      onStartLesson: startLesson,
-    );
-  } else if (currentScreen == 'lesson' && selectedLesson != null) {
-    body = LessonScreen(
-      lesson: selectedLesson!,
-      onComplete: completeLesson,
-      onClose: goHome,
-    );
-  } else if (currentScreen == 'settings') {
-    body = SettingsScreen(
-      xp: xp,
-      streak: streak,
-      level: currentLevel,
-      xpToNextLevel: xpToNextLevel, 
-      levelProgress: levelProgress,
-      onReset: confirmAndReset,
-      onOpenRecords: goToRecords,
-      onBack: goHome,
-      weakQuestionCount: getWeakQuestions().length,
-      onWeakReview: getWeakQuestions().isEmpty ? null : startWeakReview,
-    );
-  } else if (currentScreen == 'records') {
-    body = RecordsScreen(
-      xp: xp,
-      streak: streak,
-      level: currentLevel,
-      lessons: mockLessons,
-      onBack: goToSettings,
-    );
-  } else {
-    body = CompletionScreen(
-      stars: resultStars,
-      totalQuestions: resultTotalQuestions,
-      correctAnswers: resultCorrectAnswers,
-      xpGained: resultStars * 10,
-      streak: streak,
-      wrongQuestionCount: resultWrongQuestions.length,
-      onRestart: restartLesson,
-      onHome: goHome,
-      onNextLesson: getNextLessonAction(),
-      onReview: resultWrongQuestions.isEmpty ? null : startReview,
-    );
-  }
+    if (currentScreen == 'language') {
+      body = LanguageSelectScreen(
+        selectedLanguage: selectedLanguage,
+        onSelectLanguage: selectLanguage,
+      );
+    } else if (currentScreen == 'map') {
+      body = LessonMapScreen(lessons: mockLessons, onStartLesson: startLesson);
+    } else if (currentScreen == 'lesson' && selectedLesson != null) {
+      body = LessonScreen(
+        lesson: selectedLesson!,
+        onComplete: completeLesson,
+        onClose: goHome,
+        selectedLanguage: selectedLanguage,
+      );
+    } else if (currentScreen == 'diagnosis_result' && diagnosisResult != null) {
+      body = DiagnosisResultScreen(
+        result: diagnosisResult!,
+        recommendedLessons: getRecommendedLessons(),
+        totalQuestions: resultTotalQuestions,
+        correctAnswers: resultCorrectAnswers,
+        onHome: goHome,
+        onStartRecommendedLesson: startRecommendedLesson,
+      );
+    } else if (currentScreen == 'settings') {
+      body = SettingsScreen(
+        xp: xp,
+        streak: streak,
+        level: currentLevel,
+        xpToNextLevel: xpToNextLevel,
+        levelProgress: levelProgress,
+        onReset: confirmAndReset,
+        onOpenRecords: goToRecords,
+        onBack: goHome,
+        weakQuestionCount: getWeakQuestions().length,
+        onWeakReview: getWeakQuestions().isEmpty ? null : startWeakReview,
+      );
+    } else if (currentScreen == 'records') {
+      body = RecordsScreen(
+        xp: xp,
+        streak: streak,
+        level: currentLevel,
+        lessons: mockLessons,
+        onBack: goToSettings,
+      );
+    } else {
+      body = CompletionScreen(
+        stars: resultStars,
+        totalQuestions: resultTotalQuestions,
+        correctAnswers: resultCorrectAnswers,
+        xpGained: resultStars * 10,
+        streak: streak,
+        wrongQuestionCount: resultWrongQuestions.length,
+        onRestart: restartLesson,
+        onHome: goHome,
+        onNextLesson: getNextLessonAction(),
+        onReview: resultWrongQuestions.isEmpty ? null : startReview,
+      );
+    }
 
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
             Header(
-              streak: streak, 
+              streak: streak,
               xp: xp,
               level: currentLevel,
               onSettingsTap: goToSettings,
