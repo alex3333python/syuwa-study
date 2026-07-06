@@ -50,9 +50,9 @@ Question _buildDivisionWordProblem(QuestionTemplateValues values) {
     type: 'multiple-choice',
     unitId: divisionWordProblemTemplate.unitId,
     promptSchoolJa:
-        '${values.total}この${values.item}を、${values.groups}${values.people}で同じ数ずつ分けます。1${values.people}分は何こですか。',
+        '${values.total}この${values.item}を、${values.groups}${values.people}で等しく分けると、1${values.people}何こずつですか。',
     promptEasyJa:
-        '${values.item}が${values.total}こあります。${values.groups}${values.people}で同じ数に分けます。ひとり何こですか。',
+        '${values.item}が${values.total}こあります。${values.groups}${values.people}で等しく分けると、ひとり何こずつですか。',
     promptNative: {
       AppLanguage.portuguese:
           'Divida ${values.total} ${values.item} igualmente entre ${values.groups} pessoas. Quantos para cada pessoa?',

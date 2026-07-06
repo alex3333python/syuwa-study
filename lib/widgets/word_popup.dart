@@ -25,7 +25,33 @@ class WordPopup extends StatelessWidget {
           builder: (context) {
             return AlertDialog(
               title: Text(entry.word),
-              content: Text(entry.meaningFor(language)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'やさしい日本語',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF374151),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(entry.easyJa),
+                  if (language != AppLanguage.japanese) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      language.label,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF374151),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(entry.nativeMeaningFor(language)),
+                  ],
+                ],
+              ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),

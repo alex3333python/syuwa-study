@@ -11,31 +11,38 @@ class GlossaryEntry {
     this.native = const {},
   });
 
-  String meaningFor(AppLanguage language) {
-    if (language == AppLanguage.japanese) {
-      return easyJa;
-    }
+  String nativeMeaningFor(AppLanguage language) {
     return native[language] ?? easyJa;
   }
 }
 
 const glossaryEntries = {
-  '同じ数ずつ': GlossaryEntry(
-    word: '同じ数ずつ',
-    easyJa: 'ひとり分、または1つのグループの数が同じになること。',
+  '等しく': GlossaryEntry(
+    word: '等しく',
+    easyJa: 'どの人も、同じ数になるようにすること。',
     native: {
-      AppLanguage.portuguese: 'A mesma quantidade para cada pessoa ou grupo.',
-      AppLanguage.tagalog: 'Pare-parehong bilang para sa bawat tao o grupo.',
-      AppLanguage.vietnamese: 'Số lượng bằng nhau cho mỗi người hoặc nhóm.',
+      AppLanguage.portuguese:
+          'igualmente; para todos ficarem com a mesma quantidade',
+      AppLanguage.tagalog: 'pantay-pantay; pareho ang bilang para sa bawat isa',
+      AppLanguage.vietnamese: 'bằng nhau; để mỗi người có cùng số lượng',
     },
   ),
-  '残り': GlossaryEntry(
-    word: '残り',
-    easyJa: 'へったあとに、まだある数。',
+  '分ける': GlossaryEntry(
+    word: '分ける',
+    easyJa: 'いくつかの人やグループに、わたすこと。',
     native: {
-      AppLanguage.portuguese: 'A quantidade que sobra depois de tirar.',
-      AppLanguage.tagalog: 'Bilang na natitira matapos bawasan.',
-      AppLanguage.vietnamese: 'Số còn lại sau khi bớt đi.',
+      AppLanguage.portuguese: 'dividir; distribuir entre pessoas ou grupos',
+      AppLanguage.tagalog: 'hatiin; ipamahagi sa mga tao o grupo',
+      AppLanguage.vietnamese: 'chia; phân phát cho người hoặc nhóm',
+    },
+  ),
+  'ずつ': GlossaryEntry(
+    word: 'ずつ',
+    easyJa: 'ひとりに同じ数、または1つのグループに同じ数という意味。',
+    native: {
+      AppLanguage.portuguese: 'cada; a mesma quantidade para cada um',
+      AppLanguage.tagalog: 'bawat isa; parehong bilang sa bawat tao o grupo',
+      AppLanguage.vietnamese: 'mỗi; cùng một số lượng cho mỗi người hoặc nhóm',
     },
   ),
 };
