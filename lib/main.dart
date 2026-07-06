@@ -287,6 +287,7 @@ class _HomePageState extends State<HomePage> {
         stars: newStars,
         maxStars: current.maxStars,
         questions: current.questions,
+        steps: current.steps,
       );
 
       if (index + 1 < mockLessons.length) {
@@ -303,6 +304,7 @@ class _HomePageState extends State<HomePage> {
             stars: next.stars,
             maxStars: next.maxStars,
             questions: next.questions,
+            steps: next.steps,
           );
         }
       }
@@ -423,6 +425,7 @@ class _HomePageState extends State<HomePage> {
         stars: stars,
         maxStars: lesson.maxStars,
         questions: lesson.questions,
+        steps: lesson.steps,
       );
     }
 
@@ -494,6 +497,7 @@ class _HomePageState extends State<HomePage> {
           stars: 0,
           maxStars: l.maxStars,
           questions: l.questions,
+          steps: l.steps,
         );
       }
 
@@ -664,6 +668,7 @@ class _HomePageState extends State<HomePage> {
         stars: current.stars,
         maxStars: current.maxStars,
         questions: current.questions,
+        steps: current.steps,
       );
       selectedLesson = mockLessons[index];
       isWeakReviewMode = false;

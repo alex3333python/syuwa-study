@@ -116,4 +116,112 @@ final List<Lesson> mockLessons = [
     maxStars: 3,
     questions: QuestionGenerator.fractionComparisonProblems(),
   ),
+  const Lesson(
+    id: 6,
+    levelId: 1,
+    type: LessonType.practice,
+    title: '残りはいくつ',
+    description: '「残り」「食べる」「使う」などの言葉から、ひき算で考える練習をします。',
+    completed: false,
+    locked: true,
+    stars: 0,
+    maxStars: 3,
+    questions: [],
+    steps: [
+      LessonStep(
+        id: 'remaining-learn',
+        type: LessonStepType.learn,
+        title: '学習しよう',
+        explanationSchoolJa:
+            'ひき算は、数がへるときや残りを求めるときに使います。「残りは何こですか」は、はじめの数から使った数をひく合図です。',
+        explanationEasyJa: 'ものがへったときは、ひき算を使います。「残り」は、まだある数のことです。',
+        explanationNative: {
+          AppLanguage.portuguese:
+              'Use subtração quando a quantidade diminui. "Restam" quer dizer a quantidade que ainda fica.',
+          AppLanguage.tagalog:
+              'Gumamit ng pagbabawas kapag nabawasan ang bilang. Ang "natira" ay bilang na naiwan.',
+          AppLanguage.vietnamese:
+              'Dùng phép trừ khi số lượng giảm. "Còn lại" là số vẫn còn.',
+        },
+      ),
+      LessonStep(
+        id: 'remaining-guided',
+        type: LessonStepType.guidedPractice,
+        title: 'いっしょに解こう',
+        questions: [
+          Question(
+            id: 6001,
+            type: 'wordProblem',
+            unitId: 'subtraction_remaining',
+            promptSchoolJa: 'りんごが12こあります。4こ食べると、残りは何こですか。',
+            promptEasyJa: 'りんごが12こあります。4こ食べました。まだあるりんごは何こですか。',
+            promptNative: {
+              AppLanguage.portuguese:
+                  'Há 12 maçãs. Comeram 4. Quantas maçãs restam?',
+              AppLanguage.tagalog:
+                  'May 12 mansanas. Kinain ang 4. Ilang mansanas ang natira?',
+              AppLanguage.vietnamese:
+                  'Có 12 quả táo. Đã ăn 4 quả. Còn lại bao nhiêu quả táo?',
+            },
+            choices: ['4', '8', '12', '16'],
+            correctAnswer: 1,
+            explanationEasyJa: '12こから4こへったので、12 - 4 = 8です。',
+            explanationNative: {
+              AppLanguage.portuguese: 'Diminuiu 4 a partir de 12: 12 - 4 = 8.',
+              AppLanguage.tagalog: 'Nabawasan ng 4 mula sa 12: 12 - 4 = 8.',
+              AppLanguage.vietnamese: 'Bớt 4 từ 12: 12 - 4 = 8.',
+            },
+            tags: ['subtraction', 'word_problem', 'remaining'],
+          ),
+        ],
+      ),
+      LessonStep(
+        id: 'remaining-independent',
+        type: LessonStepType.independentPractice,
+        title: '自分で解こう',
+        questions: [
+          Question(
+            id: 6002,
+            type: 'wordProblem',
+            unitId: 'subtraction_remaining',
+            promptSchoolJa: '色紙が15まいあります。6まい使うと、残りは何まいですか。',
+            promptEasyJa: '色紙が15まいあります。6まい使いました。まだある色紙は何まいですか。',
+            promptNative: {
+              AppLanguage.portuguese:
+                  'Há 15 folhas de papel colorido. Usaram 6. Quantas folhas restam?',
+              AppLanguage.tagalog:
+                  'May 15 pirasong papel. Ginamit ang 6. Ilang papel ang natira?',
+              AppLanguage.vietnamese:
+                  'Có 15 tờ giấy màu. Đã dùng 6 tờ. Còn lại bao nhiêu tờ?',
+            },
+            choices: ['6', '9', '15', '21'],
+            correctAnswer: 1,
+            explanationEasyJa: '15まいから6まいへったので、15 - 6 = 9です。',
+            explanationNative: {
+              AppLanguage.portuguese: 'Diminuiu 6 a partir de 15: 15 - 6 = 9.',
+              AppLanguage.tagalog: 'Nabawasan ng 6 mula sa 15: 15 - 6 = 9.',
+              AppLanguage.vietnamese: 'Bớt 6 từ 15: 15 - 6 = 9.',
+            },
+            tags: ['subtraction', 'word_problem', 'remaining'],
+          ),
+        ],
+      ),
+      LessonStep(
+        id: 'remaining-summary',
+        type: LessonStepType.summary,
+        title: 'まとめ',
+        explanationSchoolJa:
+            '「残り」「食べる」「使う」「なくなる」は、数がへる合図です。はじめの数からへった数をひくと、残りが分かります。',
+        explanationEasyJa: '「残り」「食べる」「使う」「なくなる」が出たら、ひき算で考えます。',
+        explanationNative: {
+          AppLanguage.portuguese:
+              'Quando aparecerem palavras como restam, comer, usar ou acabar, pense em subtração.',
+          AppLanguage.tagalog:
+              'Kapag may salitang natira, kumain, gumamit, o naubos, isipin ang pagbabawas.',
+          AppLanguage.vietnamese:
+              'Khi thấy các từ còn lại, ăn, dùng, hết, hãy nghĩ đến phép trừ.',
+        },
+      ),
+    ],
+  ),
 ];

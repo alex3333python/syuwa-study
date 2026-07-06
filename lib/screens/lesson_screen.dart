@@ -35,9 +35,11 @@ class LessonScreen extends StatefulWidget {
 }
 
 class _LessonScreenState extends State<LessonScreen> {
+  int currentStepIndex = 0;
   int currentQuestionIndex = 0;
   int? selectedAnswer;
   bool showFeedback = false;
+  bool showIndependentHint = false;
   int correctCount = 0;
   final List<Question> wrongQuestions = [];
   final List<Question> correctQuestions = [];
@@ -45,7 +47,26 @@ class _LessonScreenState extends State<LessonScreen> {
   MistakeReason? selectedMistakeReason;
   QuestionPromptMode promptMode = QuestionPromptMode.schoolJa;
 
-  Question get currentQuestion => widget.lesson.questions[currentQuestionIndex];
+  bool get hasSteps => widget.lesson.steps.isNotEmpty;
+
+  LessonStep? get currentStep =>
+      hasSteps ? widget.lesson.steps[currentStepIndex] : null;
+
+  List<Question> get currentQuestions =>
+      hasSteps ? currentStep!.questions : widget.lesson.questions;
+
+  Question get currentQuestion => currentQuestions[currentQuestionIndex];
+
+  int get totalPracticeQuestions {
+    if (!hasSteps) return widget.lesson.questions.length;
+    return widget.lesson.steps.expand((step) => step.questions).length;
+  }
+
+  int get progressIndex =>
+      hasSteps ? currentStepIndex + 1 : currentQuestionIndex + 1;
+
+  int get progressTotal =>
+      hasSteps ? widget.lesson.steps.length : widget.lesson.questions.length;
 
   void handleAnswerSelect(int answerIndex) {
     if (showFeedback) return;
@@ -65,24 +86,64 @@ class _LessonScreenState extends State<LessonScreen> {
   }
 
   Future<void> handleNext() async {
+    if (hasSteps && currentQuestions.isEmpty) {
+      await _advanceStepOrComplete();
+      return;
+    }
+
     final isCurrentCorrect = selectedAnswer == currentQuestion.correctAnswer;
     if (!isCurrentCorrect && selectedMistakeReason == null) {
       return;
     }
     _updateCurrentAnswerRecord();
 
-    if (currentQuestionIndex < widget.lesson.questions.length - 1) {
+    if (currentQuestionIndex < currentQuestions.length - 1) {
       setState(() {
         currentQuestionIndex++;
         selectedAnswer = null;
         selectedMistakeReason = null;
+        showIndependentHint = false;
         showFeedback = false;
       });
       return;
     }
 
-    final totalQuestions = widget.lesson.questions.length;
-    final stars = ((correctCount / totalQuestions) * 3).ceil();
+    if (hasSteps && currentStepIndex < widget.lesson.steps.length - 1) {
+      setState(() {
+        currentStepIndex++;
+        currentQuestionIndex = 0;
+        selectedAnswer = null;
+        selectedMistakeReason = null;
+        showIndependentHint = false;
+        showFeedback = false;
+      });
+      return;
+    }
+
+    await _completeLesson();
+  }
+
+  Future<void> _advanceStepOrComplete() async {
+    if (hasSteps && currentStepIndex < widget.lesson.steps.length - 1) {
+      setState(() {
+        currentStepIndex++;
+        currentQuestionIndex = 0;
+        selectedAnswer = null;
+        selectedMistakeReason = null;
+        showIndependentHint = false;
+        showFeedback = false;
+      });
+      return;
+    }
+
+    await _completeLesson();
+  }
+
+  Future<void> _completeLesson() async {
+    final totalQuestions = totalPracticeQuestions;
+    final stars = totalQuestions == 0
+        ? 3
+        : ((correctCount / totalQuestions) * 3).ceil();
 
     await widget.onComplete(
       stars: stars,
@@ -125,13 +186,24 @@ class _LessonScreenState extends State<LessonScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (hasSteps && currentQuestions.isEmpty) {
+      return _buildStepOnlyView();
+    }
+
     final question = currentQuestion;
     final options = question.options;
     final correctAnswer = question.correctAnswer;
     final isCorrect = selectedAnswer == correctAnswer;
-    final progress =
-        (currentQuestionIndex + 1) / widget.lesson.questions.length;
-    final prompt = question.promptFor(widget.selectedLanguage, promptMode);
+    final progress = progressIndex / progressTotal;
+    final stepType = currentStep?.type;
+    final isIndependent = stepType == LessonStepType.independentPractice;
+    final promptModeForQuestion = isIndependent
+        ? QuestionPromptMode.schoolJa
+        : promptMode;
+    final prompt = question.promptFor(
+      widget.selectedLanguage,
+      promptModeForQuestion,
+    );
     final showWritingCanvas =
         question.tags.contains('word_problem') ||
         question.unitId.contains('word_problem');
@@ -140,8 +212,8 @@ class _LessonScreenState extends State<LessonScreen> {
       children: [
         _LessonTopBar(
           progress: progress,
-          currentIndex: currentQuestionIndex + 1,
-          totalCount: widget.lesson.questions.length,
+          currentIndex: progressIndex,
+          totalCount: progressTotal,
           onClose: widget.onClose,
         ),
         Expanded(
@@ -162,17 +234,45 @@ class _LessonScreenState extends State<LessonScreen> {
                         color: Color(0xFF6B7280),
                       ),
                     ),
+                    if (hasSteps) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        currentStep!.title,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF111827),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 12),
-                    _PromptModeCards(
-                      selectedMode: promptMode,
-                      selectedLanguage: widget.selectedLanguage,
-                      onChanged: (mode) {
-                        setState(() {
-                          promptMode = mode;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 22),
+                    if (!isIndependent) ...[
+                      _PromptModeCards(
+                        selectedMode: promptMode,
+                        selectedLanguage: widget.selectedLanguage,
+                        onChanged: (mode) {
+                          setState(() {
+                            promptMode = mode;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 22),
+                    ] else ...[
+                      _IndependentPracticeHeader(
+                        showHint: showIndependentHint,
+                        hintText: question.promptFor(
+                          widget.selectedLanguage,
+                          QuestionPromptMode.easyJa,
+                        ),
+                        onToggleHint: () {
+                          setState(() {
+                            showIndependentHint = !showIndependentHint;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 22),
+                    ],
                     TappableSentence(
                       text: prompt,
                       language: widget.selectedLanguage,
@@ -240,12 +340,127 @@ class _LessonScreenState extends State<LessonScreen> {
                   ),
                   selectedMistakeReason: selectedMistakeReason,
                   onMistakeReasonSelected: selectMistakeReason,
-                  isLastQuestion:
-                      currentQuestionIndex ==
-                      widget.lesson.questions.length - 1,
+                  isLastQuestion: !hasSteps
+                      ? currentQuestionIndex ==
+                            widget.lesson.questions.length - 1
+                      : currentStepIndex == widget.lesson.steps.length - 1 &&
+                            currentQuestionIndex == currentQuestions.length - 1,
                   onNext: handleNext,
                 )
               : const SizedBox.shrink(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStepOnlyView() {
+    final step = currentStep!;
+    final isSummary = step.type == LessonStepType.summary;
+    final progress = progressIndex / progressTotal;
+    final nativeTitle = widget.selectedLanguage == AppLanguage.japanese
+        ? '母語'
+        : widget.selectedLanguage.label;
+
+    return Column(
+      children: [
+        _LessonTopBar(
+          progress: progress,
+          currentIndex: progressIndex,
+          totalCount: progressTotal,
+          onClose: widget.onClose,
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 920),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      widget.lesson.title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      isSummary ? '今日できたこと' : step.title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    _StepExplanationCard(
+                      icon: isSummary
+                          ? Icons.flag_rounded
+                          : Icons.school_rounded,
+                      title: isSummary ? 'まとめ' : '学校日本語',
+                      text: step.explanationFor(
+                        widget.selectedLanguage,
+                        QuestionPromptMode.schoolJa,
+                      ),
+                    ),
+                    if (!isSummary) ...[
+                      const SizedBox(height: 12),
+                      _StepExplanationCard(
+                        icon: Icons.lightbulb_outline_rounded,
+                        title: 'やさしい日本語',
+                        text: step.explanationFor(
+                          widget.selectedLanguage,
+                          QuestionPromptMode.easyJa,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _StepExplanationCard(
+                        icon: Icons.translate_rounded,
+                        title: nativeTitle,
+                        text: step.explanationFor(
+                          widget.selectedLanguage,
+                          QuestionPromptMode.native,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+            child: SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: FilledButton(
+                onPressed: handleNext,
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF2563EB),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: Text(
+                  currentStepIndex == widget.lesson.steps.length - 1
+                      ? '完了'
+                      : '次へ',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ],
     );
@@ -462,6 +677,143 @@ class _PromptModeCards extends StatelessWidget {
           },
         ),
       ],
+    );
+  }
+}
+
+class _IndependentPracticeHeader extends StatelessWidget {
+  final bool showHint;
+  final String hintText;
+  final VoidCallback onToggleHint;
+
+  const _IndependentPracticeHeader({
+    required this.showHint,
+    required this.hintText,
+    required this.onToggleHint,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFFDE68A)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.edit_note_rounded, color: Color(0xFFB45309)),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  '自分で解こう',
+                  style: TextStyle(
+                    color: Color(0xFF92400E),
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              TextButton.icon(
+                onPressed: onToggleHint,
+                icon: Icon(
+                  showHint
+                      ? Icons.visibility_off_rounded
+                      : Icons.lightbulb_outline_rounded,
+                ),
+                label: Text(showHint ? 'ヒントを隠す' : 'ヒントを見る'),
+              ),
+            ],
+          ),
+          if (showHint) ...[
+            const SizedBox(height: 10),
+            Text(
+              hintText,
+              style: const TextStyle(
+                color: Color(0xFF78350F),
+                fontSize: 16,
+                height: 1.5,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _StepExplanationCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String text;
+
+  const _StepExplanationCard({
+    required this.icon,
+    required this.title,
+    required this.text,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x12000000),
+            blurRadius: 18,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: const Color(0xFFEFF6FF),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: const Color(0xFF2563EB)),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Color(0xFF2563EB),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  text,
+                  style: const TextStyle(
+                    color: Color(0xFF111827),
+                    fontSize: 18,
+                    height: 1.55,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
