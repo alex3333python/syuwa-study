@@ -6,6 +6,7 @@ import '../models/lesson.dart';
 import '../models/question.dart';
 import '../widgets/sign_video_player.dart';
 import '../widgets/tappable_sentence.dart';
+import '../widgets/writing_canvas.dart';
 
 class LessonScreen extends StatefulWidget {
   final Lesson lesson;
@@ -131,6 +132,9 @@ class _LessonScreenState extends State<LessonScreen> {
     final progress =
         (currentQuestionIndex + 1) / widget.lesson.questions.length;
     final prompt = question.promptFor(widget.selectedLanguage, promptMode);
+    final showWritingCanvas =
+        question.tags.contains('word_problem') ||
+        question.unitId.contains('word_problem');
 
     return Column(
       children: [
@@ -189,6 +193,10 @@ class _LessonScreenState extends State<LessonScreen> {
                           color: Color(0xFF6B7280),
                         ),
                       ),
+                    ],
+                    if (showWritingCanvas) ...[
+                      const SizedBox(height: 22),
+                      WritingCanvas(key: ValueKey('writing-${question.id}')),
                     ],
                     const SizedBox(height: 28),
                     if (question.videoUrl != null) ...[
