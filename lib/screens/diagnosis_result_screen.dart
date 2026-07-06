@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../logic/diagnosis_engine.dart';
+import '../models/answer_record.dart';
 import '../models/lesson.dart';
 
 class DiagnosisResultScreen extends StatelessWidget {
@@ -97,6 +98,15 @@ class DiagnosisResultScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 _ResultPanel(
+                  icon: Icons.record_voice_over_rounded,
+                  iconColor: Color(0xFF7C3AED),
+                  title: '自分でえらんだ「むずかしかったところ」',
+                  child: _MessageRow.watch(
+                    _mistakeReasonMessage(result.mostCommonMistakeReason),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _ResultPanel(
                   icon: Icons.play_circle_fill_rounded,
                   iconColor: Color(0xFF2563EB),
                   title: '次にやってみよう',
@@ -172,6 +182,21 @@ class DiagnosisResultScreen extends StatelessWidget {
         return '「より」というくらべる言葉の意味。';
       default:
         return tag;
+    }
+  }
+
+  String _mistakeReasonMessage(MistakeReason? reason) {
+    switch (reason) {
+      case MistakeReason.calculation:
+        return '計算のしかたで止まりやすいようです。次は式を小さく分けて見てみましょう。';
+      case MistakeReason.wording:
+        return '問題文の言葉がむずかしかったようです。大事な言葉をタップして意味を確認しましょう。';
+      case MistakeReason.askedMeaning:
+        return '何を聞かれているかをつかむところがポイントです。最後の一文をゆっくり見てみましょう。';
+      case MistakeReason.unit:
+        return '「何こ」「何人」などの単位に注目すると、答え方が見つけやすくなります。';
+      case null:
+        return '理由の選択はまだ少ないです。次の問題で、むずかしかったところを選んでみましょう。';
     }
   }
 }

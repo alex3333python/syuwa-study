@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../models/answer_record.dart';
 import '../models/app_language.dart';
 import '../models/lesson.dart';
 import '../models/question.dart';
@@ -14,6 +15,7 @@ class LessonScreen extends StatefulWidget {
     required int totalQuestions,
     required List<Question> wrongQuestions,
     required List<Question> correctQuestions,
+    required List<AnswerRecord> answerRecords,
   })
   onComplete;
   final VoidCallback onClose;
@@ -38,6 +40,8 @@ class _LessonScreenState extends State<LessonScreen> {
   int correctCount = 0;
   final List<Question> wrongQuestions = [];
   final List<Question> correctQuestions = [];
+  final List<AnswerRecord> answerRecords = [];
+  MistakeReason? selectedMistakeReason;
   QuestionPromptMode promptMode = QuestionPromptMode.schoolJa;
 
   Question get currentQuestion => widget.lesson.questions[currentQuestionIndex];
@@ -52,6 +56,7 @@ class _LessonScreenState extends State<LessonScreen> {
       if (answerIndex == currentQuestion.correctAnswer) {
         correctCount++;
         correctQuestions.add(currentQuestion);
+        _updateCurrentAnswerRecord();
       } else {
         wrongQuestions.add(currentQuestion);
       }
@@ -59,10 +64,17 @@ class _LessonScreenState extends State<LessonScreen> {
   }
 
   Future<void> handleNext() async {
+    final isCurrentCorrect = selectedAnswer == currentQuestion.correctAnswer;
+    if (!isCurrentCorrect && selectedMistakeReason == null) {
+      return;
+    }
+    _updateCurrentAnswerRecord();
+
     if (currentQuestionIndex < widget.lesson.questions.length - 1) {
       setState(() {
         currentQuestionIndex++;
         selectedAnswer = null;
+        selectedMistakeReason = null;
         showFeedback = false;
       });
       return;
@@ -77,7 +89,37 @@ class _LessonScreenState extends State<LessonScreen> {
       totalQuestions: totalQuestions,
       wrongQuestions: wrongQuestions,
       correctQuestions: correctQuestions,
+      answerRecords: answerRecords,
     );
+  }
+
+  void selectMistakeReason(MistakeReason reason) {
+    setState(() {
+      selectedMistakeReason = reason;
+      _updateCurrentAnswerRecord();
+    });
+  }
+
+  void _updateCurrentAnswerRecord() {
+    final answer = selectedAnswer;
+    if (answer == null) return;
+
+    final isCorrect = answer == currentQuestion.correctAnswer;
+    final record = AnswerRecord(
+      question: currentQuestion,
+      selectedAnswer: answer,
+      isCorrect: isCorrect,
+      mistakeReason: isCorrect ? null : selectedMistakeReason,
+    );
+    final existingIndex = answerRecords.indexWhere(
+      (record) => record.question.id == currentQuestion.id,
+    );
+
+    if (existingIndex == -1) {
+      answerRecords.add(record);
+    } else {
+      answerRecords[existingIndex] = record;
+    }
   }
 
   @override
@@ -188,6 +230,8 @@ class _LessonScreenState extends State<LessonScreen> {
                   explanationText: question.explanationFor(
                     widget.selectedLanguage,
                   ),
+                  selectedMistakeReason: selectedMistakeReason,
+                  onMistakeReasonSelected: selectMistakeReason,
                   isLastQuestion:
                       currentQuestionIndex ==
                       widget.lesson.questions.length - 1,
@@ -755,10 +799,72 @@ class _ImageAnswerCard extends StatelessWidget {
   }
 }
 
+class _MistakeReasonSelector extends StatelessWidget {
+  final MistakeReason? selectedReason;
+  final ValueChanged<MistakeReason> onSelected;
+
+  const _MistakeReasonSelector({
+    required this.selectedReason,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFECACA)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'どこがむずかしかった？',
+            style: TextStyle(
+              color: Color(0xFF991B1B),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: MistakeReason.values.map((reason) {
+              final selected = reason == selectedReason;
+              return ChoiceChip(
+                label: Text(reason.label),
+                selected: selected,
+                onSelected: (_) => onSelected(reason),
+                selectedColor: const Color(0xFFFEE2E2),
+                backgroundColor: Colors.white,
+                side: BorderSide(
+                  color: selected
+                      ? const Color(0xFFDC2626)
+                      : const Color(0xFFFECACA),
+                ),
+                labelStyle: TextStyle(
+                  color: selected
+                      ? const Color(0xFF991B1B)
+                      : const Color(0xFF374151),
+                  fontWeight: FontWeight.w700,
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _FeedbackBar extends StatelessWidget {
   final bool isCorrect;
   final String correctText;
   final String explanationText;
+  final MistakeReason? selectedMistakeReason;
+  final ValueChanged<MistakeReason> onMistakeReasonSelected;
   final bool isLastQuestion;
   final Future<void> Function() onNext;
 
@@ -767,6 +873,8 @@ class _FeedbackBar extends StatelessWidget {
     required this.isCorrect,
     required this.correctText,
     required this.explanationText,
+    required this.selectedMistakeReason,
+    required this.onMistakeReasonSelected,
     required this.isLastQuestion,
     required this.onNext,
   });
@@ -821,6 +929,13 @@ class _FeedbackBar extends StatelessWidget {
                             : '正解は「$correctText」です。${explanationText.isEmpty ? '' : explanationText}',
                         style: TextStyle(fontSize: 15, color: titleColor),
                       ),
+                      if (!isCorrect) ...[
+                        const SizedBox(height: 14),
+                        _MistakeReasonSelector(
+                          selectedReason: selectedMistakeReason,
+                          onSelected: onMistakeReasonSelected,
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -836,7 +951,9 @@ class _FeedbackBar extends StatelessWidget {
                       borderRadius: BorderRadius.circular(18),
                     ),
                   ),
-                  onPressed: onNext,
+                  onPressed: isCorrect || selectedMistakeReason != null
+                      ? onNext
+                      : null,
                   child: Text(
                     isLastQuestion ? '完了' : '次へ',
                     style: const TextStyle(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'data/mock_data.dart';
 import 'logic/diagnosis_engine.dart';
+import 'models/answer_record.dart';
 import 'models/app_language.dart';
 import 'models/lesson.dart';
 import 'screens/completion_screen.dart';
@@ -115,6 +116,7 @@ class _HomePageState extends State<HomePage> {
     required int totalQuestions,
     required List<Question> wrongQuestions,
     required List<Question> correctQuestions,
+    required List<AnswerRecord> answerRecords,
   }) async {
     if (selectedLesson != null) {
       await updateLessonProgress(lesson: selectedLesson!, stars: stars);
@@ -122,7 +124,7 @@ class _HomePageState extends State<HomePage> {
 
     final isDiagnosis = selectedLesson?.type == LessonType.diagnosis;
     final nextDiagnosisResult = isDiagnosis
-        ? DiagnosisEngine.analyze(wrongQuestions)
+        ? DiagnosisEngine.analyze(wrongQuestions, answerRecords)
         : null;
 
     setState(() {
