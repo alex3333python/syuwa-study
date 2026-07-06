@@ -15,6 +15,8 @@ class ReportScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final topTags = _topEntries(weakTagCounts);
+    final topThreeTags = _topEntries(weakTagCounts, limit: 3);
+    final topThreeReasons = _topEntries(weakReasonCounts, limit: 3);
     final topReason = _topReason();
     final trendMessages = _trendMessages(topTags, topReason);
     final supportHints = _supportHints(topTags, topReason);
@@ -68,6 +70,34 @@ class ReportScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
                 _ReportPanel(
+                  icon: Icons.bar_chart_rounded,
+                  title: 'つまずきの記録',
+                  children: topThreeTags.isEmpty && topThreeReasons.isEmpty
+                      ? const [
+                          _ReportMessage('まだ記録がありません。算数チェックや復習をすると表示されます。'),
+                        ]
+                      : [
+                          if (topThreeTags.isNotEmpty) ...[
+                            const _MiniSectionTitle('苦手タグ 上位3件'),
+                            _CountBars(
+                              entries: topThreeTags,
+                              labelFor: _tagLabel,
+                              color: Color(0xFF2563EB),
+                            ),
+                            const SizedBox(height: 14),
+                          ],
+                          if (topThreeReasons.isNotEmpty) ...[
+                            const _MiniSectionTitle('むずかしかった理由 上位3件'),
+                            _CountBars(
+                              entries: topThreeReasons,
+                              labelFor: _reasonLabel,
+                              color: Color(0xFFF97316),
+                            ),
+                          ],
+                        ],
+                ),
+                const SizedBox(height: 14),
+                _ReportPanel(
                   icon: Icons.trending_up_rounded,
                   title: 'つまずきの傾向',
                   children: trendMessages.map(_ReportMessage.new).toList(),
@@ -86,10 +116,13 @@ class ReportScreen extends StatelessWidget {
     );
   }
 
-  List<MapEntry<String, int>> _topEntries(Map<String, int> counts) {
+  List<MapEntry<String, int>> _topEntries(
+    Map<String, int> counts, {
+    int limit = 5,
+  }) {
     final entries = counts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
-    return entries.take(5).toList();
+    return entries.take(limit).toList();
   }
 
   MistakeReason? _topReason() {
@@ -187,6 +220,105 @@ class ReportScreen extends StatelessWidget {
         return tag;
     }
   }
+
+  String _reasonLabel(String reasonKey) {
+    for (final reason in MistakeReason.values) {
+      if (reason.storageValue == reasonKey) {
+        switch (reason) {
+          case MistakeReason.calculation:
+            return '計算がわからなかった';
+          case MistakeReason.wording:
+            return '問題文の言葉がわからなかった';
+          case MistakeReason.askedMeaning:
+            return '何を聞かれているかわからなかった';
+          case MistakeReason.unit:
+            return '単位がわからなかった';
+        }
+      }
+    }
+    return reasonKey;
+  }
+}
+
+class _MiniSectionTitle extends StatelessWidget {
+  final String text;
+
+  const _MiniSectionTitle(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Color(0xFF111827),
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+}
+
+class _CountBars extends StatelessWidget {
+  final List<MapEntry<String, int>> entries;
+  final String Function(String key) labelFor;
+  final Color color;
+
+  const _CountBars({
+    required this.entries,
+    required this.labelFor,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final maxCount = entries.isEmpty ? 1 : entries.first.value;
+
+    return Column(
+      children: entries.map((entry) {
+        final ratio = maxCount == 0 ? 0.0 : entry.value / maxCount;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      labelFor(entry.key),
+                      style: const TextStyle(
+                        color: Color(0xFF374151),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '${entry.value}回',
+                    style: const TextStyle(
+                      color: Color(0xFF6B7280),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(999),
+                child: LinearProgressIndicator(
+                  value: ratio,
+                  minHeight: 12,
+                  backgroundColor: const Color(0xFFE5E7EB),
+                  valueColor: AlwaysStoppedAnimation<Color>(color),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
 }
 
 class _ReportPanel extends StatelessWidget {
@@ -216,12 +348,14 @@ class _ReportPanel extends StatelessWidget {
             children: [
               Icon(icon, color: const Color(0xFF2563EB)),
               const SizedBox(width: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF111827),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF111827),
+                  ),
                 ),
               ),
             ],
