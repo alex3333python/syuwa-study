@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../models/app_language.dart';
 import '../models/lesson.dart';
 import '../models/question.dart';
@@ -35,8 +36,8 @@ class _LessonScreenState extends State<LessonScreen> {
   int? selectedAnswer;
   bool showFeedback = false;
   int correctCount = 0;
-  List<Question> wrongQuestions = [];
-  List<Question> correctQuestions = [];
+  final List<Question> wrongQuestions = [];
+  final List<Question> correctQuestions = [];
   QuestionPromptMode promptMode = QuestionPromptMode.schoolJa;
 
   Question get currentQuestion => widget.lesson.questions[currentQuestionIndex];
@@ -64,18 +65,19 @@ class _LessonScreenState extends State<LessonScreen> {
         selectedAnswer = null;
         showFeedback = false;
       });
-    } else {
-      final totalQuestions = widget.lesson.questions.length;
-      final stars = ((correctCount / totalQuestions) * 3).ceil();
-
-      await widget.onComplete(
-        stars: stars,
-        correctAnswers: correctCount,
-        totalQuestions: totalQuestions,
-        wrongQuestions: wrongQuestions,
-        correctQuestions: correctQuestions,
-      );
+      return;
     }
+
+    final totalQuestions = widget.lesson.questions.length;
+    final stars = ((correctCount / totalQuestions) * 3).ceil();
+
+    await widget.onComplete(
+      stars: stars,
+      correctAnswers: correctCount,
+      totalQuestions: totalQuestions,
+      wrongQuestions: wrongQuestions,
+      correctQuestions: correctQuestions,
+    );
   }
 
   @override
@@ -98,7 +100,7 @@ class _LessonScreenState extends State<LessonScreen> {
         ),
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
             child: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 920),
@@ -115,7 +117,7 @@ class _LessonScreenState extends State<LessonScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    _PromptModeSelector(
+                    _PromptModeCards(
                       selectedMode: promptMode,
                       selectedLanguage: widget.selectedLanguage,
                       onChanged: (mode) {
@@ -124,7 +126,7 @@ class _LessonScreenState extends State<LessonScreen> {
                         });
                       },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 22),
                     TappableSentence(
                       text: prompt,
                       language: widget.selectedLanguage,
@@ -147,7 +149,6 @@ class _LessonScreenState extends State<LessonScreen> {
                       ),
                     ],
                     const SizedBox(height: 28),
-
                     if (question.videoUrl != null) ...[
                       SignVideoPlayer(videoUrl: question.videoUrl!),
                       const SizedBox(height: 28),
@@ -156,23 +157,21 @@ class _LessonScreenState extends State<LessonScreen> {
                       _QuestionImage(imageUrl: question.imageUrl!),
                       const SizedBox(height: 28),
                     ],
-
                     if (question.type == 'text-to-image' &&
                         question.optionImageUrls != null &&
-                        question.optionImageUrls!.length == options.length) ...[
+                        question.optionImageUrls!.length == options.length)
                       _buildImageOptions(
                         options: options,
                         imageUrls: question.optionImageUrls!,
                         correctAnswer: correctAnswer,
                         isCorrect: isCorrect,
-                      ),
-                    ] else ...[
+                      )
+                    else
                       _buildTextOptions(
                         options: options,
                         correctAnswer: correctAnswer,
                         isCorrect: isCorrect,
                       ),
-                    ],
                   ],
                 ),
               ),
@@ -334,12 +333,12 @@ class _LessonScreenState extends State<LessonScreen> {
   }
 }
 
-class _PromptModeSelector extends StatelessWidget {
+class _PromptModeCards extends StatelessWidget {
   final QuestionPromptMode selectedMode;
   final AppLanguage selectedLanguage;
   final ValueChanged<QuestionPromptMode> onChanged;
 
-  const _PromptModeSelector({
+  const _PromptModeCards({
     required this.selectedMode,
     required this.selectedLanguage,
     required this.onChanged,
@@ -347,27 +346,158 @@ class _PromptModeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SegmentedButton<QuestionPromptMode>(
-      segments: [
-        const ButtonSegment(
-          value: QuestionPromptMode.schoolJa,
-          label: Text('学校日本語'),
-          icon: Icon(Icons.school_rounded),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(
+          '問題文の見かたをえらぶ',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Color(0xFF6B7280),
+            fontWeight: FontWeight.w800,
+          ),
         ),
-        const ButtonSegment(
-          value: QuestionPromptMode.easyJa,
-          label: Text('やさしい日本語'),
-          icon: Icon(Icons.lightbulb_outline_rounded),
-        ),
-        ButtonSegment(
-          value: QuestionPromptMode.native,
-          label: Text(selectedLanguage.label),
-          icon: const Icon(Icons.translate_rounded),
+        const SizedBox(height: 10),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth >= 720;
+            final buttons = [
+              _PromptModeCard(
+                mode: QuestionPromptMode.schoolJa,
+                selectedMode: selectedMode,
+                icon: Icons.school_rounded,
+                title: '学校の言い方',
+                subtitle: '教科書に近い文',
+                onTap: onChanged,
+              ),
+              _PromptModeCard(
+                mode: QuestionPromptMode.easyJa,
+                selectedMode: selectedMode,
+                icon: Icons.lightbulb_outline_rounded,
+                title: 'やさしい日本語',
+                subtitle: '短く言いかえ',
+                onTap: onChanged,
+              ),
+              _PromptModeCard(
+                mode: QuestionPromptMode.native,
+                selectedMode: selectedMode,
+                icon: Icons.translate_rounded,
+                title: selectedLanguage.label,
+                subtitle: '母語で確認',
+                onTap: onChanged,
+              ),
+            ];
+
+            if (isWide) {
+              return Row(
+                children: [
+                  for (int i = 0; i < buttons.length; i++) ...[
+                    Expanded(child: buttons[i]),
+                    if (i != buttons.length - 1) const SizedBox(width: 10),
+                  ],
+                ],
+              );
+            }
+
+            return Column(
+              children: [
+                for (int i = 0; i < buttons.length; i++) ...[
+                  buttons[i],
+                  if (i != buttons.length - 1) const SizedBox(height: 8),
+                ],
+              ],
+            );
+          },
         ),
       ],
-      selected: {selectedMode},
-      onSelectionChanged: (values) => onChanged(values.first),
-      showSelectedIcon: false,
+    );
+  }
+}
+
+class _PromptModeCard extends StatelessWidget {
+  final QuestionPromptMode mode;
+  final QuestionPromptMode selectedMode;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final ValueChanged<QuestionPromptMode> onTap;
+
+  const _PromptModeCard({
+    required this.mode,
+    required this.selectedMode,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = mode == selectedMode;
+    final backgroundColor = selected ? const Color(0xFFEFF6FF) : Colors.white;
+    final borderColor = selected
+        ? const Color(0xFF2563EB)
+        : const Color(0xFFE5E7EB);
+    final iconColor = selected
+        ? const Color(0xFF2563EB)
+        : const Color(0xFF6B7280);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => onTap(mode),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: borderColor, width: selected ? 2 : 1),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: iconColor, size: 24),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: selected
+                            ? const Color(0xFF1D4ED8)
+                            : const Color(0xFF111827),
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Color(0xFF6B7280),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (selected)
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: Color(0xFF2563EB),
+                  size: 20,
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -675,7 +805,7 @@ class _FeedbackBar extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isCorrect ? '正解です！' : '不正解です',
+                        isCorrect ? '正解です！' : '答えを見てみよう',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,

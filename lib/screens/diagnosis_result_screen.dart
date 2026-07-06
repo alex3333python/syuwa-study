@@ -26,6 +26,7 @@ class DiagnosisResultScreen extends StatelessWidget {
     final percentage = totalQuestions == 0
         ? 0
         : ((correctAnswers / totalQuestions) * 100).round();
+    final strengths = _strengthMessages();
 
     return Container(
       width: double.infinity,
@@ -45,7 +46,7 @@ class DiagnosisResultScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const Text(
-                  '診断結果',
+                  'チェックできました',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 30,
@@ -55,35 +56,53 @@ class DiagnosisResultScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '正答率 $percentage%  |  $correctAnswers / $totalQuestions',
+                  '$correctAnswers問 / $totalQuestions問 正解',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Color(0xFF6B7280),
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
+                const SizedBox(height: 14),
+                _ScoreBar(percentage: percentage),
                 const SizedBox(height: 24),
                 _ResultPanel(
-                  title: '見えてきたつまずき',
-                  child: result.hasWeakness
-                      ? Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: result.weakTags
-                              .map(_WeakTagChip.new)
-                              .toList(),
-                        )
-                      : const Text(
-                          '大きなつまずきは見つかりませんでした。次の練習に進めます。',
-                          style: TextStyle(color: Color(0xFF374151)),
-                        ),
+                  icon: Icons.check_circle_rounded,
+                  iconColor: Color(0xFF16A34A),
+                  title: 'できていること',
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: strengths
+                        .map((message) => _MessageRow.good(message))
+                        .toList(),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 _ResultPanel(
-                  title: 'おすすめレッスン',
+                  icon: Icons.lightbulb_rounded,
+                  iconColor: Color(0xFFF97316),
+                  title: 'つまずいているかもしれないこと',
+                  child: result.hasWeakness
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: result.weakTags
+                              .map(
+                                (tag) => _MessageRow.watch(
+                                  _childFriendlyTagMessage(tag),
+                                ),
+                              )
+                              .toList(),
+                        )
+                      : const _MessageRow.good('大きなつまずきは見つかりませんでした。'),
+                ),
+                const SizedBox(height: 16),
+                _ResultPanel(
+                  icon: Icons.play_circle_fill_rounded,
+                  iconColor: Color(0xFF2563EB),
+                  title: '次にやってみよう',
                   child: recommendedLessons.isEmpty
                       ? const Text(
-                          '学習マップから好きなレッスンを選んでください。',
+                          '学習マップから、やってみたいレッスンを選んでください。',
                           style: TextStyle(color: Color(0xFF374151)),
                         )
                       : Column(
@@ -93,7 +112,7 @@ class DiagnosisResultScreen extends StatelessWidget {
                                 lesson: lesson,
                                 onTap: () => onStartRecommendedLesson(lesson),
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 12),
                             ],
                           ],
                         ),
@@ -102,7 +121,7 @@ class DiagnosisResultScreen extends StatelessWidget {
                 OutlinedButton.icon(
                   onPressed: onHome,
                   icon: const Icon(Icons.map_rounded),
-                  label: const Text('学習マップへ'),
+                  label: const Text('学習マップにもどる'),
                 ),
               ],
             ),
@@ -111,13 +130,105 @@ class DiagnosisResultScreen extends StatelessWidget {
       ),
     );
   }
+
+  List<String> _strengthMessages() {
+    final messages = <String>[];
+
+    if (correctAnswers > 0) {
+      messages.add('自分で考えて、答えを選べています。');
+    }
+    if (!result.tagCounts.containsKey('place_value')) {
+      messages.add('数の位を読む問題はよくできています。');
+    }
+    if (!result.tagCounts.containsKey('word_problem')) {
+      messages.add('文章題の場面を読み取れています。');
+    }
+    if (messages.isEmpty) {
+      messages.add('まずは最後までチェックに取り組めました。');
+    }
+
+    return messages.take(3).toList();
+  }
+
+  String _childFriendlyTagMessage(String tag) {
+    switch (tag) {
+      case 'division':
+        return '同じ数に分けるとき、わり算を使うところ。';
+      case 'multiplication':
+        return '同じ数が何人分・何こ分あるかを考えるところ。';
+      case 'subtraction':
+        return '残りやちがいを、ひき算で考えるところ。';
+      case 'comparison':
+        return '「どちらがどれだけ多い・長い」をくらべるところ。';
+      case 'word_problem':
+        return '文を読んで、どんな計算かを選ぶところ。';
+      case 'school_japanese_equally':
+        return '「同じ数ずつ分ける」という学校の言い方。';
+      case 'school_japanese_each':
+        return '「ずつ」という言葉の意味。';
+      case 'school_japanese_remaining':
+        return '「残り」という言葉の意味。';
+      case 'school_japanese_more_than':
+        return '「より」というくらべる言葉の意味。';
+      default:
+        return tag;
+    }
+  }
+}
+
+class _ScoreBar extends StatelessWidget {
+  final int percentage;
+
+  const _ScoreBar({required this.percentage});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.88),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: percentage / 100,
+              minHeight: 14,
+              backgroundColor: const Color(0xFFE5E7EB),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Color(0xFF22C55E),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'いまの正解率 $percentage%',
+            style: const TextStyle(
+              color: Color(0xFF374151),
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _ResultPanel extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
   final String title;
   final Widget child;
 
-  const _ResultPanel({required this.title, required this.child});
+  const _ResultPanel({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -131,13 +242,21 @@ class _ResultPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF111827),
-            ),
+          Row(
+            children: [
+              Icon(icon, color: iconColor),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           child,
@@ -147,45 +266,41 @@ class _ResultPanel extends StatelessWidget {
   }
 }
 
-class _WeakTagChip extends StatelessWidget {
-  final String tag;
+class _MessageRow extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String text;
 
-  const _WeakTagChip(this.tag);
+  const _MessageRow.good(this.text)
+    : icon = Icons.check_rounded,
+      color = const Color(0xFF16A34A);
+
+  const _MessageRow.watch(this.text)
+    : icon = Icons.arrow_right_rounded,
+      color = const Color(0xFFF97316);
 
   @override
   Widget build(BuildContext context) {
-    return Chip(
-      label: Text(_tagLabel(tag)),
-      backgroundColor: const Color(0xFFFFF7ED),
-      side: const BorderSide(color: Color(0xFFFED7AA)),
-      labelStyle: const TextStyle(
-        color: Color(0xFF9A3412),
-        fontWeight: FontWeight.w700,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 22),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: Color(0xFF374151),
+                fontWeight: FontWeight.w700,
+                height: 1.35,
+              ),
+            ),
+          ),
+        ],
       ),
     );
-  }
-
-  String _tagLabel(String tag) {
-    switch (tag) {
-      case 'division':
-        return 'わり算';
-      case 'multiplication':
-        return 'かけ算';
-      case 'subtraction':
-        return 'ひき算';
-      case 'word_problem':
-        return '文章題';
-      case 'school_japanese_equally':
-        return '「同じ数ずつ」';
-      case 'school_japanese_each':
-        return '「ずつ」';
-      case 'school_japanese_remaining':
-        return '「残り」';
-      case 'school_japanese_more_than':
-        return '「より」';
-      default:
-        return tag;
-    }
   }
 }
 
@@ -200,20 +315,29 @@ class _RecommendedLessonCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF2563EB), Color(0xFF7C3AED)],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x332563EB),
+                blurRadius: 18,
+                offset: Offset(0, 8),
+              ),
+            ],
           ),
           child: Row(
             children: [
               const Icon(
                 Icons.play_circle_fill_rounded,
-                color: Color(0xFF2563EB),
+                color: Colors.white,
+                size: 34,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -224,20 +348,24 @@ class _RecommendedLessonCard extends StatelessWidget {
                       lesson.title,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF111827),
+                        color: Colors.white,
+                        fontSize: 17,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       lesson.description,
                       style: const TextStyle(
-                        color: Color(0xFF6B7280),
+                        color: Color(0xFFEFF6FF),
                         fontSize: 13,
+                        height: 1.35,
                       ),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 10),
+              const Icon(Icons.arrow_forward_rounded, color: Colors.white),
             ],
           ),
         ),
