@@ -14,6 +14,8 @@ import 'screens/lesson_screen.dart';
 import 'widgets/header.dart';
 import 'screens/settings_screen.dart';
 import 'screens/records_screen.dart';
+import 'screens/report_screen.dart';
+import 'screens/review_screen.dart';
 import 'models/question.dart';
 
 Future<void> main() async {
@@ -217,6 +219,40 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       currentScreen = 'settings';
     });
+  }
+
+  void selectMainTab(int index) {
+    setState(() {
+      switch (index) {
+        case 0:
+          currentScreen = 'map';
+          break;
+        case 1:
+          currentScreen = 'review';
+          break;
+        case 2:
+          currentScreen = 'report';
+          break;
+      }
+    });
+  }
+
+  int get selectedMainTabIndex {
+    switch (currentScreen) {
+      case 'review':
+        return 1;
+      case 'report':
+        return 2;
+      case 'map':
+      default:
+        return 0;
+    }
+  }
+
+  bool get showMainNavigation {
+    return currentScreen == 'map' ||
+        currentScreen == 'review' ||
+        currentScreen == 'report';
   }
 
   Future<void> selectLanguage(AppLanguage language) async {
@@ -665,11 +701,16 @@ class _HomePageState extends State<HomePage> {
         onSelectLanguage: selectLanguage,
       );
     } else if (currentScreen == 'map') {
-      body = LessonMapScreen(
-        lessons: mockLessons,
-        onStartLesson: startLesson,
+      body = LessonMapScreen(lessons: mockLessons, onStartLesson: startLesson);
+    } else if (currentScreen == 'review') {
+      body = ReviewScreen(
         reviewEnabled: weakTagCounts.isNotEmpty,
         onStartTodayReview: startTodayReview,
+      );
+    } else if (currentScreen == 'report') {
+      body = ReportScreen(
+        weakTagCounts: weakTagCounts,
+        weakReasonCounts: weakReasonCounts,
       );
     } else if (currentScreen == 'lesson' && selectedLesson != null) {
       body = LessonScreen(
@@ -724,6 +765,29 @@ class _HomePageState extends State<HomePage> {
     }
 
     return Scaffold(
+      bottomNavigationBar: showMainNavigation
+          ? NavigationBar(
+              selectedIndex: selectedMainTabIndex,
+              onDestinationSelected: selectMainTab,
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.map_outlined),
+                  selectedIcon: Icon(Icons.map_rounded),
+                  label: 'まなぶ',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.refresh_outlined),
+                  selectedIcon: Icon(Icons.refresh_rounded),
+                  label: 'ふくしゅう',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.summarize_outlined),
+                  selectedIcon: Icon(Icons.summarize_rounded),
+                  label: 'レポート',
+                ),
+              ],
+            )
+          : null,
       body: SafeArea(
         child: Column(
           children: [

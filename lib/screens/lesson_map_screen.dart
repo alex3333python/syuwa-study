@@ -4,15 +4,11 @@ import '../models/lesson.dart';
 class LessonMapScreen extends StatelessWidget {
   final List<Lesson> lessons;
   final void Function(Lesson lesson) onStartLesson;
-  final bool reviewEnabled;
-  final VoidCallback onStartTodayReview;
 
   const LessonMapScreen({
     super.key,
     required this.lessons,
     required this.onStartLesson,
-    this.reviewEnabled = false,
-    required this.onStartTodayReview,
   });
 
   @override
@@ -130,12 +126,7 @@ class LessonMapScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 28),
 
-                    _TodayReviewCard(
-                      enabled: reviewEnabled,
-                      onTap: reviewEnabled ? onStartTodayReview : null,
-                    ),
-
-                    const SizedBox(height: 42),
+                    const SizedBox(height: 28),
 
                     for (int i = 0; i < lessonItems.length; i++) ...[
                       _LessonRow(
@@ -208,11 +199,15 @@ class LessonMapScreen extends StatelessWidget {
   }
 }
 
-class _TodayReviewCard extends StatelessWidget {
+class TodayReviewCard extends StatelessWidget {
   final bool enabled;
   final VoidCallback? onTap;
 
-  const _TodayReviewCard({required this.enabled, required this.onTap});
+  const TodayReviewCard({
+    super.key,
+    required this.enabled,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
