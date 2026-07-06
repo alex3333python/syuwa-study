@@ -4,11 +4,15 @@ import '../models/lesson.dart';
 class LessonMapScreen extends StatelessWidget {
   final List<Lesson> lessons;
   final void Function(Lesson lesson) onStartLesson;
+  final bool reviewEnabled;
+  final VoidCallback onStartTodayReview;
 
   const LessonMapScreen({
     super.key,
     required this.lessons,
     required this.onStartLesson,
+    this.reviewEnabled = false,
+    required this.onStartTodayReview,
   });
 
   @override
@@ -124,7 +128,14 @@ class LessonMapScreen extends StatelessWidget {
                       '算数と学校日本語を、ひとつずつ確認しましょう。',
                       style: TextStyle(fontSize: 16, color: Color(0xFF6B7280)),
                     ),
-                    const SizedBox(height: 56),
+                    const SizedBox(height: 28),
+
+                    _TodayReviewCard(
+                      enabled: reviewEnabled,
+                      onTap: reviewEnabled ? onStartTodayReview : null,
+                    ),
+
+                    const SizedBox(height: 42),
 
                     for (int i = 0; i < lessonItems.length; i++) ...[
                       _LessonRow(
@@ -192,6 +203,118 @@ class LessonMapScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _TodayReviewCard extends StatelessWidget {
+  final bool enabled;
+  final VoidCallback? onTap;
+
+  const _TodayReviewCard({required this.enabled, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final color1 = enabled ? const Color(0xFF14B8A6) : const Color(0xFF9CA3AF);
+    final color2 = enabled ? const Color(0xFF2563EB) : const Color(0xFF6B7280);
+    final badgeColor = enabled
+        ? const Color(0xFFDCFCE7)
+        : const Color(0xFFF3F4F6);
+    final badgeTextColor = enabled
+        ? const Color(0xFF166534)
+        : const Color(0xFF6B7280);
+
+    return SizedBox(
+      width: 430,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(28),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: enabled ? 0.94 : 0.72),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(
+                color: enabled
+                    ? const Color(0xFF99F6E4)
+                    : const Color(0xFFE5E7EB),
+                width: 2,
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x14000000),
+                  blurRadius: 22,
+                  offset: Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    gradient: LinearGradient(colors: [color1, color2]),
+                  ),
+                  child: Icon(
+                    enabled ? Icons.refresh_rounded : Icons.lock_rounded,
+                    color: Colors.white,
+                    size: 34,
+                  ),
+                ),
+                const SizedBox(width: 18),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '今日の復習',
+                        style: TextStyle(
+                          fontSize: 21,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF111827),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        enabled
+                            ? '前にむずかしかったところに近い問題を3問練習します。'
+                            : '間違えた問題がたまると、ここから復習できます。',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 9,
+                        ),
+                        decoration: BoxDecoration(
+                          color: badgeColor,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          enabled ? '復習する' : 'まだ準備中',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            color: badgeTextColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

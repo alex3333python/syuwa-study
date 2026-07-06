@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'data/mock_data.dart';
 import 'logic/diagnosis_engine.dart';
+import 'logic/question_generator.dart';
 import 'models/answer_record.dart';
 import 'models/app_language.dart';
 import 'models/lesson.dart';
@@ -94,6 +95,8 @@ class _HomePageState extends State<HomePage> {
   int resultTotalQuestions = 0;
   List<Question> resultWrongQuestions = [];
   List<int> weakQuestionIds = [];
+  Map<String, int> weakTagCounts = {};
+  Map<String, int> weakReasonCounts = {};
 
   double get levelProgress {
     final currentLevelXp = getNextLevelXp(currentLevel - 1);
@@ -126,6 +129,7 @@ class _HomePageState extends State<HomePage> {
     final nextDiagnosisResult = isDiagnosis
         ? DiagnosisEngine.analyze(wrongQuestions, answerRecords)
         : null;
+    recordWeakSignals(answerRecords);
 
     setState(() {
       previousLevel = currentLevel;
@@ -192,6 +196,20 @@ class _HomePageState extends State<HomePage> {
           ),
         );
       });
+    }
+  }
+
+  void recordWeakSignals(List<AnswerRecord> answerRecords) {
+    for (final record in answerRecords.where((record) => !record.isCorrect)) {
+      for (final tag in record.question.tags) {
+        weakTagCounts[tag] = (weakTagCounts[tag] ?? 0) + 1;
+      }
+
+      final reason = record.mistakeReason;
+      if (reason != null) {
+        final key = reason.storageValue;
+        weakReasonCounts[key] = (weakReasonCounts[key] ?? 0) + 1;
+      }
     }
   }
 
@@ -305,6 +323,14 @@ class _HomePageState extends State<HomePage> {
       'weak_question_ids',
       weakQuestionIds.map((id) => id.toString()).toList(),
     );
+    await prefs.setStringList(
+      'weak_tag_counts',
+      _encodeCountMap(weakTagCounts),
+    );
+    await prefs.setStringList(
+      'weak_reason_counts',
+      _encodeCountMap(weakReasonCounts),
+    );
 
     if (lastPlayedDate != null) {
       await prefs.setString(
@@ -312,6 +338,30 @@ class _HomePageState extends State<HomePage> {
         lastPlayedDate!.toIso8601String(),
       );
     }
+  }
+
+  List<String> _encodeCountMap(Map<String, int> counts) {
+    return counts.entries
+        .map((entry) => '${entry.key}:${entry.value}')
+        .toList();
+  }
+
+  Map<String, int> _decodeCountMap(List<String>? values) {
+    final counts = <String, int>{};
+    if (values == null) return counts;
+
+    for (final value in values) {
+      final separatorIndex = value.lastIndexOf(':');
+      if (separatorIndex <= 0) continue;
+
+      final key = value.substring(0, separatorIndex);
+      final count = int.tryParse(value.substring(separatorIndex + 1));
+      if (count == null) continue;
+
+      counts[key] = count;
+    }
+
+    return counts;
   }
 
   Future<void> loadProgress() async {
@@ -344,6 +394,8 @@ class _HomePageState extends State<HomePage> {
     final savedStreak = prefs.getInt('user_streak');
     final savedLastPlayed = prefs.getString('last_played_date');
     final savedWeakIds = prefs.getStringList('weak_question_ids');
+    final savedWeakTagCounts = prefs.getStringList('weak_tag_counts');
+    final savedWeakReasonCounts = prefs.getStringList('weak_reason_counts');
     final savedLanguage = prefs.getString('selected_language');
 
     setState(() {
@@ -362,6 +414,9 @@ class _HomePageState extends State<HomePage> {
       if (savedWeakIds != null) {
         weakQuestionIds = savedWeakIds.map((id) => int.parse(id)).toList();
       }
+
+      weakTagCounts = _decodeCountMap(savedWeakTagCounts);
+      weakReasonCounts = _decodeCountMap(savedWeakReasonCounts);
 
       if (savedLanguage != null) {
         selectedLanguage = AppLanguageLabel.fromStorageValue(savedLanguage);
@@ -407,6 +462,8 @@ class _HomePageState extends State<HomePage> {
       }
 
       xp = 0;
+      weakTagCounts = {};
+      weakReasonCounts = {};
 
       // 画面もマップに戻すと分かりやすい
       currentScreen = 'map';
@@ -523,6 +580,30 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void startTodayReview() {
+    final questions = QuestionGenerator.reviewQuestionsForTags(
+      weakTagCounts.keys.toSet(),
+    );
+    if (questions.isEmpty) return;
+
+    setState(() {
+      selectedLesson = Lesson(
+        id: -3,
+        levelId: -1,
+        type: LessonType.practice,
+        title: '今日の復習',
+        description: '前にむずかしかった言葉や計算に近い問題を練習します。',
+        completed: false,
+        locked: false,
+        stars: 0,
+        maxStars: 3,
+        questions: questions.take(3).toList(),
+      );
+      isWeakReviewMode = false;
+      currentScreen = 'lesson';
+    });
+  }
+
   void goHome() {
     setState(() {
       isWeakReviewMode = false;
@@ -584,7 +665,12 @@ class _HomePageState extends State<HomePage> {
         onSelectLanguage: selectLanguage,
       );
     } else if (currentScreen == 'map') {
-      body = LessonMapScreen(lessons: mockLessons, onStartLesson: startLesson);
+      body = LessonMapScreen(
+        lessons: mockLessons,
+        onStartLesson: startLesson,
+        reviewEnabled: weakTagCounts.isNotEmpty,
+        onStartTodayReview: startTodayReview,
+      );
     } else if (currentScreen == 'lesson' && selectedLesson != null) {
       body = LessonScreen(
         lesson: selectedLesson!,

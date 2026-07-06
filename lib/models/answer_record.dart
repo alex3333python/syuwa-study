@@ -3,6 +3,8 @@ import 'question.dart';
 enum MistakeReason { calculation, wording, askedMeaning, unit }
 
 extension MistakeReasonLabel on MistakeReason {
+  String get storageValue => name;
+
   String get label {
     switch (this) {
       case MistakeReason.calculation:

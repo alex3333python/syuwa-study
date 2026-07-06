@@ -36,7 +36,7 @@ class QuestionTemplateValues {
 const divisionWordProblemTemplate = QuestionTemplate(
   id: 'division_equal_share_1',
   unitId: 'division_word_problem',
-  tags: ['division', 'word_problem', 'school_japanese_equally'],
+  tags: ['division', 'word_problem', 'equal_share', 'school_japanese_equally'],
   build: _buildDivisionWordProblem,
 );
 

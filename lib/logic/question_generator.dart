@@ -29,4 +29,18 @@ class QuestionGenerator {
 
     return values.map(divisionWordProblemTemplate.build).toList();
   }
+
+  static List<Question> reviewQuestionsForTags(Set<String> tags) {
+    final hasDivisionReviewTag =
+        tags.contains('division') ||
+        tags.contains('word_problem') ||
+        tags.contains('equal_share') ||
+        tags.contains('school_japanese_equally');
+
+    if (!hasDivisionReviewTag) {
+      return const [];
+    }
+
+    return divisionWordProblems();
+  }
 }
