@@ -216,6 +216,8 @@ class ReportScreen extends StatelessWidget {
         return 'ひき算';
       case 'comparison':
         return 'くらべる問題';
+      case 'fraction':
+        return '分数';
       default:
         return tag;
     }

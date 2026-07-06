@@ -73,6 +73,9 @@ class DiagnosisEngine {
     if (_hasAny(tagCounts, ['subtraction', 'comparison'])) {
       recommendations.add(4);
     }
+    if (_hasAny(tagCounts, ['fraction'])) {
+      recommendations.add(5);
+    }
 
     if (recommendations.isEmpty && tagCounts.isNotEmpty) {
       recommendations.add(2);

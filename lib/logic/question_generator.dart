@@ -30,6 +30,34 @@ class QuestionGenerator {
     return values.map(divisionWordProblemTemplate.build).toList();
   }
 
+  static List<Question> fractionComparisonProblems() {
+    const values = [
+      FractionComparisonTemplateValues(
+        questionId: 5001,
+        leftNumerator: 1,
+        leftDenominator: 2,
+        rightNumerator: 1,
+        rightDenominator: 3,
+      ),
+      FractionComparisonTemplateValues(
+        questionId: 5002,
+        leftNumerator: 2,
+        leftDenominator: 5,
+        rightNumerator: 1,
+        rightDenominator: 4,
+      ),
+      FractionComparisonTemplateValues(
+        questionId: 5003,
+        leftNumerator: 3,
+        leftDenominator: 4,
+        rightNumerator: 2,
+        rightDenominator: 3,
+      ),
+    ];
+
+    return values.map(fractionComparisonTemplate.build).toList();
+  }
+
   static List<Question> reviewQuestionsForTags(Set<String> tags) {
     final hasDivisionReviewTag =
         tags.contains('division') ||

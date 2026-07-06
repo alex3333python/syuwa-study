@@ -170,6 +170,8 @@ class DiagnosisResultScreen extends StatelessWidget {
         return '残りやちがいを、ひき算で考えるところ。';
       case 'comparison':
         return '「どちらがどれだけ多い・長い」をくらべるところ。';
+      case 'fraction':
+        return '分数の大きさをくらべるところ。';
       case 'word_problem':
         return '文を読んで、どんな計算かを選ぶところ。';
       case 'school_japanese_equally':

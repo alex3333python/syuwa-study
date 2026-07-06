@@ -5,7 +5,7 @@ class QuestionTemplate {
   final String id;
   final String unitId;
   final List<String> tags;
-  final Question Function(QuestionTemplateValues values) build;
+  final Question Function(dynamic values) build;
 
   const QuestionTemplate({
     required this.id,
@@ -33,6 +33,31 @@ class QuestionTemplateValues {
   int get answer => total ~/ groups;
 }
 
+class FractionComparisonTemplateValues {
+  final int questionId;
+  final int leftNumerator;
+  final int leftDenominator;
+  final int rightNumerator;
+  final int rightDenominator;
+
+  const FractionComparisonTemplateValues({
+    required this.questionId,
+    required this.leftNumerator,
+    required this.leftDenominator,
+    required this.rightNumerator,
+    required this.rightDenominator,
+  });
+
+  String get leftFraction => '$leftNumerator/$leftDenominator';
+  String get rightFraction => '$rightNumerator/$rightDenominator';
+
+  bool get isLeftGreater {
+    return leftNumerator * rightDenominator > rightNumerator * leftDenominator;
+  }
+
+  String get correctFraction => isLeftGreater ? leftFraction : rightFraction;
+}
+
 const divisionWordProblemTemplate = QuestionTemplate(
   id: 'division_equal_share_1',
   unitId: 'division_word_problem',
@@ -40,7 +65,8 @@ const divisionWordProblemTemplate = QuestionTemplate(
   build: _buildDivisionWordProblem,
 );
 
-Question _buildDivisionWordProblem(QuestionTemplateValues values) {
+Question _buildDivisionWordProblem(dynamic rawValues) {
+  final values = rawValues as QuestionTemplateValues;
   final wrong1 = values.answer + 1;
   final wrong2 = values.groups;
   final wrong3 = values.total - values.groups;
@@ -74,5 +100,50 @@ Question _buildDivisionWordProblem(QuestionTemplateValues values) {
           'Chia đều dùng phép chia: ${values.total} ÷ ${values.groups} = ${values.answer}.',
     },
     tags: divisionWordProblemTemplate.tags,
+  );
+}
+
+const fractionComparisonTemplate = QuestionTemplate(
+  id: 'fraction_comparison_1',
+  unitId: 'fraction_comparison',
+  tags: ['fraction', 'comparison'],
+  build: _buildFractionComparison,
+);
+
+Question _buildFractionComparison(dynamic rawValues) {
+  final values = rawValues as FractionComparisonTemplateValues;
+  final leftChoice = values.leftFraction;
+  final rightChoice = values.rightFraction;
+  final sameChoice = '同じ大きさ';
+
+  return Question(
+    id: values.questionId,
+    type: 'multiple-choice',
+    unitId: fractionComparisonTemplate.unitId,
+    promptSchoolJa:
+        '${values.leftFraction} と ${values.rightFraction} は、どちらが大きいですか。',
+    promptEasyJa:
+        '${values.leftFraction} と ${values.rightFraction} をくらべます。大きいほうはどちらですか。',
+    promptNative: {
+      AppLanguage.portuguese:
+          'Qual fração é maior: ${values.leftFraction} ou ${values.rightFraction}?',
+      AppLanguage.tagalog:
+          'Aling fraction ang mas malaki: ${values.leftFraction} o ${values.rightFraction}?',
+      AppLanguage.vietnamese:
+          'Phân số nào lớn hơn: ${values.leftFraction} hay ${values.rightFraction}?',
+    },
+    choices: [leftChoice, rightChoice, sameChoice],
+    correctAnswer: values.isLeftGreater ? 0 : 1,
+    explanationEasyJa:
+        '分母がちがう分数は、同じ大きさの図を考えるとくらべやすいです。大きいのは ${values.correctFraction} です。',
+    explanationNative: {
+      AppLanguage.portuguese:
+          'Para comparar frações, pense no mesmo todo dividido em partes. A maior é ${values.correctFraction}.',
+      AppLanguage.tagalog:
+          'Para ikumpara ang fractions, isipin ang parehong buo na hinati sa bahagi. Mas malaki ang ${values.correctFraction}.',
+      AppLanguage.vietnamese:
+          'Để so sánh phân số, hãy nghĩ về cùng một hình được chia thành các phần. Phân số lớn hơn là ${values.correctFraction}.',
+    },
+    tags: fractionComparisonTemplate.tags,
   );
 }

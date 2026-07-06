@@ -104,4 +104,16 @@ final List<Lesson> mockLessons = [
       ),
     ],
   ),
+  Lesson(
+    id: 5,
+    levelId: 1,
+    type: LessonType.practice,
+    title: '分数の大きさ',
+    description: '1/2 と 1/3 など、分数の大きさをくらべる練習です。',
+    completed: false,
+    locked: true,
+    stars: 0,
+    maxStars: 3,
+    questions: QuestionGenerator.fractionComparisonProblems(),
+  ),
 ];
