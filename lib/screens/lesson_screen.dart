@@ -40,11 +40,11 @@ class _LessonScreenState extends State<LessonScreen> {
   int? selectedAnswer;
   bool showFeedback = false;
   bool showIndependentHint = false;
+  bool showNoteOverlay = false;
   int correctCount = 0;
   final List<Question> wrongQuestions = [];
   final List<Question> correctQuestions = [];
   final List<AnswerRecord> answerRecords = [];
-  MistakeReason? selectedMistakeReason;
   QuestionPromptMode promptMode = QuestionPromptMode.schoolJa;
 
   bool get hasSteps => widget.lesson.steps.isNotEmpty;
@@ -91,19 +91,15 @@ class _LessonScreenState extends State<LessonScreen> {
       return;
     }
 
-    final isCurrentCorrect = selectedAnswer == currentQuestion.correctAnswer;
-    if (!isCurrentCorrect && selectedMistakeReason == null) {
-      return;
-    }
     _updateCurrentAnswerRecord();
 
     if (currentQuestionIndex < currentQuestions.length - 1) {
       setState(() {
         currentQuestionIndex++;
         selectedAnswer = null;
-        selectedMistakeReason = null;
         showIndependentHint = false;
         showFeedback = false;
+        showNoteOverlay = false;
       });
       return;
     }
@@ -113,9 +109,9 @@ class _LessonScreenState extends State<LessonScreen> {
         currentStepIndex++;
         currentQuestionIndex = 0;
         selectedAnswer = null;
-        selectedMistakeReason = null;
         showIndependentHint = false;
         showFeedback = false;
+        showNoteOverlay = false;
       });
       return;
     }
@@ -129,9 +125,9 @@ class _LessonScreenState extends State<LessonScreen> {
         currentStepIndex++;
         currentQuestionIndex = 0;
         selectedAnswer = null;
-        selectedMistakeReason = null;
         showIndependentHint = false;
         showFeedback = false;
+        showNoteOverlay = false;
       });
       return;
     }
@@ -155,13 +151,6 @@ class _LessonScreenState extends State<LessonScreen> {
     );
   }
 
-  void selectMistakeReason(MistakeReason reason) {
-    setState(() {
-      selectedMistakeReason = reason;
-      _updateCurrentAnswerRecord();
-    });
-  }
-
   void _updateCurrentAnswerRecord() {
     final answer = selectedAnswer;
     if (answer == null) return;
@@ -171,7 +160,7 @@ class _LessonScreenState extends State<LessonScreen> {
       question: currentQuestion,
       selectedAnswer: answer,
       isCorrect: isCorrect,
-      mistakeReason: isCorrect ? null : selectedMistakeReason,
+      mistakeReason: null,
     );
     final existingIndex = answerRecords.indexWhere(
       (record) => record.question.id == currentQuestion.id,
@@ -204,151 +193,162 @@ class _LessonScreenState extends State<LessonScreen> {
       widget.selectedLanguage,
       promptModeForQuestion,
     );
-    final showWritingCanvas =
-        question.tags.contains('word_problem') ||
-        question.unitId.contains('word_problem');
-
-    return Column(
+    return Stack(
       children: [
-        _LessonTopBar(
-          progress: progress,
-          currentIndex: progressIndex,
-          totalCount: progressTotal,
-          onClose: widget.onClose,
-        ),
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 920),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      widget.lesson.title,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF6B7280),
-                      ),
+        Column(
+          children: [
+            _LessonTopBar(
+              progress: progress,
+              currentIndex: progressIndex,
+              totalCount: progressTotal,
+              onClose: widget.onClose,
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 920),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          widget.lesson.title,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF6B7280),
+                          ),
+                        ),
+                        if (hasSteps) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            currentStep!.title,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFF111827),
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 12),
+                        if (!isIndependent) ...[
+                          _PromptModeCards(
+                            selectedMode: promptMode,
+                            selectedLanguage: widget.selectedLanguage,
+                            onChanged: (mode) {
+                              setState(() {
+                                promptMode = mode;
+                              });
+                            },
+                          ),
+                          const SizedBox(height: 22),
+                        ] else ...[
+                          _IndependentPracticeHeader(
+                            showHint: showIndependentHint,
+                            hintText: question.promptFor(
+                              widget.selectedLanguage,
+                              QuestionPromptMode.easyJa,
+                            ),
+                            onToggleHint: () {
+                              setState(() {
+                                showIndependentHint = !showIndependentHint;
+                              });
+                            },
+                          ),
+                          const SizedBox(height: 22),
+                        ],
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: _NoteButton(
+                            onPressed: () {
+                              setState(() {
+                                showNoteOverlay = true;
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        TappableSentence(
+                          text: prompt,
+                          language: widget.selectedLanguage,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF111827),
+                          ),
+                        ),
+                        if (question.signDescription.isNotEmpty) ...[
+                          const SizedBox(height: 10),
+                          Text(
+                            question.signDescription,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF6B7280),
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 28),
+                        if (question.videoUrl != null) ...[
+                          SignVideoPlayer(videoUrl: question.videoUrl!),
+                          const SizedBox(height: 28),
+                        ] else if (question.type == 'image-to-text' &&
+                            question.imageUrl != null) ...[
+                          _QuestionImage(imageUrl: question.imageUrl!),
+                          const SizedBox(height: 28),
+                        ],
+                        if (question.type == 'text-to-image' &&
+                            question.optionImageUrls != null &&
+                            question.optionImageUrls!.length == options.length)
+                          _buildImageOptions(
+                            options: options,
+                            imageUrls: question.optionImageUrls!,
+                            correctAnswer: correctAnswer,
+                            isCorrect: isCorrect,
+                          )
+                        else
+                          _buildTextOptions(
+                            options: options,
+                            correctAnswer: correctAnswer,
+                            isCorrect: isCorrect,
+                          ),
+                      ],
                     ),
-                    if (hasSteps) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        currentStep!.title,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w900,
-                          color: Color(0xFF111827),
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 12),
-                    if (!isIndependent) ...[
-                      _PromptModeCards(
-                        selectedMode: promptMode,
-                        selectedLanguage: widget.selectedLanguage,
-                        onChanged: (mode) {
-                          setState(() {
-                            promptMode = mode;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 22),
-                    ] else ...[
-                      _IndependentPracticeHeader(
-                        showHint: showIndependentHint,
-                        hintText: question.promptFor(
-                          widget.selectedLanguage,
-                          QuestionPromptMode.easyJa,
-                        ),
-                        onToggleHint: () {
-                          setState(() {
-                            showIndependentHint = !showIndependentHint;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 22),
-                    ],
-                    TappableSentence(
-                      text: prompt,
-                      language: widget.selectedLanguage,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF111827),
-                      ),
-                    ),
-                    if (question.signDescription.isNotEmpty) ...[
-                      const SizedBox(height: 10),
-                      Text(
-                        question.signDescription,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Color(0xFF6B7280),
-                        ),
-                      ),
-                    ],
-                    if (showWritingCanvas) ...[
-                      const SizedBox(height: 22),
-                      WritingCanvas(key: ValueKey('writing-${question.id}')),
-                    ],
-                    const SizedBox(height: 28),
-                    if (question.videoUrl != null) ...[
-                      SignVideoPlayer(videoUrl: question.videoUrl!),
-                      const SizedBox(height: 28),
-                    ] else if (question.type == 'image-to-text' &&
-                        question.imageUrl != null) ...[
-                      _QuestionImage(imageUrl: question.imageUrl!),
-                      const SizedBox(height: 28),
-                    ],
-                    if (question.type == 'text-to-image' &&
-                        question.optionImageUrls != null &&
-                        question.optionImageUrls!.length == options.length)
-                      _buildImageOptions(
-                        options: options,
-                        imageUrls: question.optionImageUrls!,
-                        correctAnswer: correctAnswer,
-                        isCorrect: isCorrect,
-                      )
-                    else
-                      _buildTextOptions(
-                        options: options,
-                        correctAnswer: correctAnswer,
-                        isCorrect: isCorrect,
-                      ),
-                  ],
+                  ),
                 ),
               ),
             ),
+          ],
+        ),
+        if (showFeedback)
+          _ExplanationOverlay(
+            isCorrect: isCorrect,
+            correctAnswerText: question.resolvedCorrectAnswerText,
+            explanationText: question.explanationFor(widget.selectedLanguage),
+            formulaExplanation: question.resolvedFormulaExplanation,
+            visualHint: question.visualHint.isNotEmpty
+                ? question.visualHint
+                : question.pictureDescription,
+            languagePoint: question.resolvedLanguagePoint,
+            isLastQuestion: !hasSteps
+                ? currentQuestionIndex == widget.lesson.questions.length - 1
+                : currentStepIndex == widget.lesson.steps.length - 1 &&
+                      currentQuestionIndex == currentQuestions.length - 1,
+            onNext: handleNext,
           ),
-        ),
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 220),
-          child: showFeedback
-              ? _FeedbackBar(
-                  key: ValueKey(currentQuestionIndex),
-                  isCorrect: isCorrect,
-                  correctText: options[correctAnswer],
-                  explanationText: question.explanationFor(
-                    widget.selectedLanguage,
-                  ),
-                  selectedMistakeReason: selectedMistakeReason,
-                  onMistakeReasonSelected: selectMistakeReason,
-                  isLastQuestion: !hasSteps
-                      ? currentQuestionIndex ==
-                            widget.lesson.questions.length - 1
-                      : currentStepIndex == widget.lesson.steps.length - 1 &&
-                            currentQuestionIndex == currentQuestions.length - 1,
-                  onNext: handleNext,
-                )
-              : const SizedBox.shrink(),
-        ),
+        if (showNoteOverlay)
+          _NoteOverlay(
+            key: ValueKey('note-${question.id}'),
+            onClose: () {
+              setState(() {
+                showNoteOverlay = false;
+              });
+            },
+          ),
       ],
     );
   }
@@ -633,7 +633,7 @@ class _PromptModeCards extends StatelessWidget {
                 mode: QuestionPromptMode.schoolJa,
                 selectedMode: selectedMode,
                 icon: Icons.school_rounded,
-                title: '学校の言い方',
+                title: '学校日本語',
                 subtitle: '教科書に近い文',
                 onTap: onChanged,
               ),
@@ -642,7 +642,7 @@ class _PromptModeCards extends StatelessWidget {
                 selectedMode: selectedMode,
                 icon: Icons.lightbulb_outline_rounded,
                 title: 'やさしい日本語',
-                subtitle: '短く言いかえ',
+                subtitle: '短い言葉で確認',
                 onTap: onChanged,
               ),
               _PromptModeCard(
@@ -995,7 +995,7 @@ class _QuestionImage extends StatelessWidget {
           errorBuilder: (context, error, stackTrace) {
             return const Center(
               child: Text(
-                '画像を表示できません',
+                '逕ｻ蜒上ｒ陦ｨ遉ｺ縺ｧ縺阪∪縺帙ｓ',
                 style: TextStyle(color: Color(0xFF6B7280)),
               ),
             );
@@ -1159,173 +1159,274 @@ class _ImageAnswerCard extends StatelessWidget {
   }
 }
 
-class _MistakeReasonSelector extends StatelessWidget {
-  final MistakeReason? selectedReason;
-  final ValueChanged<MistakeReason> onSelected;
+class _NoteButton extends StatelessWidget {
+  final VoidCallback onPressed;
 
-  const _MistakeReasonSelector({
-    required this.selectedReason,
-    required this.onSelected,
-  });
+  const _NoteButton({required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.7),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFECACA)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'どこがむずかしかった？',
-            style: TextStyle(
-              color: Color(0xFF991B1B),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: MistakeReason.values.map((reason) {
-              final selected = reason == selectedReason;
-              return ChoiceChip(
-                label: Text(reason.label),
-                selected: selected,
-                onSelected: (_) => onSelected(reason),
-                selectedColor: const Color(0xFFFEE2E2),
-                backgroundColor: Colors.white,
-                side: BorderSide(
-                  color: selected
-                      ? const Color(0xFFDC2626)
-                      : const Color(0xFFFECACA),
-                ),
-                labelStyle: TextStyle(
-                  color: selected
-                      ? const Color(0xFF991B1B)
-                      : const Color(0xFF374151),
-                  fontWeight: FontWeight.w700,
-                ),
-              );
-            }).toList(),
-          ),
-        ],
+    return FilledButton.icon(
+      onPressed: onPressed,
+      icon: const Icon(Icons.edit_note_rounded, size: 28),
+      label: const Text('ノート'),
+      style: FilledButton.styleFrom(
+        backgroundColor: const Color(0xFF111827),
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
       ),
     );
   }
 }
 
-class _FeedbackBar extends StatelessWidget {
+class _NoteOverlay extends StatelessWidget {
+  final VoidCallback onClose;
+
+  const _NoteOverlay({super.key, required this.onClose});
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: Material(
+        color: Colors.black.withValues(alpha: 0.42),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(28),
+            child: WritingCanvas(
+              height: MediaQuery.sizeOf(context).height * 0.68,
+              title: 'ノート',
+              showCloseButton: true,
+              onClose: onClose,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExplanationOverlay extends StatelessWidget {
   final bool isCorrect;
-  final String correctText;
+  final String correctAnswerText;
   final String explanationText;
-  final MistakeReason? selectedMistakeReason;
-  final ValueChanged<MistakeReason> onMistakeReasonSelected;
+  final String formulaExplanation;
+  final String visualHint;
+  final String languagePoint;
   final bool isLastQuestion;
   final Future<void> Function() onNext;
 
-  const _FeedbackBar({
-    super.key,
+  const _ExplanationOverlay({
     required this.isCorrect,
-    required this.correctText,
+    required this.correctAnswerText,
     required this.explanationText,
-    required this.selectedMistakeReason,
-    required this.onMistakeReasonSelected,
+    required this.formulaExplanation,
+    required this.visualHint,
+    required this.languagePoint,
     required this.isLastQuestion,
     required this.onNext,
   });
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = isCorrect
-        ? const Color(0xFFF0FDF4)
-        : const Color(0xFFFEF2F2);
-    final borderColor = isCorrect
-        ? const Color(0xFFBBF7D0)
-        : const Color(0xFFFECACA);
-    final titleColor = isCorrect
-        ? const Color(0xFF166534)
-        : const Color(0xFF991B1B);
-    final buttonColor = isCorrect
-        ? const Color(0xFF16A34A)
-        : const Color(0xFFDC2626);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-      decoration: BoxDecoration(
-        color: bgColor,
-        border: Border(top: BorderSide(color: borderColor, width: 2)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 900),
-            child: Row(
-              children: [
-                Expanded(
+    return Positioned.fill(
+      child: Material(
+        color: Colors.black.withValues(alpha: 0.36),
+        child: SafeArea(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: 780,
+                maxHeight: MediaQuery.sizeOf(context).height * 0.9,
+              ),
+              child: Container(
+                margin: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x33000000),
+                      blurRadius: 36,
+                      offset: Offset(0, 18),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(28),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(
-                        isCorrect ? '正解です！' : '答えを見てみよう',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: titleColor,
+                      Flexible(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(28),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    isCorrect
+                                        ? Icons.check_circle_rounded
+                                        : Icons.lightbulb_circle_rounded,
+                                    color: isCorrect
+                                        ? const Color(0xFF16A34A)
+                                        : const Color(0xFFF59E0B),
+                                    size: 46,
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Text(
+                                      isCorrect ? '正解です' : 'いっしょに見てみよう',
+                                      style: const TextStyle(
+                                        color: Color(0xFF111827),
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 18),
+                              _ExplanationSection(
+                                icon: Icons.fact_check_rounded,
+                                title: '正しい答え',
+                                text: correctAnswerText,
+                                accentColor: const Color(0xFF16A34A),
+                              ),
+                              if (explanationText.isNotEmpty) ...[
+                                const SizedBox(height: 12),
+                                _ExplanationSection(
+                                  icon: Icons.tips_and_updates_rounded,
+                                  title: '解き方の説明',
+                                  text: explanationText,
+                                  accentColor: const Color(0xFF2563EB),
+                                ),
+                              ],
+                              if (formulaExplanation.isNotEmpty) ...[
+                                const SizedBox(height: 12),
+                                _ExplanationSection(
+                                  icon: Icons.functions_rounded,
+                                  title: '式の説明',
+                                  text: formulaExplanation,
+                                  accentColor: const Color(0xFF7C3AED),
+                                ),
+                              ],
+                              if (visualHint.isNotEmpty) ...[
+                                const SizedBox(height: 12),
+                                _ExplanationSection(
+                                  icon: Icons.grid_view_rounded,
+                                  title: '図や補助説明',
+                                  text: visualHint,
+                                  accentColor: const Color(0xFF0891B2),
+                                ),
+                              ],
+                              const SizedBox(height: 12),
+                              _ExplanationSection(
+                                icon: Icons.menu_book_rounded,
+                                title: '日本語のポイント',
+                                text: languagePoint,
+                                accentColor: const Color(0xFFF97316),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        isCorrect
-                            ? (explanationText.isEmpty
-                                  ? 'その調子で進みましょう。'
-                                  : explanationText)
-                            : '正解は「$correctText」です。${explanationText.isEmpty ? '' : explanationText}',
-                        style: TextStyle(fontSize: 15, color: titleColor),
-                      ),
-                      if (!isCorrect) ...[
-                        const SizedBox(height: 14),
-                        _MistakeReasonSelector(
-                          selectedReason: selectedMistakeReason,
-                          onSelected: onMistakeReasonSelected,
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(28, 16, 28, 24),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFF8FAFC),
+                          border: Border(
+                            top: BorderSide(color: Color(0xFFE5E7EB)),
+                          ),
                         ),
-                      ],
+                        child: SizedBox(
+                          height: 64,
+                          child: FilledButton.icon(
+                            onPressed: onNext,
+                            icon: const Icon(Icons.arrow_forward_rounded),
+                            label: Text(isLastQuestion ? '完了' : '次へ'),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFF2563EB),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              textStyle: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 16),
-                FilledButton(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: buttonColor,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 28,
-                      vertical: 18,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                    ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExplanationSection extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String text;
+  final Color accentColor;
+
+  const _ExplanationSection({
+    required this.icon,
+    required this.title,
+    required this.text,
+    required this.accentColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: accentColor, size: 30),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: accentColor,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
                   ),
-                  onPressed: isCorrect || selectedMistakeReason != null
-                      ? onNext
-                      : null,
-                  child: Text(
-                    isLastQuestion ? '完了' : '次へ',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  text,
+                  style: const TextStyle(
+                    color: Color(0xFF111827),
+                    fontSize: 18,
+                    height: 1.5,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }

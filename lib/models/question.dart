@@ -8,7 +8,11 @@ class Question {
   final String promptEasyJa;
   final Map<AppLanguage, String> promptNative;
   final List<String> choices;
+  final String correctAnswerText;
   final String explanationEasyJa;
+  final String explanation;
+  final String formulaExplanation;
+  final String languagePoint;
   final Map<AppLanguage, String> explanationNative;
   final List<String> tags;
   final String equationHint;
@@ -40,7 +44,11 @@ class Question {
     List<String>? choices,
     List<String>? options,
     required this.correctAnswer,
+    this.correctAnswerText = '',
     this.explanationEasyJa = '',
+    this.explanation = '',
+    this.formulaExplanation = '',
+    this.languagePoint = '',
     this.explanationNative = const {},
     this.tags = const [],
     this.equationHint = '',
@@ -62,6 +70,30 @@ class Question {
 
   List<String> get options => choices;
 
+  String get resolvedCorrectAnswerText {
+    if (correctAnswerText.isNotEmpty) return correctAnswerText;
+    if (correctAnswer >= 0 && correctAnswer < choices.length) {
+      return choices[correctAnswer];
+    }
+    return '';
+  }
+
+  String get resolvedFormulaExplanation {
+    if (formulaExplanation.isNotEmpty) return formulaExplanation;
+    return [
+      equationHint,
+      thinkingHint,
+    ].where((text) => text.isNotEmpty).join('\n');
+  }
+
+  String get resolvedLanguagePoint {
+    if (languagePoint.isNotEmpty) return languagePoint;
+    if (vocabulary.isNotEmpty) {
+      return '大事な言葉: ${vocabulary.join('・')}';
+    }
+    return '問題文の最後を見て、何を答えるかを確かめましょう。';
+  }
+
   String promptFor(AppLanguage language, QuestionPromptMode mode) {
     switch (mode) {
       case QuestionPromptMode.schoolJa:
@@ -78,10 +110,13 @@ class Question {
   }
 
   String explanationFor(AppLanguage language) {
+    final fallbackExplanation = explanationEasyJa.isNotEmpty
+        ? explanationEasyJa
+        : explanation;
     if (language == AppLanguage.japanese) {
-      return explanationEasyJa;
+      return fallbackExplanation;
     }
-    return explanationNative[language] ?? explanationEasyJa;
+    return explanationNative[language] ?? fallbackExplanation;
   }
 }
 

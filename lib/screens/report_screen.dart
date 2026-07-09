@@ -16,8 +16,8 @@ class ReportScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final topTags = _topEntries(weakTagCounts);
     final topThreeTags = _topEntries(weakTagCounts, limit: 3);
-    final topThreeReasons = _topEntries(weakReasonCounts, limit: 3);
-    final topReason = _topReason();
+    const topThreeReasons = <MapEntry<String, int>>[];
+    const MistakeReason? topReason = null;
     final trendMessages = _trendMessages(topTags, topReason);
     final supportHints = _supportHints(topTags, topReason);
 
@@ -125,6 +125,7 @@ class ReportScreen extends StatelessWidget {
     return entries.take(limit).toList();
   }
 
+  // ignore: unused_element
   MistakeReason? _topReason() {
     if (weakReasonCounts.isEmpty) return null;
 
