@@ -5,8 +5,8 @@ import '../models/app_language.dart';
 import '../models/lesson.dart';
 import '../models/question.dart';
 import '../widgets/question_visual.dart';
+import '../widgets/ruby_text.dart';
 import '../widgets/sign_video_player.dart';
-import '../widgets/tappable_sentence.dart';
 import '../widgets/writing_canvas.dart';
 
 class LessonScreen extends StatefulWidget {
@@ -190,10 +190,11 @@ class _LessonScreenState extends State<LessonScreen> {
     final promptModeForQuestion = isIndependent
         ? QuestionPromptMode.schoolJa
         : promptMode;
-    final prompt = question.promptFor(
+    final promptRuby = question.promptRubyFor(
       widget.selectedLanguage,
       promptModeForQuestion,
     );
+    final optionRubies = question.resolvedChoicesRuby;
     return Stack(
       children: [
         Column(
@@ -272,9 +273,8 @@ class _LessonScreenState extends State<LessonScreen> {
                           ),
                         ),
                         const SizedBox(height: 14),
-                        TappableSentence(
-                          text: prompt,
-                          language: widget.selectedLanguage,
+                        RubyText(
+                          text: promptRuby,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             fontSize: 28,
@@ -312,12 +312,14 @@ class _LessonScreenState extends State<LessonScreen> {
                           _buildImageOptions(
                             options: options,
                             imageUrls: question.optionImageUrls!,
+                            optionRubies: optionRubies,
                             correctAnswer: correctAnswer,
                             isCorrect: isCorrect,
                           )
                         else
                           _buildTextOptions(
                             options: options,
+                            optionRubies: optionRubies,
                             correctAnswer: correctAnswer,
                             isCorrect: isCorrect,
                           ),
@@ -333,13 +335,15 @@ class _LessonScreenState extends State<LessonScreen> {
           _ExplanationOverlay(
             isCorrect: isCorrect,
             question: question,
-            correctAnswerText: question.resolvedCorrectAnswerText,
-            explanationText: question.explanationFor(widget.selectedLanguage),
-            formulaExplanation: question.resolvedFormulaExplanation,
+            correctAnswerText: question.resolvedCorrectAnswerTextRuby,
+            explanationText: question.explanationRubyFor(
+              widget.selectedLanguage,
+            ),
+            formulaExplanation: question.resolvedFormulaExplanationRuby,
             visualHint: question.visualHint.isNotEmpty
                 ? question.visualHint
                 : question.pictureDescription,
-            languagePoint: question.resolvedLanguagePoint,
+            languagePoint: question.resolvedLanguagePointRuby,
             isLastQuestion: !hasSteps
                 ? currentQuestionIndex == widget.lesson.questions.length - 1
                 : currentStepIndex == widget.lesson.steps.length - 1 &&
@@ -474,6 +478,7 @@ class _LessonScreenState extends State<LessonScreen> {
 
   Widget _buildTextOptions({
     required List<String> options,
+    required List<String> optionRubies,
     required int correctAnswer,
     required bool isCorrect,
   }) {
@@ -489,7 +494,7 @@ class _LessonScreenState extends State<LessonScreen> {
             crossAxisCount: isWide ? 2 : 1,
             mainAxisSpacing: 16,
             crossAxisSpacing: 16,
-            childAspectRatio: isWide ? 2.3 : 4.0,
+            childAspectRatio: isWide ? 1.95 : 3.15,
           ),
           itemBuilder: (context, index) {
             final style = _answerStyle(
@@ -499,7 +504,7 @@ class _LessonScreenState extends State<LessonScreen> {
             );
 
             return _AnswerCard(
-              text: options[index],
+              rubyText: optionRubies[index],
               backgroundColor: style.backgroundColor,
               borderColor: style.borderColor,
               textColor: style.textColor,
@@ -515,6 +520,7 @@ class _LessonScreenState extends State<LessonScreen> {
 
   Widget _buildImageOptions({
     required List<String> options,
+    required List<String> optionRubies,
     required List<String> imageUrls,
     required int correctAnswer,
     required bool isCorrect,
@@ -541,7 +547,7 @@ class _LessonScreenState extends State<LessonScreen> {
             );
 
             return _ImageAnswerCard(
-              label: options[index],
+              labelRuby: optionRubies[index],
               imageUrl: imageUrls[index],
               backgroundColor: style.backgroundColor,
               borderColor: style.borderColor,
@@ -806,8 +812,8 @@ class _StepExplanationCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  text,
+                RubyText(
+                  text: text,
                   style: const TextStyle(
                     color: Color(0xFF111827),
                     fontSize: 18,
@@ -1001,7 +1007,7 @@ class _QuestionImage extends StatelessWidget {
           errorBuilder: (context, error, stackTrace) {
             return const Center(
               child: Text(
-                '逕ｻ蜒上ｒ陦ｨ遉ｺ縺ｧ縺阪∪縺帙ｓ',
+                '画像を表示できません',
                 style: TextStyle(color: Color(0xFF6B7280)),
               ),
             );
@@ -1013,7 +1019,7 @@ class _QuestionImage extends StatelessWidget {
 }
 
 class _AnswerCard extends StatelessWidget {
-  final String text;
+  final String rubyText;
   final Color backgroundColor;
   final Color borderColor;
   final Color textColor;
@@ -1022,7 +1028,7 @@ class _AnswerCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const _AnswerCard({
-    required this.text,
+    required this.rubyText,
     required this.backgroundColor,
     required this.borderColor,
     required this.textColor,
@@ -1056,8 +1062,8 @@ class _AnswerCard extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                child: Text(
-                  text,
+                child: RubyText(
+                  text: rubyText,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -1076,7 +1082,7 @@ class _AnswerCard extends StatelessWidget {
 }
 
 class _ImageAnswerCard extends StatelessWidget {
-  final String label;
+  final String labelRuby;
   final String imageUrl;
   final Color backgroundColor;
   final Color borderColor;
@@ -1086,7 +1092,7 @@ class _ImageAnswerCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const _ImageAnswerCard({
-    required this.label,
+    required this.labelRuby,
     required this.imageUrl,
     required this.backgroundColor,
     required this.borderColor,
@@ -1145,9 +1151,10 @@ class _ImageAnswerCard extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      label,
+                    child: RubyText(
+                      text: labelRuby,
                       style: TextStyle(
+                        fontSize: 15,
                         fontWeight: FontWeight.bold,
                         color: textColor,
                       ),

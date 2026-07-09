@@ -7,12 +7,18 @@ class Question {
   final String promptSchoolJa;
   final String promptEasyJa;
   final Map<AppLanguage, String> promptNative;
+  final String questionTextRuby;
   final List<String> choices;
+  final List<String> choicesRuby;
   final String correctAnswerText;
+  final String correctAnswerTextRuby;
   final String explanationEasyJa;
   final String explanation;
+  final String explanationRuby;
   final String formulaExplanation;
+  final String formulaExplanationRuby;
   final String languagePoint;
+  final String languagePointRuby;
   final Map<AppLanguage, String> explanationNative;
   final List<String> tags;
   final String equationHint;
@@ -51,14 +57,20 @@ class Question {
     this.promptSchoolJa = '',
     this.promptEasyJa = '',
     this.promptNative = const {},
+    this.questionTextRuby = '',
     List<String>? choices,
     List<String>? options,
+    this.choicesRuby = const [],
     required this.correctAnswer,
     this.correctAnswerText = '',
+    this.correctAnswerTextRuby = '',
     this.explanationEasyJa = '',
     this.explanation = '',
+    this.explanationRuby = '',
     this.formulaExplanation = '',
+    this.formulaExplanationRuby = '',
     this.languagePoint = '',
+    this.languagePointRuby = '',
     this.explanationNative = const {},
     this.tags = const [],
     this.equationHint = '',
@@ -92,12 +104,31 @@ class Question {
 
   bool get hasVisual => visualType != QuestionVisualType.none;
 
+  String promptRubyFor(AppLanguage language, QuestionPromptMode mode) {
+    if (questionTextRuby.isNotEmpty) return questionTextRuby;
+    return promptFor(language, mode);
+  }
+
+  List<String> get resolvedChoicesRuby {
+    return [
+      for (var i = 0; i < choices.length; i++)
+        i < choicesRuby.length && choicesRuby[i].isNotEmpty
+            ? choicesRuby[i]
+            : choices[i],
+    ];
+  }
+
   String get resolvedCorrectAnswerText {
     if (correctAnswerText.isNotEmpty) return correctAnswerText;
     if (correctAnswer >= 0 && correctAnswer < choices.length) {
       return choices[correctAnswer];
     }
     return '';
+  }
+
+  String get resolvedCorrectAnswerTextRuby {
+    if (correctAnswerTextRuby.isNotEmpty) return correctAnswerTextRuby;
+    return resolvedCorrectAnswerText;
   }
 
   String get resolvedFormulaExplanation {
@@ -108,12 +139,27 @@ class Question {
     ].where((text) => text.isNotEmpty).join('\n');
   }
 
+  String get resolvedFormulaExplanationRuby {
+    if (formulaExplanationRuby.isNotEmpty) return formulaExplanationRuby;
+    return resolvedFormulaExplanation;
+  }
+
   String get resolvedLanguagePoint {
     if (languagePoint.isNotEmpty) return languagePoint;
     if (vocabulary.isNotEmpty) {
       return '大事な言葉: ${vocabulary.join('・')}';
     }
     return '問題文の最後を見て、何を答えるかを確かめましょう。';
+  }
+
+  String get resolvedLanguagePointRuby {
+    if (languagePointRuby.isNotEmpty) return languagePointRuby;
+    return resolvedLanguagePoint;
+  }
+
+  String explanationRubyFor(AppLanguage language) {
+    if (explanationRuby.isNotEmpty) return explanationRuby;
+    return explanationFor(language);
   }
 
   String promptFor(AppLanguage language, QuestionPromptMode mode) {
