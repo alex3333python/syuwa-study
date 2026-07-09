@@ -83,9 +83,12 @@ class _WritingCanvasState extends State<WritingCanvas> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC).withValues(alpha: 0.96),
+        color: const Color(0xFFF8FAFC).withValues(alpha: 0.34),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE5E7EB), width: 2),
+        border: Border.all(
+          color: const Color(0xFFE5E7EB).withValues(alpha: 0.48),
+          width: 2,
+        ),
         boxShadow: const [
           BoxShadow(
             color: Color(0x1F000000),
@@ -148,9 +151,12 @@ class _WritingCanvasState extends State<WritingCanvas> {
           Container(
             height: widget.height,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Colors.white.withValues(alpha: 0.32),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xFFE5E7EB), width: 2),
+              border: Border.all(
+                color: const Color(0xFFE5E7EB).withValues(alpha: 0.42),
+                width: 2,
+              ),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(18),
@@ -238,20 +244,7 @@ class _GridPaperPainter extends CustomPainter {
   const _GridPaperPainter();
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final gridPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..color = const Color(0xFFE5E7EB)
-      ..strokeWidth = 1;
-    const gridGap = 40.0;
-
-    for (double x = gridGap; x < size.width; x += gridGap) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
-    }
-    for (double y = gridGap; y < size.height; y += gridGap) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
-    }
-  }
+  void paint(Canvas canvas, Size size) {}
 
   @override
   bool shouldRepaint(covariant _GridPaperPainter oldDelegate) => false;

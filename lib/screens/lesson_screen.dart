@@ -1196,7 +1196,7 @@ class _NoteOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Positioned.fill(
       child: Material(
-        color: Colors.black.withValues(alpha: 0.42),
+        color: Colors.black.withValues(alpha: 0.02),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(28),
