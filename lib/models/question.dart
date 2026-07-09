@@ -18,6 +18,16 @@ class Question {
   final String equationHint;
   final String thinkingHint;
   final String visualHint;
+  final QuestionVisualType visualType;
+  final String visualTitle;
+  final String visualDescription;
+  final String itemLabel;
+  final String itemEmoji;
+  final String itemUnit;
+  final int? totalCount;
+  final int? groupCount;
+  final int? perGroupCount;
+  final int? remainderCount;
   final String pictureDescription;
   final String diagramType;
   final Map<String, String> diagramData;
@@ -54,6 +64,16 @@ class Question {
     this.equationHint = '',
     this.thinkingHint = '',
     this.visualHint = '',
+    this.visualType = QuestionVisualType.none,
+    this.visualTitle = '',
+    this.visualDescription = '',
+    this.itemLabel = '',
+    this.itemEmoji = '●',
+    this.itemUnit = 'こ',
+    this.totalCount,
+    this.groupCount,
+    this.perGroupCount,
+    this.remainderCount,
     this.pictureDescription = '',
     this.diagramType = '',
     this.diagramData = const {},
@@ -69,6 +89,8 @@ class Question {
   }) : choices = choices ?? options ?? const [];
 
   List<String> get options => choices;
+
+  bool get hasVisual => visualType != QuestionVisualType.none;
 
   String get resolvedCorrectAnswerText {
     if (correctAnswerText.isNotEmpty) return correctAnswerText;
@@ -121,3 +143,12 @@ class Question {
 }
 
 enum QuestionPromptMode { schoolJa, easyJa, native }
+
+enum QuestionVisualType {
+  none,
+  divisionSharing,
+  divisionRemainder,
+  grouping,
+  numberLine,
+  fraction,
+}

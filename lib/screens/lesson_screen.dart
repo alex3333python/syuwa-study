@@ -4,6 +4,7 @@ import '../models/answer_record.dart';
 import '../models/app_language.dart';
 import '../models/lesson.dart';
 import '../models/question.dart';
+import '../widgets/question_visual.dart';
 import '../widgets/sign_video_player.dart';
 import '../widgets/tappable_sentence.dart';
 import '../widgets/writing_canvas.dart';
@@ -292,6 +293,10 @@ class _LessonScreenState extends State<LessonScreen> {
                             ),
                           ),
                         ],
+                        if (question.hasVisual) ...[
+                          const SizedBox(height: 24),
+                          QuestionVisual(question: question),
+                        ],
                         const SizedBox(height: 28),
                         if (question.videoUrl != null) ...[
                           SignVideoPlayer(videoUrl: question.videoUrl!),
@@ -327,6 +332,7 @@ class _LessonScreenState extends State<LessonScreen> {
         if (showFeedback)
           _ExplanationOverlay(
             isCorrect: isCorrect,
+            question: question,
             correctAnswerText: question.resolvedCorrectAnswerText,
             explanationText: question.explanationFor(widget.selectedLanguage),
             formulaExplanation: question.resolvedFormulaExplanation,
@@ -1209,6 +1215,7 @@ class _NoteOverlay extends StatelessWidget {
 
 class _ExplanationOverlay extends StatelessWidget {
   final bool isCorrect;
+  final Question question;
   final String correctAnswerText;
   final String explanationText;
   final String formulaExplanation;
@@ -1219,6 +1226,7 @@ class _ExplanationOverlay extends StatelessWidget {
 
   const _ExplanationOverlay({
     required this.isCorrect,
+    required this.question,
     required this.correctAnswerText,
     required this.explanationText,
     required this.formulaExplanation,
@@ -1296,6 +1304,22 @@ class _ExplanationOverlay extends StatelessWidget {
                                 text: correctAnswerText,
                                 accentColor: const Color(0xFF16A34A),
                               ),
+                              if (question.hasVisual) ...[
+                                const SizedBox(height: 12),
+                                QuestionVisual(
+                                  question: question,
+                                  compact: true,
+                                  showSolution: true,
+                                ),
+                              ] else if (visualHint.isNotEmpty) ...[
+                                const SizedBox(height: 12),
+                                _ExplanationSection(
+                                  icon: Icons.grid_view_rounded,
+                                  title: '図や補助説明',
+                                  text: visualHint,
+                                  accentColor: const Color(0xFF0891B2),
+                                ),
+                              ],
                               if (explanationText.isNotEmpty) ...[
                                 const SizedBox(height: 12),
                                 _ExplanationSection(
@@ -1312,15 +1336,6 @@ class _ExplanationOverlay extends StatelessWidget {
                                   title: '式の説明',
                                   text: formulaExplanation,
                                   accentColor: const Color(0xFF7C3AED),
-                                ),
-                              ],
-                              if (visualHint.isNotEmpty) ...[
-                                const SizedBox(height: 12),
-                                _ExplanationSection(
-                                  icon: Icons.grid_view_rounded,
-                                  title: '図や補助説明',
-                                  text: visualHint,
-                                  accentColor: const Color(0xFF0891B2),
                                 ),
                               ],
                               const SizedBox(height: 12),
