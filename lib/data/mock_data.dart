@@ -3,6 +3,8 @@ import '../models/app_language.dart';
 import '../models/lesson.dart';
 import '../models/question.dart';
 import 'diagnostic_questions.dart';
+import 'grade3_division_unit.dart';
+import 'grade3_division_remainder_unit.dart';
 
 final List<Lesson> mockLessons = [
   const Lesson(
@@ -224,4 +226,6 @@ final List<Lesson> mockLessons = [
       ),
     ],
   ),
+  ...grade3DivisionLessons,
+  ...grade3DivisionRemainderLessons,
 ];

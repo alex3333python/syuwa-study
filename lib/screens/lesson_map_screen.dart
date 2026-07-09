@@ -13,31 +13,7 @@ class LessonMapScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final lessonItems = lessons.map((lesson) {
-      return LessonMapItem(
-        title: lesson.title,
-        description: lesson.description,
-        stars: lesson.stars,
-        maxStars: lesson.maxStars,
-        locked: lesson.locked,
-        completed: lesson.completed,
-        color1: lesson.id == 1
-            ? const Color(0xFF3B82F6)
-            : lesson.id == 2
-            ? const Color(0xFFA855F7)
-            : const Color(0xFFEC4899),
-        color2: lesson.id == 1
-            ? const Color(0xFF2563EB)
-            : lesson.id == 2
-            ? const Color(0xFF7C3AED)
-            : const Color(0xFFDB2777),
-        icon: lesson.id == 1
-            ? Icons.fact_check_rounded
-            : lesson.id == 2
-            ? Icons.call_split_rounded
-            : Icons.calculate_rounded,
-      );
-    }).toList();
+    final lessonEntries = _buildLessonEntries(lessons);
 
     return Container(
       width: double.infinity,
@@ -128,15 +104,17 @@ class LessonMapScreen extends StatelessWidget {
 
                     const SizedBox(height: 28),
 
-                    for (int i = 0; i < lessonItems.length; i++) ...[
+                    for (int i = 0; i < lessonEntries.length; i++) ...[
                       _LessonRow(
-                        item: lessonItems[i],
+                        item: lessonEntries[i].item,
                         alignLeft: i % 2 == 0,
-                        onTap: lessons[i].locked
+                        onTap: lessonEntries[i].lessonToStart == null
                             ? null
-                            : () => onStartLesson(lessons[i]),
+                            : () => onStartLesson(
+                                lessonEntries[i].lessonToStart!,
+                              ),
                       ),
-                      if (i != lessonItems.length - 1)
+                      if (i != lessonEntries.length - 1)
                         const SizedBox(height: 42),
                     ],
 
@@ -197,6 +175,147 @@ class LessonMapScreen extends StatelessWidget {
       ),
     );
   }
+
+  List<_LessonMapEntry> _buildLessonEntries(List<Lesson> lessons) {
+    final entries = <_LessonMapEntry>[];
+    var addedDivisionUnit = false;
+    var addedRemainderUnit = false;
+
+    for (final lesson in lessons) {
+      if (_isGrade3DivisionLesson(lesson)) {
+        if (addedDivisionUnit) continue;
+        addedDivisionUnit = true;
+
+        final divisionLessons = lessons.where(_isGrade3DivisionLesson).toList();
+        entries.add(
+          _buildUnitEntry(
+            unitLessons: divisionLessons,
+            title: 'わり算れっすん',
+            description: '同じ数ずつ分ける、何こずつ配る、文章題まで練習します。',
+            color1: const Color(0xFF14B8A6),
+            color2: const Color(0xFF2563EB),
+          ),
+        );
+        continue;
+      }
+
+      if (_isGrade3RemainderLesson(lesson)) {
+        if (addedRemainderUnit) continue;
+        addedRemainderUnit = true;
+
+        final remainderLessons = lessons
+            .where(_isGrade3RemainderLesson)
+            .toList();
+        entries.add(
+          _buildUnitEntry(
+            unitLessons: remainderLessons,
+            title: 'あまりのあるわり算れっすん',
+            description: 'あまりの出るわり算と、文章題での答え方を練習します。',
+            color1: const Color(0xFFF97316),
+            color2: const Color(0xFFDB2777),
+          ),
+        );
+        continue;
+      }
+
+      entries.add(
+        _LessonMapEntry(
+          item: LessonMapItem(
+            title: lesson.title,
+            description: lesson.description,
+            stars: lesson.stars,
+            maxStars: lesson.maxStars,
+            locked: lesson.locked,
+            completed: lesson.completed,
+            color1: lesson.id == 1
+                ? const Color(0xFF3B82F6)
+                : lesson.id == 2
+                ? const Color(0xFFA855F7)
+                : const Color(0xFFEC4899),
+            color2: lesson.id == 1
+                ? const Color(0xFF2563EB)
+                : lesson.id == 2
+                ? const Color(0xFF7C3AED)
+                : const Color(0xFFDB2777),
+            icon: lesson.id == 1
+                ? Icons.fact_check_rounded
+                : lesson.id == 2
+                ? Icons.call_split_rounded
+                : Icons.calculate_rounded,
+          ),
+          lessonToStart: lesson.locked ? null : lesson,
+        ),
+      );
+    }
+
+    return entries;
+  }
+
+  _LessonMapEntry _buildUnitEntry({
+    required List<Lesson> unitLessons,
+    required String title,
+    required String description,
+    required Color color1,
+    required Color color2,
+  }) {
+    final allCompleted = unitLessons.every((lesson) => lesson.completed);
+    final lessonToStart = unitLessons.where((lesson) {
+      return !lesson.locked && !lesson.completed;
+    }).firstOrNull;
+    final fallbackLesson = unitLessons.where((lesson) {
+      return !lesson.locked;
+    }).firstOrNull;
+    final reviewLesson = unitLessons.isEmpty ? null : unitLessons.last;
+    final completedCount = unitLessons.where((lesson) {
+      return lesson.completed;
+    }).length;
+    final averageStars = unitLessons.isEmpty
+        ? 0
+        : (unitLessons.fold<int>(0, (sum, lesson) => sum + lesson.stars) /
+                  unitLessons.length)
+              .round();
+
+    return _LessonMapEntry(
+      item: LessonMapItem(
+        title: title,
+        description: description,
+        stars: averageStars,
+        maxStars: 3,
+        locked: unitLessons.every((lesson) => lesson.locked),
+        completed: allCompleted,
+        color1: color1,
+        color2: color2,
+        icon: Icons.dashboard_customize_rounded,
+        subLessons: [
+          for (final lesson in unitLessons)
+            LessonMapSubItem(
+              title: lesson.title,
+              locked: lesson.locked,
+              completed: lesson.completed,
+            ),
+        ],
+        progressText: '$completedCount / ${unitLessons.length}',
+      ),
+      lessonToStart: allCompleted
+          ? reviewLesson
+          : lessonToStart ?? fallbackLesson,
+    );
+  }
+
+  bool _isGrade3DivisionLesson(Lesson lesson) {
+    return lesson.id >= 7 && lesson.id <= 11;
+  }
+
+  bool _isGrade3RemainderLesson(Lesson lesson) {
+    return lesson.id >= 12 && lesson.id <= 16;
+  }
+}
+
+class _LessonMapEntry {
+  final LessonMapItem item;
+  final Lesson? lessonToStart;
+
+  const _LessonMapEntry({required this.item, required this.lessonToStart});
 }
 
 class TodayReviewCard extends StatelessWidget {
@@ -325,6 +444,8 @@ class LessonMapItem {
   final Color color1;
   final Color color2;
   final IconData icon;
+  final List<LessonMapSubItem> subLessons;
+  final String progressText;
 
   const LessonMapItem({
     required this.title,
@@ -336,6 +457,20 @@ class LessonMapItem {
     required this.color1,
     required this.color2,
     required this.icon,
+    this.subLessons = const [],
+    this.progressText = '',
+  });
+}
+
+class LessonMapSubItem {
+  final String title;
+  final bool locked;
+  final bool completed;
+
+  const LessonMapSubItem({
+    required this.title,
+    required this.locked,
+    required this.completed,
   });
 }
 
@@ -443,14 +578,121 @@ class _LessonCard extends StatelessWidget {
                           color: Color(0xFF6B7280),
                         ),
                       ),
+                      if (item.subLessons.isNotEmpty) ...[
+                        const SizedBox(height: 14),
+                        _SubLessonList(items: item.subLessons),
+                      ],
                       const SizedBox(height: 16),
-                      _ActionBadge(item: item),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 8,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          _ActionBadge(item: item),
+                          if (item.progressText.isNotEmpty)
+                            _ProgressPill(text: item.progressText),
+                        ],
+                      ),
                     ],
                   ),
                 ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SubLessonList extends StatelessWidget {
+  final List<LessonMapSubItem> items;
+
+  const _SubLessonList({required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        for (final item in items) ...[
+          _SubLessonTile(item: item),
+          if (item != items.last) const SizedBox(height: 6),
+        ],
+      ],
+    );
+  }
+}
+
+class _SubLessonTile extends StatelessWidget {
+  final LessonMapSubItem item;
+
+  const _SubLessonTile({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    final icon = item.completed
+        ? Icons.check_circle_rounded
+        : item.locked
+        ? Icons.lock_outline_rounded
+        : Icons.play_circle_outline_rounded;
+    final color = item.completed
+        ? const Color(0xFF16A34A)
+        : item.locked
+        ? const Color(0xFF9CA3AF)
+        : const Color(0xFF2563EB);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        color: item.locked ? const Color(0xFFF9FAFB) : const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: item.locked
+              ? const Color(0xFFE5E7EB)
+              : const Color(0xFFBFDBFE),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 19),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              item.title,
+              style: TextStyle(
+                color: item.locked
+                    ? const Color(0xFF6B7280)
+                    : const Color(0xFF111827),
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProgressPill extends StatelessWidget {
+  final String text;
+
+  const _ProgressPill({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      decoration: BoxDecoration(
+        color: const Color(0xFFECFEFF),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: const Color(0xFFA5F3FC)),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Color(0xFF0E7490),
+          fontWeight: FontWeight.w900,
         ),
       ),
     );

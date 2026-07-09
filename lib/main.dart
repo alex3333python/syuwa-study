@@ -554,7 +554,12 @@ class _HomePageState extends State<HomePage> {
 
   List<Question> getWeakQuestions() {
     final allQuestions = mockLessons
-        .expand((lesson) => lesson.questions)
+        .expand(
+          (lesson) => [
+            ...lesson.questions,
+            ...lesson.steps.expand((step) => step.questions),
+          ],
+        )
         .toList();
 
     return allQuestions

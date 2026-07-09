@@ -11,6 +11,16 @@ class Question {
   final String explanationEasyJa;
   final Map<AppLanguage, String> explanationNative;
   final List<String> tags;
+  final String equationHint;
+  final String thinkingHint;
+  final String visualHint;
+  final String pictureDescription;
+  final String diagramType;
+  final Map<String, String> diagramData;
+  final List<String> vocabulary;
+  final int? grade;
+  final String subject;
+  final String unit;
 
   // Legacy fields kept so the old sign-language screens can be migrated gradually.
   final String question;
@@ -33,6 +43,16 @@ class Question {
     this.explanationEasyJa = '',
     this.explanationNative = const {},
     this.tags = const [],
+    this.equationHint = '',
+    this.thinkingHint = '',
+    this.visualHint = '',
+    this.pictureDescription = '',
+    this.diagramType = '',
+    this.diagramData = const {},
+    this.vocabulary = const [],
+    this.grade,
+    this.subject = '',
+    this.unit = '',
     this.question = '',
     this.signDescription = '',
     this.imageUrl,
