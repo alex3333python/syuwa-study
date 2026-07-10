@@ -19,6 +19,7 @@ class Question {
   final String formulaExplanationRuby;
   final String languagePoint;
   final String languagePointRuby;
+  final List<VocabularyEntry> vocabularyEntries;
   final Map<AppLanguage, String> explanationNative;
   final List<String> tags;
   final String equationHint;
@@ -71,6 +72,7 @@ class Question {
     this.formulaExplanationRuby = '',
     this.languagePoint = '',
     this.languagePointRuby = '',
+    this.vocabularyEntries = const [],
     this.explanationNative = const {},
     this.tags = const [],
     this.equationHint = '',
@@ -197,4 +199,26 @@ enum QuestionVisualType {
   grouping,
   numberLine,
   fraction,
+}
+
+class VocabularyEntry {
+  final String term;
+  final String reading;
+  final String simpleJapanese;
+  final Map<AppLanguage, String> translations;
+  final String exampleSentence;
+  final String category;
+
+  const VocabularyEntry({
+    required this.term,
+    required this.reading,
+    required this.simpleJapanese,
+    this.translations = const {},
+    this.exampleSentence = '',
+    this.category = '',
+  });
+
+  String translationFor(AppLanguage language) {
+    return translations[language] ?? simpleJapanese;
+  }
 }

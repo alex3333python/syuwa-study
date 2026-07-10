@@ -276,6 +276,8 @@ class _LessonScreenState extends State<LessonScreen> {
                         RubyText(
                           text: promptRuby,
                           textAlign: TextAlign.center,
+                          vocabularyEntries: question.vocabularyEntries,
+                          language: widget.selectedLanguage,
                           style: const TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
@@ -335,6 +337,7 @@ class _LessonScreenState extends State<LessonScreen> {
           _ExplanationOverlay(
             isCorrect: isCorrect,
             question: question,
+            questionLanguage: widget.selectedLanguage,
             correctAnswerText: question.resolvedCorrectAnswerTextRuby,
             explanationText: question.explanationRubyFor(
               widget.selectedLanguage,
@@ -370,6 +373,7 @@ class _LessonScreenState extends State<LessonScreen> {
     final nativeTitle = widget.selectedLanguage == AppLanguage.japanese
         ? '母語'
         : widget.selectedLanguage.label;
+    final richLearnCard = _buildRichLearnCard(step, widget.selectedLanguage);
 
     return Column(
       children: [
@@ -408,35 +412,40 @@ class _LessonScreenState extends State<LessonScreen> {
                       ),
                     ),
                     const SizedBox(height: 22),
-                    _StepExplanationCard(
-                      icon: isSummary
-                          ? Icons.flag_rounded
-                          : Icons.school_rounded,
-                      title: isSummary ? 'まとめ' : '学校日本語',
-                      text: step.explanationFor(
-                        widget.selectedLanguage,
-                        QuestionPromptMode.schoolJa,
-                      ),
-                    ),
-                    if (!isSummary) ...[
-                      const SizedBox(height: 12),
+                    if (richLearnCard != null) ...[
+                      richLearnCard,
+                      const SizedBox(height: 16),
+                    ] else ...[
                       _StepExplanationCard(
-                        icon: Icons.lightbulb_outline_rounded,
-                        title: 'やさしい日本語',
+                        icon: isSummary
+                            ? Icons.flag_rounded
+                            : Icons.school_rounded,
+                        title: isSummary ? 'まとめ' : '学校日本語',
                         text: step.explanationFor(
                           widget.selectedLanguage,
-                          QuestionPromptMode.easyJa,
+                          QuestionPromptMode.schoolJa,
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      _StepExplanationCard(
-                        icon: Icons.translate_rounded,
-                        title: nativeTitle,
-                        text: step.explanationFor(
-                          widget.selectedLanguage,
-                          QuestionPromptMode.native,
+                      if (!isSummary) ...[
+                        const SizedBox(height: 12),
+                        _StepExplanationCard(
+                          icon: Icons.lightbulb_outline_rounded,
+                          title: 'やさしい日本語',
+                          text: step.explanationFor(
+                            widget.selectedLanguage,
+                            QuestionPromptMode.easyJa,
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 12),
+                        _StepExplanationCard(
+                          icon: Icons.translate_rounded,
+                          title: nativeTitle,
+                          text: step.explanationFor(
+                            widget.selectedLanguage,
+                            QuestionPromptMode.native,
+                          ),
+                        ),
+                      ],
                     ],
                   ],
                 ),
@@ -505,6 +514,8 @@ class _LessonScreenState extends State<LessonScreen> {
 
             return _AnswerCard(
               rubyText: optionRubies[index],
+              vocabularyEntries: currentQuestion.vocabularyEntries,
+              language: widget.selectedLanguage,
               backgroundColor: style.backgroundColor,
               borderColor: style.borderColor,
               textColor: style.textColor,
@@ -548,6 +559,8 @@ class _LessonScreenState extends State<LessonScreen> {
 
             return _ImageAnswerCard(
               labelRuby: optionRubies[index],
+              vocabularyEntries: currentQuestion.vocabularyEntries,
+              language: widget.selectedLanguage,
               imageUrl: imageUrls[index],
               backgroundColor: style.backgroundColor,
               borderColor: style.borderColor,
@@ -754,6 +767,488 @@ class _IndependentPracticeHeader extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+Widget? _buildRichLearnCard(LessonStep step, AppLanguage selectedLanguage) {
+  switch (step.id) {
+    case 'division-equal-share-learn':
+      return _DivisionLearnStoryboard(
+        mode: _DivisionLearnMode.equalShare,
+        selectedLanguage: selectedLanguage,
+        nativeText: step.explanationFor(
+          selectedLanguage,
+          QuestionPromptMode.native,
+        ),
+      );
+    case 'division-measure-learn':
+      return _DivisionLearnStoryboard(
+        mode: _DivisionLearnMode.measure,
+        selectedLanguage: selectedLanguage,
+        nativeText: step.explanationFor(
+          selectedLanguage,
+          QuestionPromptMode.native,
+        ),
+      );
+  }
+  return null;
+}
+
+enum _DivisionLearnMode { equalShare, measure }
+
+class _DivisionLearnStoryboard extends StatelessWidget {
+  final _DivisionLearnMode mode;
+  final AppLanguage selectedLanguage;
+  final String nativeText;
+
+  const _DivisionLearnStoryboard({
+    required this.mode,
+    required this.selectedLanguage,
+    required this.nativeText,
+  });
+
+  bool get isEqualShare => mode == _DivisionLearnMode.equalShare;
+
+  @override
+  Widget build(BuildContext context) {
+    final title = isEqualShare ? '例題で見てみよう' : '何人分できるかな';
+    final problem = isEqualShare
+        ? 'いちごが6こあります。3人で同じ数ずつ分けると、1人分は何こになりますか。'
+        : 'いちごが6こあります。1人に2こずつ分けると、何人に分けられますか。';
+    final action = isEqualShare
+        ? '1こずつ、3人のお皿に入れます。もう一度1こずつ入れると、どのお皿も2こです。'
+        : '1人に2こずつ持たせます。2こ、2こ、2こと分けると、3人分できます。';
+    final reading = isEqualShare ? '6わる3は2' : '6わる2は3';
+    final nativeTitle = selectedLanguage == AppLanguage.japanese
+        ? '母語サポート'
+        : selectedLanguage.label;
+
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFFDE68A), width: 2),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x12000000),
+            blurRadius: 20,
+            offset: Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFFBBF24)),
+                ),
+                child: const Text('🍓', style: TextStyle(fontSize: 28)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: Color(0xFF92400E),
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _StoryboardPanel(
+            stepLabel: '1',
+            title: 'もんだい',
+            child: RubyText(
+              text: problem,
+              style: const TextStyle(
+                color: Color(0xFF111827),
+                fontSize: 21,
+                height: 1.45,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _StoryboardPanel(
+            stepLabel: '2',
+            title: '分ける動き',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  action,
+                  style: const TextStyle(
+                    color: Color(0xFF374151),
+                    fontSize: 17,
+                    height: 1.45,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                _StrawberryDistribution(mode: mode),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          _StoryboardPanel(
+            stepLabel: '3',
+            title: '式で表す',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _DivisionEquation(mode: mode),
+                const SizedBox(height: 10),
+                Text(
+                  '読み方：$reading。これは「わり算」といいます。',
+                  style: const TextStyle(
+                    color: Color(0xFF111827),
+                    fontSize: 18,
+                    height: 1.45,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  '九九を使って、答えをたしかめることもできます。',
+                  style: TextStyle(
+                    color: Color(0xFF4B5563),
+                    fontSize: 16,
+                    height: 1.45,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          _StoryboardPanel(
+            stepLabel: '🌐',
+            title: nativeTitle,
+            child: Text(
+              nativeText,
+              style: const TextStyle(
+                color: Color(0xFF374151),
+                fontSize: 16,
+                height: 1.45,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StoryboardPanel extends StatelessWidget {
+  final String stepLabel;
+  final String title;
+  final Widget child;
+
+  const _StoryboardPanel({
+    required this.stepLabel,
+    required this.title,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: const Color(0xFFEFF6FF),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Text(
+              stepLabel,
+              style: const TextStyle(
+                color: Color(0xFF2563EB),
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Color(0xFF2563EB),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                child,
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StrawberryDistribution extends StatelessWidget {
+  final _DivisionLearnMode mode;
+
+  const _StrawberryDistribution({required this.mode});
+
+  bool get isEqualShare => mode == _DivisionLearnMode.equalShare;
+
+  @override
+  Widget build(BuildContext context) {
+    final groupCount = isEqualShare ? 3 : 3;
+    final berriesPerGroup = isEqualShare ? 2 : 2;
+
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: [
+        _AllBerriesCard(),
+        for (var index = 0; index < groupCount; index++)
+          _PlateCard(
+            label: isEqualShare ? '${index + 1}人目のお皿' : '${index + 1}人目',
+            count: berriesPerGroup,
+          ),
+      ],
+    );
+  }
+}
+
+class _AllBerriesCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 156,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFF93C5FD), width: 2),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'ぜんぶ',
+            style: TextStyle(
+              color: Color(0xFF1D4ED8),
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          SizedBox(height: 8),
+          Wrap(
+            spacing: 5,
+            runSpacing: 5,
+            children: [
+              Text('🍓', style: TextStyle(fontSize: 24)),
+              Text('🍓', style: TextStyle(fontSize: 24)),
+              Text('🍓', style: TextStyle(fontSize: 24)),
+              Text('🍓', style: TextStyle(fontSize: 24)),
+              Text('🍓', style: TextStyle(fontSize: 24)),
+              Text('🍓', style: TextStyle(fontSize: 24)),
+            ],
+          ),
+          SizedBox(height: 8),
+          Text(
+            '6こ',
+            style: TextStyle(
+              color: Color(0xFF1D4ED8),
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PlateCard extends StatelessWidget {
+  final String label;
+  final int count;
+
+  const _PlateCard({required this.label, required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 156,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0FDF4),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFF86EFAC), width: 2),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFF166534),
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 5,
+            children: [
+              for (var i = 0; i < count; i++)
+                const Text('🍓', style: TextStyle(fontSize: 24)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '$countこ',
+            style: const TextStyle(
+              color: Color(0xFF166534),
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DivisionEquation extends StatelessWidget {
+  final _DivisionLearnMode mode;
+
+  const _DivisionEquation({required this.mode});
+
+  bool get isEqualShare => mode == _DivisionLearnMode.equalShare;
+
+  @override
+  Widget build(BuildContext context) {
+    final divisor = isEqualShare ? '3' : '2';
+    final answer = isEqualShare ? '2' : '3';
+
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        const _EquationChip(
+          value: '6',
+          label: 'ぜんぶの数\nわられる数',
+          color: Color(0xFFEFF6FF),
+          textColor: Color(0xFF1D4ED8),
+        ),
+        const _EquationSymbol('÷'),
+        _EquationChip(
+          value: divisor,
+          label: isEqualShare ? '分ける人数\nわる数' : '1人分の数\nわる数',
+          color: const Color(0xFFFFF7ED),
+          textColor: const Color(0xFFC2410C),
+        ),
+        const _EquationSymbol('='),
+        _EquationChip(
+          value: answer,
+          label: isEqualShare ? '1人分の数\n答え' : '分けられる人数\n答え',
+          color: const Color(0xFFF0FDF4),
+          textColor: const Color(0xFF15803D),
+        ),
+      ],
+    );
+  }
+}
+
+class _EquationChip extends StatelessWidget {
+  final String value;
+  final String label;
+  final Color color;
+  final Color textColor;
+
+  const _EquationChip({
+    required this.value,
+    required this.label,
+    required this.color,
+    required this.textColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 132,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: textColor.withValues(alpha: 0.24), width: 2),
+      ),
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              color: textColor,
+              fontSize: 30,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: textColor,
+              fontSize: 12,
+              height: 1.25,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EquationSymbol extends StatelessWidget {
+  final String symbol;
+
+  const _EquationSymbol(this.symbol);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      symbol,
+      style: const TextStyle(
+        color: Color(0xFF111827),
+        fontSize: 30,
+        fontWeight: FontWeight.w900,
       ),
     );
   }
@@ -1020,6 +1515,8 @@ class _QuestionImage extends StatelessWidget {
 
 class _AnswerCard extends StatelessWidget {
   final String rubyText;
+  final List<VocabularyEntry> vocabularyEntries;
+  final AppLanguage language;
   final Color backgroundColor;
   final Color borderColor;
   final Color textColor;
@@ -1029,6 +1526,8 @@ class _AnswerCard extends StatelessWidget {
 
   const _AnswerCard({
     required this.rubyText,
+    required this.vocabularyEntries,
+    required this.language,
     required this.backgroundColor,
     required this.borderColor,
     required this.textColor,
@@ -1064,6 +1563,8 @@ class _AnswerCard extends StatelessWidget {
               Expanded(
                 child: RubyText(
                   text: rubyText,
+                  vocabularyEntries: vocabularyEntries,
+                  language: language,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -1083,6 +1584,8 @@ class _AnswerCard extends StatelessWidget {
 
 class _ImageAnswerCard extends StatelessWidget {
   final String labelRuby;
+  final List<VocabularyEntry> vocabularyEntries;
+  final AppLanguage language;
   final String imageUrl;
   final Color backgroundColor;
   final Color borderColor;
@@ -1093,6 +1596,8 @@ class _ImageAnswerCard extends StatelessWidget {
 
   const _ImageAnswerCard({
     required this.labelRuby,
+    required this.vocabularyEntries,
+    required this.language,
     required this.imageUrl,
     required this.backgroundColor,
     required this.borderColor,
@@ -1153,6 +1658,8 @@ class _ImageAnswerCard extends StatelessWidget {
                   Expanded(
                     child: RubyText(
                       text: labelRuby,
+                      vocabularyEntries: vocabularyEntries,
+                      language: language,
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
@@ -1223,6 +1730,7 @@ class _NoteOverlay extends StatelessWidget {
 class _ExplanationOverlay extends StatelessWidget {
   final bool isCorrect;
   final Question question;
+  final AppLanguage questionLanguage;
   final String correctAnswerText;
   final String explanationText;
   final String formulaExplanation;
@@ -1234,6 +1742,7 @@ class _ExplanationOverlay extends StatelessWidget {
   const _ExplanationOverlay({
     required this.isCorrect,
     required this.question,
+    required this.questionLanguage,
     required this.correctAnswerText,
     required this.explanationText,
     required this.formulaExplanation,
@@ -1309,6 +1818,8 @@ class _ExplanationOverlay extends StatelessWidget {
                                 icon: Icons.fact_check_rounded,
                                 title: '正しい答え',
                                 text: correctAnswerText,
+                                vocabularyEntries: question.vocabularyEntries,
+                                language: questionLanguage,
                                 accentColor: const Color(0xFF16A34A),
                               ),
                               if (question.hasVisual) ...[
@@ -1324,6 +1835,8 @@ class _ExplanationOverlay extends StatelessWidget {
                                   icon: Icons.grid_view_rounded,
                                   title: '図や補助説明',
                                   text: visualHint,
+                                  vocabularyEntries: question.vocabularyEntries,
+                                  language: questionLanguage,
                                   accentColor: const Color(0xFF0891B2),
                                 ),
                               ],
@@ -1333,6 +1846,8 @@ class _ExplanationOverlay extends StatelessWidget {
                                   icon: Icons.tips_and_updates_rounded,
                                   title: '解き方の説明',
                                   text: explanationText,
+                                  vocabularyEntries: question.vocabularyEntries,
+                                  language: questionLanguage,
                                   accentColor: const Color(0xFF2563EB),
                                 ),
                               ],
@@ -1342,6 +1857,8 @@ class _ExplanationOverlay extends StatelessWidget {
                                   icon: Icons.functions_rounded,
                                   title: '式の説明',
                                   text: formulaExplanation,
+                                  vocabularyEntries: question.vocabularyEntries,
+                                  language: questionLanguage,
                                   accentColor: const Color(0xFF7C3AED),
                                 ),
                               ],
@@ -1350,6 +1867,8 @@ class _ExplanationOverlay extends StatelessWidget {
                                 icon: Icons.menu_book_rounded,
                                 title: '日本語のポイント',
                                 text: languagePoint,
+                                vocabularyEntries: question.vocabularyEntries,
+                                language: questionLanguage,
                                 accentColor: const Color(0xFFF97316),
                               ),
                             ],
@@ -1400,12 +1919,16 @@ class _ExplanationSection extends StatelessWidget {
   final IconData icon;
   final String title;
   final String text;
+  final List<VocabularyEntry> vocabularyEntries;
+  final AppLanguage language;
   final Color accentColor;
 
   const _ExplanationSection({
     required this.icon,
     required this.title,
     required this.text,
+    required this.vocabularyEntries,
+    required this.language,
     required this.accentColor,
   });
 
@@ -1436,8 +1959,10 @@ class _ExplanationSection extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                Text(
-                  text,
+                RubyText(
+                  text: text,
+                  vocabularyEntries: vocabularyEntries,
+                  language: language,
                   style: const TextStyle(
                     color: Color(0xFF111827),
                     fontSize: 18,

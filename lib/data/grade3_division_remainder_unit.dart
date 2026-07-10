@@ -202,6 +202,7 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             languagePoint: '「あまり」は、同じ数ずつ分けたあとに残る数です。',
             languagePointRuby:
                 '「あまり」は、{同じ数|おなじかず}ずつ{分けた|わけた}あとに{残る|のこる}{数|かず}です。',
+            vocabularyEntries: _remainderVocabulary,
             visualType: QuestionVisualType.divisionRemainder,
             visualTitle: '13このあめを4人で分ける図',
             visualDescription: '4人のカードに、あめが3こずつ入って、1こあまります。',
@@ -226,6 +227,7 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             correct: 1,
             explanation: '5×3=15、17-15=2 なので、あまりは2です。',
             explanationRuby: '5×3=15、17-15=2 なので、あまりは2です。',
+            vocabularyEntries: _remainderVocabulary,
             visualType: QuestionVisualType.divisionRemainder,
             visualTitle: '17まいのシールを5人で分ける図',
             visualDescription: '5人のカードに、シールが3まいずつ入って、2まいあまります。',
@@ -867,6 +869,7 @@ Question _q({
   String languagePoint = '',
   String languagePointRuby = '',
   String explanationRuby = '',
+  List<VocabularyEntry> vocabularyEntries = const [],
   QuestionVisualType visualType = QuestionVisualType.none,
   String visualTitle = '',
   String visualDescription = '',
@@ -901,6 +904,7 @@ Question _q({
     formulaExplanationRuby: formulaExplanationRuby,
     languagePoint: languagePoint,
     languagePointRuby: languagePointRuby,
+    vocabularyEntries: vocabularyEntries,
     explanationNative: _nativeText(explanation),
     tags: ['grade3', 'math', 'division', 'remainder', ...tags],
     equationHint: equationHint,
@@ -924,6 +928,81 @@ Question _q({
     unit: 'division_remainder',
   );
 }
+
+const _remainderVocabulary = [
+  VocabularyEntry(
+    term: '同じ数ずつ',
+    reading: 'おなじかずずつ',
+    simpleJapanese: 'ひとりひとりに、同じ数を配ること。',
+    translations: {
+      AppLanguage.portuguese: 'a mesma quantidade para cada pessoa',
+      AppLanguage.tagalog: 'pare-parehong dami para sa bawat tao',
+      AppLanguage.vietnamese: 'cùng một số lượng cho mỗi người',
+    },
+    exampleSentence: '4人に同じ数ずつ分けます。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '分ける',
+    reading: 'わける',
+    simpleJapanese: 'ものを、何人かに配ること。',
+    translations: {
+      AppLanguage.portuguese: 'dividir / distribuir',
+      AppLanguage.tagalog: 'hatiin / ipamahagi',
+      AppLanguage.vietnamese: 'chia / phân phát',
+    },
+    exampleSentence: '13このあめを4人に分けます。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '残る',
+    reading: 'のこる',
+    simpleJapanese: '使ったあと、まだあること。',
+    translations: {
+      AppLanguage.portuguese: 'restar / ficar',
+      AppLanguage.tagalog: 'matira',
+      AppLanguage.vietnamese: 'còn lại',
+    },
+    exampleSentence: '分けたあとに1こ残ります。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '余る',
+    reading: 'あまる',
+    simpleJapanese: '分けたあとに、残ること。',
+    translations: {
+      AppLanguage.portuguese: 'sobrar',
+      AppLanguage.tagalog: 'may matira',
+      AppLanguage.vietnamese: 'còn dư',
+    },
+    exampleSentence: '1こ余ります。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '答え',
+    reading: 'こたえ',
+    simpleJapanese: '問題で聞かれていることへの返事。',
+    translations: {
+      AppLanguage.portuguese: 'resposta',
+      AppLanguage.tagalog: 'sagot',
+      AppLanguage.vietnamese: 'đáp án',
+    },
+    exampleSentence: '答えは3あまり1です。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '何こ',
+    reading: 'なんこ',
+    simpleJapanese: '数を聞く言葉。',
+    translations: {
+      AppLanguage.portuguese: 'quantos itens',
+      AppLanguage.tagalog: 'ilang piraso',
+      AppLanguage.vietnamese: 'bao nhiêu cái',
+    },
+    exampleSentence: '何こ余りますか。',
+    category: 'math_language',
+  ),
+];
 
 Map<AppLanguage, String> _nativeText(String fallback) {
   return {

@@ -28,9 +28,14 @@ class QuestionVisual extends StatelessWidget {
           compact: compact,
           showSolution: showSolution,
         );
+      case QuestionVisualType.numberLine:
+        return _NumberLineVisual(
+          question: question,
+          compact: compact,
+          showSolution: showSolution,
+        );
       case QuestionVisualType.none:
       case QuestionVisualType.grouping:
-      case QuestionVisualType.numberLine:
       case QuestionVisualType.fraction:
         return const SizedBox.shrink();
     }
@@ -197,6 +202,259 @@ class _DivisionVisual extends StatelessWidget {
       ),
     );
   }
+}
+
+class _NumberLineVisual extends StatelessWidget {
+  final Question question;
+  final bool compact;
+  final bool showSolution;
+
+  const _NumberLineVisual({
+    required this.question,
+    required this.compact,
+    required this.showSolution,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pointCount =
+        _parseInt(question.diagramData['points']) ?? question.totalCount ?? 0;
+    final segmentCount =
+        _parseInt(question.diagramData['segments']) ??
+        question.groupCount ??
+        (pointCount > 0 ? pointCount - 1 : 0);
+    final pointEmoji = question.diagramData['pointEmoji'] ?? question.itemEmoji;
+    final totalLabel = question.diagramData['totalLabel'] ?? '';
+    final knownSegmentLabel = question.diagramData['segmentLabel'] ?? '';
+    final unknownLabel = question.diagramData['unknownLabel'] ?? '？';
+    final segmentLabel = showSolution && knownSegmentLabel.isNotEmpty
+        ? knownSegmentLabel
+        : unknownLabel;
+
+    if (pointCount <= 1 || segmentCount <= 0) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: EdgeInsets.all(compact ? 14 : 20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFFFF),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFE5E7EB), width: 2),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0F000000),
+            blurRadius: 14,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.timeline_rounded,
+                color: Color(0xFF2563EB),
+                size: 30,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  question.visualTitle.isEmpty
+                      ? '図で見てみよう'
+                      : question.visualTitle,
+                  style: TextStyle(
+                    color: const Color(0xFF111827),
+                    fontSize: compact ? 18 : 22,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (showSolution && question.visualDescription.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              question.visualDescription,
+              style: TextStyle(
+                color: const Color(0xFF4B5563),
+                fontSize: compact ? 14 : 16,
+                height: 1.4,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+          SizedBox(height: compact ? 14 : 20),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    for (var index = 0; index < pointCount; index++) ...[
+                      _PointMarker(
+                        emoji: pointEmoji,
+                        label: '${index + 1}本目',
+                        compact: compact,
+                      ),
+                      if (index < pointCount - 1)
+                        _IntervalSegment(label: segmentLabel, compact: compact),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: compact ? 12 : 16),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              _VisualBadge(
+                label:
+                    '${question.itemLabel.isEmpty ? '点' : question.itemLabel}は$pointCount${question.itemUnit}',
+                color: const Color(0xFFEFF6FF),
+                textColor: const Color(0xFF1D4ED8),
+              ),
+              _VisualBadge(
+                label: '間は$segmentCountつ',
+                color: const Color(0xFFFFF7ED),
+                textColor: const Color(0xFFC2410C),
+              ),
+              if (totalLabel.isNotEmpty)
+                _VisualBadge(
+                  label: totalLabel,
+                  color: const Color(0xFFF0FDF4),
+                  textColor: const Color(0xFF15803D),
+                ),
+              _VisualBadge(
+                label: showSolution ? '1つ分は$segmentLabel' : '1つ分は$unknownLabel',
+                color: const Color(0xFFF0FDF4),
+                textColor: const Color(0xFF15803D),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PointMarker extends StatelessWidget {
+  final String emoji;
+  final String label;
+  final bool compact;
+
+  const _PointMarker({
+    required this.emoji,
+    required this.label,
+    required this.compact,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: compact ? 42 : 52,
+          height: compact ? 42 : 52,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: const Color(0xFFEFF6FF),
+            shape: BoxShape.circle,
+            border: Border.all(color: const Color(0xFF93C5FD), width: 2),
+          ),
+          child: Text(emoji, style: TextStyle(fontSize: compact ? 22 : 28)),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          style: TextStyle(
+            color: const Color(0xFF4B5563),
+            fontSize: compact ? 12 : 13,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _IntervalSegment extends StatelessWidget {
+  final String label;
+  final bool compact;
+
+  const _IntervalSegment({required this.label, required this.compact});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: compact ? 20 : 22),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: compact ? 54 : 72,
+            height: 4,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF97316),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: TextStyle(
+              color: const Color(0xFFC2410C),
+              fontSize: compact ? 14 : 16,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _VisualBadge extends StatelessWidget {
+  final String label;
+  final Color color;
+  final Color textColor;
+
+  const _VisualBadge({
+    required this.label,
+    required this.color,
+    required this.textColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: textColor,
+          fontSize: 15,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
+}
+
+int? _parseInt(String? value) {
+  if (value == null) return null;
+  return int.tryParse(value);
 }
 
 class _TotalItemsRow extends StatelessWidget {
