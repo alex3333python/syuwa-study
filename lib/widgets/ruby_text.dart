@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/app_language.dart';
 import '../models/question.dart';
+import '../services/audio_service.dart';
 
 class RubyText extends StatelessWidget {
   final String text;
@@ -242,24 +243,48 @@ class _RubyPiece extends StatelessWidget {
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      isScrollControlled: true,
       builder: (context) {
         final nativeLabel = language == AppLanguage.japanese
             ? '母国語'
             : language.label;
         return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(
+              24,
+              8,
+              24,
+              MediaQuery.viewInsetsOf(context).bottom + 24,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  entry.term,
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF111827),
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        entry.term,
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF111827),
+                        ),
+                      ),
+                    ),
+                    TextButton.icon(
+                      onPressed: () {
+                        LearningAudio.speakJapanese(
+                          context,
+                          label: entry.term,
+                          text: entry.term,
+                        );
+                      },
+                      icon: const Icon(Icons.volume_up_rounded),
+                      label: const Text('音声'),
+                    ),
+                  ],
                 ),
                 if (entry.reading.isNotEmpty) ...[
                   const SizedBox(height: 4),
@@ -273,11 +298,11 @@ class _RubyPiece extends StatelessWidget {
                   ),
                 ],
                 const SizedBox(height: 18),
-                _VocabularyBlock(title: 'やさしい日本語', text: entry.simpleJapanese),
+                _VocabularyBlock(title: '意味', text: entry.simpleJapanese),
                 if (language != AppLanguage.japanese) ...[
                   const SizedBox(height: 14),
                   _VocabularyBlock(
-                    title: nativeLabel,
+                    title: '$nativeLabelで',
                     text: entry.translationFor(language),
                   ),
                 ],

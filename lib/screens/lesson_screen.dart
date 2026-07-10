@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../data/equal_share_language_support.dart';
 import '../models/answer_record.dart';
 import '../models/app_language.dart';
 import '../models/lesson.dart';
 import '../models/question.dart';
+import '../services/audio_service.dart';
 import '../widgets/question_visual.dart';
 import '../widgets/ruby_text.dart';
 import '../widgets/sign_video_player.dart';
@@ -824,14 +826,17 @@ class _EqualShareInteractiveLearnState
   final List<int?> _berryPlates = List<int?>.filled(_berryCount, null);
   bool _showStory = false;
   int _storyStep = 0;
-  String _message = 'イチゴを動かしてみよう！';
+  String _message = equalShareInstruction.japanese;
   bool _isCorrect = false;
+  bool _showProblemNative = false;
+  bool _showInstructionNative = false;
+  bool _showResultNative = false;
 
   void _moveBerry(int berryIndex, int? plateIndex) {
     setState(() {
       _berryPlates[berryIndex] = plateIndex;
       _isCorrect = false;
-      _message = 'イチゴを動かしてみよう！';
+      _message = equalShareInstruction.japanese;
     });
 
     if (_berryPlates.every((plate) => plate != null)) {
@@ -862,7 +867,7 @@ class _EqualShareInteractiveLearnState
         _berryPlates[i] = null;
       }
       _isCorrect = false;
-      _message = 'イチゴを動かしてみよう！';
+      _message = equalShareInstruction.japanese;
     });
   }
 
@@ -901,10 +906,6 @@ class _EqualShareInteractiveLearnState
 
   @override
   Widget build(BuildContext context) {
-    final nativeTitle = widget.selectedLanguage == AppLanguage.japanese
-        ? '母語サポート'
-        : widget.selectedLanguage.label;
-
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -927,11 +928,11 @@ class _EqualShareInteractiveLearnState
             children: [
               const _LearnHeaderIcon(icon: Icons.touch_app_rounded),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       '同じ数ずつ分けてみよう',
                       style: TextStyle(
                         color: Color(0xFF111827),
@@ -939,39 +940,45 @@ class _EqualShareInteractiveLearnState
                         fontWeight: FontWeight.w900,
                       ),
                     ),
-                    SizedBox(height: 6),
-                    Text(
-                      'いちごが6こあります。3人で同じ数ずつ分けると、1人分は何こになりますか。',
-                      style: TextStyle(
-                        color: Color(0xFF4B5563),
-                        fontSize: 17,
-                        height: 1.35,
-                        fontWeight: FontWeight.w700,
+                    const SizedBox(height: 6),
+                    _SupportedTextLines(
+                      lines: equalShareProblemLines,
+                      language: widget.selectedLanguage,
+                      showNative: _showProblemNative,
+                      vocabularyEntries: equalShareVocabularyEntries,
+                    ),
+                    const SizedBox(height: 8),
+                    _LanguageSupportActions(
+                      language: widget.selectedLanguage,
+                      showNative: _showProblemNative,
+                      onToggleNative: () {
+                        setState(() {
+                          _showProblemNative = !_showProblemNative;
+                        });
+                      },
+                      onAudio: () => _showAudioPlaceholder(
+                        context,
+                        '問題文',
+                        equalShareProblemLines
+                            .map((line) => line.japanese)
+                            .join(' '),
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 12),
-              OutlinedButton.icon(
+              _LearnIconButton(
+                semanticLabel: _showStory ? '操作する' : '見てみる',
+                icon: _showStory
+                    ? Icons.pan_tool_alt_rounded
+                    : Icons.play_circle_outline_rounded,
                 onPressed: () {
                   setState(() {
                     _showStory = !_showStory;
                     _storyStep = 0;
                   });
                 },
-                icon: Icon(
-                  _showStory
-                      ? Icons.pan_tool_alt_rounded
-                      : Icons.play_circle_outline_rounded,
-                ),
-                label: Text(_showStory ? '操作する' : '見てみる'),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(128, 52),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
               ),
             ],
           ),
@@ -1000,19 +1007,44 @@ class _EqualShareInteractiveLearnState
               message: _message,
               onMoveBerry: _moveBerry,
               onReset: _reset,
+              selectedLanguage: widget.selectedLanguage,
+              showInstructionNative: _showInstructionNative,
+              onToggleInstructionNative: () {
+                setState(() {
+                  _showInstructionNative = !_showInstructionNative;
+                });
+              },
             ),
           const SizedBox(height: 14),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 220),
             child: _isCorrect
-                ? const _DivisionResultCard(key: ValueKey('correct-result'))
+                ? _DivisionResultCard(
+                    key: const ValueKey('correct-result'),
+                    selectedLanguage: widget.selectedLanguage,
+                    showNative: _showResultNative,
+                    onToggleNative: () {
+                      setState(() {
+                        _showResultNative = !_showResultNative;
+                      });
+                    },
+                    onAudio: () => _showAudioPlaceholder(
+                      context,
+                      '正解後の説明',
+                      equalShareResultLines
+                          .map((line) => line.japanese)
+                          .join(' '),
+                    ),
+                  )
                 : const SizedBox.shrink(key: ValueKey('empty-result')),
           ),
-          const SizedBox(height: 14),
-          _CompactNativeSupport(title: nativeTitle, text: widget.nativeText),
         ],
       ),
     );
+  }
+
+  void _showAudioPlaceholder(BuildContext context, String label, String text) {
+    LearningAudio.speakJapanese(context, label: label, text: text);
   }
 }
 
@@ -1024,6 +1056,9 @@ class _EqualShareDragBoard extends StatelessWidget {
   final String message;
   final void Function(int berryIndex, int? plateIndex) onMoveBerry;
   final VoidCallback onReset;
+  final AppLanguage selectedLanguage;
+  final bool showInstructionNative;
+  final VoidCallback onToggleInstructionNative;
 
   const _EqualShareDragBoard({
     required this.sourceBerryIds,
@@ -1033,6 +1068,9 @@ class _EqualShareDragBoard extends StatelessWidget {
     required this.message,
     required this.onMoveBerry,
     required this.onReset,
+    required this.selectedLanguage,
+    required this.showInstructionNative,
+    required this.onToggleInstructionNative,
   });
 
   @override
@@ -1049,12 +1087,20 @@ class _EqualShareDragBoard extends StatelessWidget {
           plateCounts: plateCounts,
           isCorrect: isCorrect,
           onMoveBerry: onMoveBerry,
+          language: selectedLanguage,
+          showNative: showInstructionNative,
         );
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _InstructionStrip(message: message, isSuccess: isCorrect),
+            _InstructionStrip(
+              message: message,
+              isSuccess: isCorrect,
+              language: selectedLanguage,
+              showNative: showInstructionNative,
+              onToggleNative: onToggleInstructionNative,
+            ),
             const SizedBox(height: 14),
             if (isWide)
               Row(
@@ -1070,21 +1116,55 @@ class _EqualShareDragBoard extends StatelessWidget {
             const SizedBox(height: 14),
             Align(
               alignment: Alignment.centerRight,
-              child: OutlinedButton.icon(
+              child: _LearnIconButton(
+                semanticLabel: 'もどす',
+                icon: Icons.refresh_rounded,
                 onPressed: onReset,
-                icon: const Icon(Icons.refresh_rounded),
-                label: const Text('もどす'),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(132, 52),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
               ),
             ),
           ],
         );
       },
+    );
+  }
+}
+
+class _LearnIconButton extends StatelessWidget {
+  final String semanticLabel;
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  const _LearnIconButton({
+    required this.semanticLabel,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      child: SizedBox(
+        width: 58,
+        height: 48,
+        child: OutlinedButton(
+          onPressed: onPressed,
+          style: OutlinedButton.styleFrom(
+            padding: EdgeInsets.zero,
+            minimumSize: const Size(58, 48),
+            fixedSize: const Size(58, 48),
+            tapTargetSize: MaterialTapTargetSize.padded,
+            side: const BorderSide(color: Color(0xFF9CA3AF), width: 1.4),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: Center(
+            child: Icon(icon, size: 22, color: const Color(0xFF4F46E5)),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -1121,7 +1201,7 @@ class _BerrySourceTray extends StatelessWidget {
               if (berryIds.isEmpty) ...[
                 const SizedBox(height: 16),
                 const Text(
-                  'ぜんぶ分けました',
+                  ' ',
                   style: TextStyle(
                     color: Color(0xFF6B7280),
                     fontWeight: FontWeight.w700,
@@ -1141,12 +1221,16 @@ class _PlateTargets extends StatelessWidget {
   final List<int> plateCounts;
   final bool isCorrect;
   final void Function(int berryIndex, int? plateIndex) onMoveBerry;
+  final AppLanguage language;
+  final bool showNative;
 
   const _PlateTargets({
     required this.plateBerryIds,
     required this.plateCounts,
     required this.isCorrect,
     required this.onMoveBerry,
+    this.language = AppLanguage.japanese,
+    this.showNative = false,
   });
 
   @override
@@ -1163,6 +1247,8 @@ class _PlateTargets extends StatelessWidget {
               isBalanced: plateCounts[i] == 2,
               showBalanced: isCorrect,
               onMoveBerry: onMoveBerry,
+              language: language,
+              showNative: showNative,
             ),
         ];
 
@@ -1198,6 +1284,8 @@ class _PlateDropTarget extends StatelessWidget {
   final bool isBalanced;
   final bool showBalanced;
   final void Function(int berryIndex, int? plateIndex) onMoveBerry;
+  final AppLanguage language;
+  final bool showNative;
 
   const _PlateDropTarget({
     required this.index,
@@ -1206,6 +1294,8 @@ class _PlateDropTarget extends StatelessWidget {
     required this.isBalanced,
     required this.showBalanced,
     required this.onMoveBerry,
+    required this.language,
+    required this.showNative,
   });
 
   @override
@@ -1237,7 +1327,11 @@ class _PlateDropTarget extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _SectionLabel(text: '${index + 1}人目'),
+                  _PersonPlateLabel(
+                    index: index,
+                    language: language,
+                    showNative: showNative,
+                  ),
                   const SizedBox(height: 10),
                   SizedBox(
                     height: 84,
@@ -1250,7 +1344,7 @@ class _PlateDropTarget extends StatelessWidget {
                           for (final id in berryIds) _DraggableBerry(id: id),
                           if (berryIds.isEmpty)
                             const Text(
-                              'ここへ',
+                              ' ',
                               style: TextStyle(
                                 color: Color(0xFF9CA3AF),
                                 fontWeight: FontWeight.w700,
@@ -1294,16 +1388,213 @@ class _DraggableBerry extends StatelessWidget {
   }
 }
 
-class _InstructionStrip extends StatelessWidget {
-  final String message;
-  final bool isSuccess;
+class _SupportedTextLines extends StatelessWidget {
+  final List<SupportLine> lines;
+  final AppLanguage language;
+  final bool showNative;
+  final List<VocabularyEntry> vocabularyEntries;
 
-  const _InstructionStrip({required this.message, required this.isSuccess});
+  const _SupportedTextLines({
+    required this.lines,
+    required this.language,
+    required this.showNative,
+    this.vocabularyEntries = const [],
+  });
 
   @override
   Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final line in lines) ...[
+          RubyText(
+            text: line.japanese,
+            vocabularyEntries: vocabularyEntries,
+            language: language,
+            style: const TextStyle(
+              color: Color(0xFF374151),
+              fontSize: 17,
+              height: 1.35,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          if (showNative &&
+              language != AppLanguage.japanese &&
+              line.nativeFor(language).isNotEmpty) ...[
+            const SizedBox(height: 3),
+            Text(
+              line.nativeFor(language),
+              style: const TextStyle(
+                color: Color(0xFF6B7280),
+                fontSize: 14,
+                height: 1.35,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+          const SizedBox(height: 5),
+        ],
+      ],
+    );
+  }
+}
+
+class _LanguageSupportActions extends StatelessWidget {
+  final AppLanguage language;
+  final bool showNative;
+  final VoidCallback onToggleNative;
+  final VoidCallback onAudio;
+
+  const _LanguageSupportActions({
+    required this.language,
+    required this.showNative,
+    required this.onToggleNative,
+    required this.onAudio,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        if (language != AppLanguage.japanese)
+          _InlineSupportButton(
+            icon: Icons.translate_rounded,
+            label: showNative ? '日本語' : '${language.label}',
+            onPressed: onToggleNative,
+          ),
+        _InlineSupportButton(
+          icon: Icons.volume_up_rounded,
+          label: '音声',
+          onPressed: onAudio,
+        ),
+      ],
+    );
+  }
+}
+
+class _InlineSupportButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  const _InlineSupportButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 18),
+      label: Text(label),
+      style: TextButton.styleFrom(
+        minimumSize: const Size(44, 38),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        tapTargetSize: MaterialTapTargetSize.padded,
+        foregroundColor: const Color(0xFF374151),
+        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+}
+
+class _AudioIconButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onPressed;
+
+  const _AudioIconButton({required this.label, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: label,
+      child: IconButton(
+        onPressed: onPressed,
+        icon: const Icon(Icons.volume_up_rounded),
+        iconSize: 20,
+        visualDensity: VisualDensity.compact,
+        tooltip: label,
+      ),
+    );
+  }
+}
+
+class _PersonPlateLabel extends StatelessWidget {
+  final int index;
+  final AppLanguage language;
+  final bool showNative;
+
+  const _PersonPlateLabel({
+    required this.index,
+    required this.language,
+    required this.showNative,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final native = equalSharePersonLabel(index, language);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const Icon(Icons.person_rounded, color: Color(0xFF64748B), size: 22),
+        const SizedBox(width: 5),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _SectionLabel(text: '${index + 1}人目'),
+              if (showNative &&
+                  language != AppLanguage.japanese &&
+                  native.isNotEmpty)
+                Text(
+                  native,
+                  style: const TextStyle(
+                    color: Color(0xFF6B7280),
+                    fontSize: 12,
+                    height: 1.15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _InstructionStrip extends StatelessWidget {
+  final String message;
+  final bool isSuccess;
+  final AppLanguage language;
+  final bool showNative;
+  final VoidCallback onToggleNative;
+
+  const _InstructionStrip({
+    required this.message,
+    required this.isSuccess,
+    required this.language,
+    required this.showNative,
+    required this.onToggleNative,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final line = isSuccess
+        ? equalShareResultLines.first
+        : message == equalShareInstruction.japanese
+        ? equalShareInstruction
+        : SupportLine(japanese: message);
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: isSuccess ? const Color(0xFFF0FDF4) : const Color(0xFFEFF6FF),
         borderRadius: BorderRadius.circular(12),
@@ -1311,38 +1602,95 @@ class _InstructionStrip extends StatelessWidget {
           color: isSuccess ? const Color(0xFFBBF7D0) : const Color(0xFFBFDBFE),
         ),
       ),
-      child: Text(
-        message,
-        style: TextStyle(
-          color: isSuccess ? const Color(0xFF166534) : const Color(0xFF1E3A8A),
-          fontSize: 18,
-          height: 1.35,
-          fontWeight: FontWeight.w900,
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text(
+                  line.japanese,
+                  style: TextStyle(
+                    color: isSuccess
+                        ? const Color(0xFF166534)
+                        : message == equalShareInstruction.japanese
+                        ? const Color(0xFF374151)
+                        : const Color(0xFF1E3A8A),
+                    fontSize: 17,
+                    height: 1.35,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              if (language != AppLanguage.japanese)
+                _InlineSupportButton(
+                  icon: Icons.translate_rounded,
+                  label: showNative ? '日本語' : language.label,
+                  onPressed: onToggleNative,
+                ),
+              _AudioIconButton(
+                label: '操作案内の音声',
+                onPressed: () {
+                  LearningAudio.speakJapanese(
+                    context,
+                    label: '操作案内',
+                    text: equalShareInstruction.japanese,
+                  );
+                },
+              ),
+            ],
+          ),
+          if (showNative &&
+              language != AppLanguage.japanese &&
+              line.nativeFor(language).isNotEmpty) ...[
+            const SizedBox(height: 2),
+            Text(
+              line.nativeFor(language),
+              style: const TextStyle(
+                color: Color(0xFF6B7280),
+                fontSize: 14,
+                height: 1.35,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
 }
 
 class _DivisionResultCard extends StatelessWidget {
-  const _DivisionResultCard({super.key});
+  final AppLanguage selectedLanguage;
+  final bool showNative;
+  final VoidCallback onToggleNative;
+  final VoidCallback onAudio;
+
+  const _DivisionResultCard({
+    super.key,
+    required this.selectedLanguage,
+    required this.showNative,
+    required this.onToggleNative,
+    required this.onAudio,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.only(top: 4),
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.check_circle_rounded,
                 color: Color(0xFF059669),
                 size: 28,
               ),
-              SizedBox(width: 8),
-              Expanded(
+              const SizedBox(width: 8),
+              const Expanded(
                 child: Text(
                   '同じ数ずつ分けられたね！',
                   style: TextStyle(
@@ -1352,30 +1700,46 @@ class _DivisionResultCard extends StatelessWidget {
                   ),
                 ),
               ),
+              if (selectedLanguage != AppLanguage.japanese)
+                _InlineSupportButton(
+                  icon: Icons.translate_rounded,
+                  label: showNative ? '日本語' : selectedLanguage.label,
+                  onPressed: onToggleNative,
+                ),
+              _AudioIconButton(label: '正解説明の音声', onPressed: onAudio),
             ],
           ),
-          SizedBox(height: 10),
-          Text(
-            'いちご6こを、3人で同じ数ずつ分けると、1人分は2こになります。',
-            style: TextStyle(
-              color: Color(0xFF374151),
-              fontSize: 17,
-              height: 1.45,
-              fontWeight: FontWeight.w800,
-            ),
+          const SizedBox(height: 10),
+          _SupportedTextLines(
+            lines: equalShareResultLines.skip(1).toList(),
+            language: selectedLanguage,
+            showNative: showNative,
+            vocabularyEntries: equalShareVocabularyEntries,
           ),
-          SizedBox(height: 8),
-          Text(
-            'このことを式で 6 ÷ 3 = 2 と書いて、「6わる3は2」と読みます。',
-            style: TextStyle(
-              color: Color(0xFF374151),
-              fontSize: 17,
-              height: 1.45,
-              fontWeight: FontWeight.w800,
-            ),
+          const SizedBox(height: 12),
+          _EquationLine(language: selectedLanguage),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _AudioIconButton(
+                label: '式の読み方の音声',
+                onPressed: () {
+                  LearningAudio.speakJapanese(
+                    context,
+                    label: '式の読み方',
+                    text: equalShareEquationReading.japanese,
+                  );
+                },
+              ),
+              Expanded(
+                child: _SupportedTextLines(
+                  lines: const [equalShareEquationReading],
+                  language: selectedLanguage,
+                  showNative: showNative,
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 12),
-          _EquationLine(),
         ],
       ),
     );
@@ -1383,71 +1747,181 @@ class _DivisionResultCard extends StatelessWidget {
 }
 
 class _EquationLine extends StatelessWidget {
-  const _EquationLine();
+  final AppLanguage language;
+
+  const _EquationLine({required this.language});
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      crossAxisAlignment: WrapCrossAlignment.center,
-      spacing: 10,
-      runSpacing: 12,
-      children: const [
-        _EquationNumber(value: '6', label: 'ぜんぶの数', color: Color(0xFF2563EB)),
-        _ResultEquationSymbol('÷'),
-        _EquationNumber(value: '3', label: '分ける人数', color: Color(0xFFF97316)),
-        _ResultEquationSymbol('='),
-        _EquationNumber(value: '2', label: '1人分の数', color: Color(0xFF059669)),
-      ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _EquationNumber(
+            support: equalShareEquationSupports[0],
+            color: const Color(0xFF2563EB),
+            language: language,
+          ),
+          const _ResultEquationSymbol('÷'),
+          _EquationNumber(
+            support: equalShareEquationSupports[1],
+            color: const Color(0xFFF97316),
+            language: language,
+          ),
+          const _ResultEquationSymbol('='),
+          _EquationNumber(
+            support: equalShareEquationSupports[2],
+            color: const Color(0xFF059669),
+            language: language,
+          ),
+        ],
+      ),
     );
   }
 }
 
 class _EquationNumber extends StatelessWidget {
-  final String value;
-  final String label;
+  final EquationSupport support;
   final Color color;
+  final AppLanguage language;
 
   const _EquationNumber({
-    required this.value,
-    required this.label,
+    required this.support,
     required this.color,
+    required this.language,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          value,
-          style: TextStyle(
-            color: color,
-            fontSize: 36,
-            height: 1,
-            fontWeight: FontWeight.w900,
-          ),
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: () => _showEquationMeaning(context),
+      child: SizedBox(
+        width: 78,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              height: 42,
+              child: Center(
+                child: Transform.translate(
+                  offset: const Offset(0, 4),
+                  child: Text(
+                    support.value,
+                    textHeightBehavior: const TextHeightBehavior(
+                      applyHeightToFirstAscent: false,
+                      applyHeightToLastDescent: false,
+                    ),
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 36,
+                      height: 1,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Container(
+              width: 48,
+              height: 5,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.24),
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              support.label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: color,
+                fontSize: 13,
+                height: 1.15,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 4),
-        Container(
-          width: 48,
-          height: 5,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.24),
-            borderRadius: BorderRadius.circular(999),
+      ),
+    );
+  }
+
+  void _showEquationMeaning(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        final native = support.nativeFor(language);
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  support.label,
+                  style: const TextStyle(
+                    color: Color(0xFF111827),
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  support.meaning,
+                  style: const TextStyle(
+                    color: Color(0xFF111827),
+                    fontSize: 18,
+                    height: 1.45,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                if (language != AppLanguage.japanese && native.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    language.label,
+                    style: const TextStyle(
+                      color: Color(0xFF6B7280),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    native,
+                    style: const TextStyle(
+                      color: Color(0xFF111827),
+                      fontSize: 17,
+                      height: 1.4,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: () {
+                      LearningAudio.speakJapanese(
+                        context,
+                        label: support.label,
+                        text: support.label,
+                      );
+                    },
+                    icon: const Icon(Icons.volume_up_rounded),
+                    label: const Text('音声'),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 5),
-        Text(
-          label,
-          style: TextStyle(
-            color: color,
-            fontSize: 13,
-            height: 1.15,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 }
@@ -1459,15 +1933,22 @@ class _ResultEquationSymbol extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Text(
-        value,
-        style: const TextStyle(
-          color: Color(0xFF111827),
-          fontSize: 32,
-          height: 1,
-          fontWeight: FontWeight.w900,
+    return SizedBox(
+      width: 30,
+      height: 42,
+      child: Center(
+        child: Text(
+          value,
+          textHeightBehavior: const TextHeightBehavior(
+            applyHeightToFirstAscent: false,
+            applyHeightToLastDescent: false,
+          ),
+          style: const TextStyle(
+            color: Color(0xFF111827),
+            fontSize: 32,
+            height: 1,
+            fontWeight: FontWeight.w900,
+          ),
         ),
       ),
     );
@@ -1578,6 +2059,9 @@ class _EqualShareStoryMode extends StatelessWidget {
         _InstructionStrip(
           message: complete ? 'どのお皿も2こずつになりました。' : '1こずつ順番に置いていきます。',
           isSuccess: complete,
+          language: AppLanguage.japanese,
+          showNative: false,
+          onToggleNative: () {},
         ),
         const SizedBox(height: 14),
         LayoutBuilder(
@@ -1631,7 +2115,12 @@ class _EqualShareStoryMode extends StatelessWidget {
         ),
         if (complete) ...[
           const SizedBox(height: 14),
-          const _DivisionResultCard(),
+          _DivisionResultCard(
+            selectedLanguage: AppLanguage.japanese,
+            showNative: false,
+            onToggleNative: () {},
+            onAudio: () {},
+          ),
         ],
       ],
     );
@@ -1681,47 +2170,6 @@ class _StaticPlateRow extends StatelessWidget {
       plateCounts: [for (final ids in plateBerryIds) ids.length],
       isCorrect: plateBerryIds.every((ids) => ids.length == 2),
       onMoveBerry: (_, _) {},
-    );
-  }
-}
-
-class _CompactNativeSupport extends StatelessWidget {
-  final String title;
-  final String text;
-
-  const _CompactNativeSupport({required this.title, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    if (text.trim().isEmpty) return const SizedBox.shrink();
-    return ExpansionTile(
-      tilePadding: const EdgeInsets.symmetric(horizontal: 12),
-      childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      collapsedShape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      title: Text(
-        title,
-        style: const TextStyle(
-          color: Color(0xFF374151),
-          fontWeight: FontWeight.w900,
-        ),
-      ),
-      children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            text,
-            style: const TextStyle(
-              color: Color(0xFF4B5563),
-              fontSize: 15,
-              height: 1.45,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
