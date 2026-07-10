@@ -194,6 +194,7 @@ class LessonMapScreen extends StatelessWidget {
             description: '同じ数ずつ分ける、何こずつ分ける、文章題まで練習します。',
             color1: const Color(0xFF14B8A6),
             color2: const Color(0xFF2563EB),
+            restartFromFirstWhenCompleted: true,
           ),
         );
         continue;
@@ -257,6 +258,7 @@ class LessonMapScreen extends StatelessWidget {
     required String description,
     required Color color1,
     required Color color2,
+    bool restartFromFirstWhenCompleted = false,
   }) {
     final allCompleted = unitLessons.every((lesson) => lesson.completed);
     final lessonToStart = unitLessons.where((lesson) {
@@ -265,7 +267,14 @@ class LessonMapScreen extends StatelessWidget {
     final fallbackLesson = unitLessons.where((lesson) {
       return !lesson.locked;
     }).firstOrNull;
-    final reviewLesson = unitLessons.isEmpty ? null : unitLessons.last;
+    final Lesson? reviewLesson;
+    if (unitLessons.isEmpty) {
+      reviewLesson = null;
+    } else if (restartFromFirstWhenCompleted) {
+      reviewLesson = unitLessons.first;
+    } else {
+      reviewLesson = unitLessons.last;
+    }
     final completedCount = unitLessons.where((lesson) {
       return lesson.completed;
     }).length;

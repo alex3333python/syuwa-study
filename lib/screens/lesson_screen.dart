@@ -342,11 +342,15 @@ class _LessonScreenState extends State<LessonScreen> {
             explanationText: question.explanationRubyFor(
               widget.selectedLanguage,
             ),
-            formulaExplanation: question.resolvedFormulaExplanationRuby,
+            formulaExplanation: widget.lesson.id == 7
+                ? ''
+                : question.resolvedFormulaExplanationRuby,
             visualHint: question.visualHint.isNotEmpty
                 ? question.visualHint
                 : question.pictureDescription,
-            languagePoint: question.resolvedLanguagePointRuby,
+            languagePoint: widget.lesson.id == 7
+                ? ''
+                : question.resolvedLanguagePointRuby,
             isLastQuestion: !hasSteps
                 ? currentQuestionIndex == widget.lesson.questions.length - 1
                 : currentStepIndex == widget.lesson.steps.length - 1 &&
@@ -775,14 +779,15 @@ class _IndependentPracticeHeader extends StatelessWidget {
 Widget? _buildRichLearnCard(LessonStep step, AppLanguage selectedLanguage) {
   switch (step.id) {
     case 'division-equal-share-learn':
-      return _DivisionLearnStoryboard(
-        mode: _DivisionLearnMode.equalShare,
+      return _EqualShareInteractiveLearn(
         selectedLanguage: selectedLanguage,
         nativeText: step.explanationFor(
           selectedLanguage,
           QuestionPromptMode.native,
         ),
       );
+    case 'division-equal-share-words':
+      return _EqualShareWordsCard(selectedLanguage: selectedLanguage);
     case 'division-measure-learn':
       return _DivisionLearnStoryboard(
         mode: _DivisionLearnMode.measure,
@@ -797,6 +802,1047 @@ Widget? _buildRichLearnCard(LessonStep step, AppLanguage selectedLanguage) {
 }
 
 enum _DivisionLearnMode { equalShare, measure }
+
+class _EqualShareInteractiveLearn extends StatefulWidget {
+  final AppLanguage selectedLanguage;
+  final String nativeText;
+
+  const _EqualShareInteractiveLearn({
+    required this.selectedLanguage,
+    required this.nativeText,
+  });
+
+  @override
+  State<_EqualShareInteractiveLearn> createState() =>
+      _EqualShareInteractiveLearnState();
+}
+
+class _EqualShareInteractiveLearnState
+    extends State<_EqualShareInteractiveLearn> {
+  static const int _berryCount = 6;
+  static const int _plateCount = 3;
+  final List<int?> _berryPlates = List<int?>.filled(_berryCount, null);
+  bool _showStory = false;
+  int _storyStep = 0;
+  String _message = 'イチゴを動かしてみよう！';
+  bool _isCorrect = false;
+
+  void _moveBerry(int berryIndex, int? plateIndex) {
+    setState(() {
+      _berryPlates[berryIndex] = plateIndex;
+      _isCorrect = false;
+      _message = 'イチゴを動かしてみよう！';
+    });
+
+    if (_berryPlates.every((plate) => plate != null)) {
+      _checkAnswer(auto: true);
+    }
+  }
+
+  void _checkAnswer({bool auto = false}) {
+    final counts = _plateCounts;
+    final complete = _berryPlates.every((plate) => plate != null);
+    final correct = complete && counts.every((count) => count == 2);
+
+    setState(() {
+      _isCorrect = correct;
+      if (correct) {
+        _message = '同じ数ずつ分けられたね！';
+      } else if (!complete && !auto) {
+        _message = 'まだ入っていないいちごがあります。';
+      } else {
+        _message = '同じ数になっているかな？ お皿ごとの数を見てみよう。';
+      }
+    });
+  }
+
+  void _reset() {
+    setState(() {
+      for (var i = 0; i < _berryPlates.length; i++) {
+        _berryPlates[i] = null;
+      }
+      _isCorrect = false;
+      _message = 'イチゴを動かしてみよう！';
+    });
+  }
+
+  List<int> get _plateCounts {
+    return [
+      for (var plate = 0; plate < _plateCount; plate++)
+        _berryPlates.where((value) => value == plate).length,
+    ];
+  }
+
+  List<List<int>> get _plateBerryIds {
+    return [
+      for (var plate = 0; plate < _plateCount; plate++)
+        [
+          for (var i = 0; i < _berryPlates.length; i++)
+            if (_berryPlates[i] == plate) i,
+        ],
+    ];
+  }
+
+  List<int> get _sourceBerryIds {
+    return [
+      for (var i = 0; i < _berryPlates.length; i++)
+        if (_berryPlates[i] == null) i,
+    ];
+  }
+
+  List<int> _storyPlateForStep(int step) {
+    final placements = <int>[];
+    const order = [0, 1, 2, 0, 1, 2];
+    for (var i = 0; i < _berryCount; i++) {
+      placements.add(i < step ? order[i] : -1);
+    }
+    return placements;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final nativeTitle = widget.selectedLanguage == AppLanguage.japanese
+        ? '母語サポート'
+        : widget.selectedLanguage.label;
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E7EB), width: 1.5),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _LearnHeaderIcon(icon: Icons.touch_app_rounded),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '同じ数ずつ分けてみよう',
+                      style: TextStyle(
+                        color: Color(0xFF111827),
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      'いちごが6こあります。3人で同じ数ずつ分けると、1人分は何こになりますか。',
+                      style: TextStyle(
+                        color: Color(0xFF4B5563),
+                        fontSize: 17,
+                        height: 1.35,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              OutlinedButton.icon(
+                onPressed: () {
+                  setState(() {
+                    _showStory = !_showStory;
+                    _storyStep = 0;
+                  });
+                },
+                icon: Icon(
+                  _showStory
+                      ? Icons.pan_tool_alt_rounded
+                      : Icons.play_circle_outline_rounded,
+                ),
+                label: Text(_showStory ? '操作する' : '見てみる'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(128, 52),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          if (_showStory)
+            _EqualShareStoryMode(
+              step: _storyStep,
+              placements: _storyPlateForStep(_storyStep),
+              onNext: () {
+                setState(() {
+                  _storyStep = (_storyStep + 1).clamp(0, 6);
+                });
+              },
+              onBack: () {
+                setState(() {
+                  _storyStep = (_storyStep - 1).clamp(0, 6);
+                });
+              },
+            )
+          else
+            _EqualShareDragBoard(
+              sourceBerryIds: _sourceBerryIds,
+              plateBerryIds: _plateBerryIds,
+              plateCounts: _plateCounts,
+              isCorrect: _isCorrect,
+              message: _message,
+              onMoveBerry: _moveBerry,
+              onReset: _reset,
+            ),
+          const SizedBox(height: 14),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            child: _isCorrect
+                ? const _DivisionResultCard(key: ValueKey('correct-result'))
+                : const SizedBox.shrink(key: ValueKey('empty-result')),
+          ),
+          const SizedBox(height: 14),
+          _CompactNativeSupport(title: nativeTitle, text: widget.nativeText),
+        ],
+      ),
+    );
+  }
+}
+
+class _EqualShareDragBoard extends StatelessWidget {
+  final List<int> sourceBerryIds;
+  final List<List<int>> plateBerryIds;
+  final List<int> plateCounts;
+  final bool isCorrect;
+  final String message;
+  final void Function(int berryIndex, int? plateIndex) onMoveBerry;
+  final VoidCallback onReset;
+
+  const _EqualShareDragBoard({
+    required this.sourceBerryIds,
+    required this.plateBerryIds,
+    required this.plateCounts,
+    required this.isCorrect,
+    required this.message,
+    required this.onMoveBerry,
+    required this.onReset,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 760;
+        final source = _BerrySourceTray(
+          berryIds: sourceBerryIds,
+          onAccept: (id) => onMoveBerry(id, null),
+        );
+        final plates = _PlateTargets(
+          plateBerryIds: plateBerryIds,
+          plateCounts: plateCounts,
+          isCorrect: isCorrect,
+          onMoveBerry: onMoveBerry,
+        );
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _InstructionStrip(message: message, isSuccess: isCorrect),
+            const SizedBox(height: 14),
+            if (isWide)
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(width: 260, child: source),
+                  const SizedBox(width: 16),
+                  Expanded(child: plates),
+                ],
+              )
+            else
+              Column(children: [source, const SizedBox(height: 14), plates]),
+            const SizedBox(height: 14),
+            Align(
+              alignment: Alignment.centerRight,
+              child: OutlinedButton.icon(
+                onPressed: onReset,
+                icon: const Icon(Icons.refresh_rounded),
+                label: const Text('もどす'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(132, 52),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _BerrySourceTray extends StatelessWidget {
+  final List<int> berryIds;
+  final ValueChanged<int> onAccept;
+
+  const _BerrySourceTray({required this.berryIds, required this.onAccept});
+
+  @override
+  Widget build(BuildContext context) {
+    return DragTarget<int>(
+      onAcceptWithDetails: (details) => onAccept(details.data),
+      builder: (context, candidateData, rejectedData) {
+        return Container(
+          constraints: const BoxConstraints(minHeight: 176),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _SectionLabel(text: 'いちご 6こ'),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [for (final id in berryIds) _DraggableBerry(id: id)],
+              ),
+              if (berryIds.isEmpty) ...[
+                const SizedBox(height: 16),
+                const Text(
+                  'ぜんぶ分けました',
+                  style: TextStyle(
+                    color: Color(0xFF6B7280),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _PlateTargets extends StatelessWidget {
+  final List<List<int>> plateBerryIds;
+  final List<int> plateCounts;
+  final bool isCorrect;
+  final void Function(int berryIndex, int? plateIndex) onMoveBerry;
+
+  const _PlateTargets({
+    required this.plateBerryIds,
+    required this.plateCounts,
+    required this.isCorrect,
+    required this.onMoveBerry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 560;
+        final children = [
+          for (var i = 0; i < plateBerryIds.length; i++)
+            _PlateDropTarget(
+              index: i,
+              berryIds: plateBerryIds[i],
+              count: plateCounts[i],
+              isBalanced: plateCounts[i] == 2,
+              showBalanced: isCorrect,
+              onMoveBerry: onMoveBerry,
+            ),
+        ];
+
+        if (isWide) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (var i = 0; i < children.length; i++) ...[
+                Expanded(child: children[i]),
+                if (i != children.length - 1) const SizedBox(width: 12),
+              ],
+            ],
+          );
+        }
+
+        return Column(
+          children: [
+            for (var i = 0; i < children.length; i++) ...[
+              children[i],
+              if (i != children.length - 1) const SizedBox(height: 12),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _PlateDropTarget extends StatelessWidget {
+  final int index;
+  final List<int> berryIds;
+  final int count;
+  final bool isBalanced;
+  final bool showBalanced;
+  final void Function(int berryIndex, int? plateIndex) onMoveBerry;
+
+  const _PlateDropTarget({
+    required this.index,
+    required this.berryIds,
+    required this.count,
+    required this.isBalanced,
+    required this.showBalanced,
+    required this.onMoveBerry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DragTarget<int>(
+      onAcceptWithDetails: (details) => onMoveBerry(details.data, index),
+      builder: (context, candidateData, rejectedData) {
+        final active = candidateData.isNotEmpty;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          constraints: const BoxConstraints(minHeight: 176),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: active ? const Color(0xFFEFF6FF) : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: showBalanced && isBalanced
+                  ? const Color(0xFF22C55E)
+                  : const Color(0xFFD1D5DB),
+              width: showBalanced && isBalanced ? 2 : 1.5,
+            ),
+          ),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                top: 30,
+                child: CustomPaint(painter: _PlatePainter(active: active)),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _SectionLabel(text: '${index + 1}人目'),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    height: 84,
+                    child: Center(
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          for (final id in berryIds) _DraggableBerry(id: id),
+                          if (berryIds.isEmpty)
+                            const Text(
+                              'ここへ',
+                              style: TextStyle(
+                                color: Color(0xFF9CA3AF),
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Center(child: _CountBadge(count: count)),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _DraggableBerry extends StatelessWidget {
+  final int id;
+
+  const _DraggableBerry({required this.id});
+
+  @override
+  Widget build(BuildContext context) {
+    return Draggable<int>(
+      data: id,
+      feedback: const Material(
+        color: Colors.transparent,
+        child: _CounterDot(size: 42),
+      ),
+      childWhenDragging: const Opacity(
+        opacity: 0.25,
+        child: _CounterDot(size: 42),
+      ),
+      child: const _CounterDot(size: 42),
+    );
+  }
+}
+
+class _InstructionStrip extends StatelessWidget {
+  final String message;
+  final bool isSuccess;
+
+  const _InstructionStrip({required this.message, required this.isSuccess});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: isSuccess ? const Color(0xFFF0FDF4) : const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isSuccess ? const Color(0xFFBBF7D0) : const Color(0xFFBFDBFE),
+        ),
+      ),
+      child: Text(
+        message,
+        style: TextStyle(
+          color: isSuccess ? const Color(0xFF166534) : const Color(0xFF1E3A8A),
+          fontSize: 18,
+          height: 1.35,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
+}
+
+class _DivisionResultCard extends StatelessWidget {
+  const _DivisionResultCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.only(top: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.check_circle_rounded,
+                color: Color(0xFF059669),
+                size: 28,
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '同じ数ずつ分けられたね！',
+                  style: TextStyle(
+                    color: Color(0xFF065F46),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10),
+          Text(
+            'いちご6こを、3人で同じ数ずつ分けると、1人分は2こになります。',
+            style: TextStyle(
+              color: Color(0xFF374151),
+              fontSize: 17,
+              height: 1.45,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'このことを式で 6 ÷ 3 = 2 と書いて、「6わる3は2」と読みます。',
+            style: TextStyle(
+              color: Color(0xFF374151),
+              fontSize: 17,
+              height: 1.45,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          SizedBox(height: 12),
+          _EquationLine(),
+        ],
+      ),
+    );
+  }
+}
+
+class _EquationLine extends StatelessWidget {
+  const _EquationLine();
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 10,
+      runSpacing: 12,
+      children: const [
+        _EquationNumber(value: '6', label: 'ぜんぶの数', color: Color(0xFF2563EB)),
+        _ResultEquationSymbol('÷'),
+        _EquationNumber(value: '3', label: '分ける人数', color: Color(0xFFF97316)),
+        _ResultEquationSymbol('='),
+        _EquationNumber(value: '2', label: '1人分の数', color: Color(0xFF059669)),
+      ],
+    );
+  }
+}
+
+class _EquationNumber extends StatelessWidget {
+  final String value;
+  final String label;
+  final Color color;
+
+  const _EquationNumber({
+    required this.value,
+    required this.label,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            color: color,
+            fontSize: 36,
+            height: 1,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          width: 48,
+          height: 5,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.24),
+            borderRadius: BorderRadius.circular(999),
+          ),
+        ),
+        const SizedBox(height: 5),
+        Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: 13,
+            height: 1.15,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ResultEquationSymbol extends StatelessWidget {
+  final String value;
+
+  const _ResultEquationSymbol(this.value);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Text(
+        value,
+        style: const TextStyle(
+          color: Color(0xFF111827),
+          fontSize: 32,
+          height: 1,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
+}
+
+class _CountBadge extends StatelessWidget {
+  final int count;
+
+  const _CountBadge({required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      width: 112,
+      height: 64,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFD1D5DB), width: 1.5),
+      ),
+      child: Center(
+        child: RichText(
+          textAlign: TextAlign.center,
+          textHeightBehavior: const TextHeightBehavior(
+            applyHeightToFirstAscent: false,
+            applyHeightToLastDescent: false,
+          ),
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: '$count',
+                style: const TextStyle(
+                  color: Color(0xFF111827),
+                  fontSize: 38,
+                  height: 1,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const TextSpan(
+                text: 'こ',
+                style: TextStyle(
+                  color: Color(0xFF111827),
+                  fontSize: 22,
+                  height: 1,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  final String text;
+
+  const _SectionLabel({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: const TextStyle(
+        color: Color(0xFF374151),
+        fontSize: 16,
+        fontWeight: FontWeight.w900,
+      ),
+    );
+  }
+}
+
+class _EqualShareStoryMode extends StatelessWidget {
+  final int step;
+  final List<int> placements;
+  final VoidCallback onNext;
+  final VoidCallback onBack;
+
+  const _EqualShareStoryMode({
+    required this.step,
+    required this.placements,
+    required this.onNext,
+    required this.onBack,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final plateBerryIds = [
+      for (var plate = 0; plate < 3; plate++)
+        [
+          for (var i = 0; i < placements.length; i++)
+            if (placements[i] == plate) i,
+        ],
+    ];
+    final sourceIds = [
+      for (var i = 0; i < placements.length; i++)
+        if (placements[i] == -1) i,
+    ];
+    final complete = step >= 6;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _InstructionStrip(
+          message: complete ? 'どのお皿も2こずつになりました。' : '1こずつ順番に置いていきます。',
+          isSuccess: complete,
+        ),
+        const SizedBox(height: 14),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth >= 760;
+            final source = _StaticBerryTray(berryIds: sourceIds);
+            final plates = _StaticPlateRow(plateBerryIds: plateBerryIds);
+            if (isWide) {
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(width: 260, child: source),
+                  const SizedBox(width: 16),
+                  Expanded(child: plates),
+                ],
+              );
+            }
+            return Column(
+              children: [source, const SizedBox(height: 14), plates],
+            );
+          },
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            OutlinedButton(
+              onPressed: step == 0 ? null : onBack,
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(104, 52),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('もどる'),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: FilledButton(
+                onPressed: step >= 6 ? null : onNext,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(52),
+                  backgroundColor: const Color(0xFF2563EB),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(step >= 6 ? 'できあがり' : 'つぎ'),
+              ),
+            ),
+          ],
+        ),
+        if (complete) ...[
+          const SizedBox(height: 14),
+          const _DivisionResultCard(),
+        ],
+      ],
+    );
+  }
+}
+
+class _StaticBerryTray extends StatelessWidget {
+  final List<int> berryIds;
+
+  const _StaticBerryTray({required this.berryIds});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 176),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _SectionLabel(text: 'いちご 6こ'),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [for (final _ in berryIds) const _CounterDot(size: 42)],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StaticPlateRow extends StatelessWidget {
+  final List<List<int>> plateBerryIds;
+
+  const _StaticPlateRow({required this.plateBerryIds});
+
+  @override
+  Widget build(BuildContext context) {
+    return _PlateTargets(
+      plateBerryIds: plateBerryIds,
+      plateCounts: [for (final ids in plateBerryIds) ids.length],
+      isCorrect: plateBerryIds.every((ids) => ids.length == 2),
+      onMoveBerry: (_, _) {},
+    );
+  }
+}
+
+class _CompactNativeSupport extends StatelessWidget {
+  final String title;
+  final String text;
+
+  const _CompactNativeSupport({required this.title, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    if (text.trim().isEmpty) return const SizedBox.shrink();
+    return ExpansionTile(
+      tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+      childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      collapsedShape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: Color(0xFF374151),
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            text,
+            style: const TextStyle(
+              color: Color(0xFF4B5563),
+              fontSize: 15,
+              height: 1.45,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _EqualShareWordsCard extends StatelessWidget {
+  final AppLanguage selectedLanguage;
+
+  const _EqualShareWordsCard({required this.selectedLanguage});
+
+  @override
+  Widget build(BuildContext context) {
+    final words = [
+      ('同じ数ずつ', 'みんなが同じ数になるようにする'),
+      ('分ける', 'ものをいくつかに分ける'),
+      ('1人分', '1人がもらう数'),
+      ('何こ', '数をたずねる言葉'),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E7EB), width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Row(
+            children: [
+              _LearnHeaderIcon(icon: Icons.menu_book_rounded),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  '今日使うことば',
+                  style: TextStyle(
+                    color: Color(0xFF111827),
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          for (final word in words) ...[
+            _VocabularyRow(term: word.$1, meaning: word.$2),
+            const SizedBox(height: 10),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _VocabularyRow extends StatelessWidget {
+  final String term;
+  final String meaning;
+
+  const _VocabularyRow({required this.term, required this.meaning});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFAFAFA),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 132,
+            child: Text(
+              term,
+              style: const TextStyle(
+                color: Color(0xFF111827),
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              meaning,
+              style: const TextStyle(
+                color: Color(0xFF4B5563),
+                fontSize: 16,
+                height: 1.35,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LearnHeaderIcon extends StatelessWidget {
+  final IconData icon;
+
+  const _LearnHeaderIcon({required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 48,
+      height: 48,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFBFDBFE)),
+      ),
+      child: Icon(icon, color: const Color(0xFF2563EB), size: 28),
+    );
+  }
+}
 
 class _DivisionLearnStoryboard extends StatelessWidget {
   final _DivisionLearnMode mode;
@@ -826,16 +1872,16 @@ class _DivisionLearnStoryboard extends StatelessWidget {
         : selectedLanguage.label;
 
     return Container(
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFBEB),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFFDE68A), width: 2),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E7EB), width: 1.5),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x12000000),
-            blurRadius: 20,
-            offset: Offset(0, 10),
+            color: Color(0x0A000000),
+            blurRadius: 10,
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -849,18 +1895,22 @@ class _DivisionLearnStoryboard extends StatelessWidget {
                 height: 48,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFFBBF24)),
+                  color: const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFBFDBFE)),
                 ),
-                child: const Text('🍓', style: TextStyle(fontSize: 28)),
+                child: const Icon(
+                  Icons.school_rounded,
+                  color: Color(0xFF2563EB),
+                  size: 28,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   title,
                   style: const TextStyle(
-                    color: Color(0xFF92400E),
+                    color: Color(0xFF111827),
                     fontSize: 22,
                     fontWeight: FontWeight.w900,
                   ),
@@ -970,8 +2020,8 @@ class _StoryboardPanel extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        color: const Color(0xFFFAFAFA),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
       child: Row(
@@ -983,7 +2033,7 @@ class _StoryboardPanel extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: const Color(0xFFEFF6FF),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
               stepLabel,
@@ -1052,13 +2102,13 @@ class _AllBerriesCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: const Color(0xFFEFF6FF),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFF93C5FD), width: 2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFBFDBFE), width: 1.5),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'ぜんぶ',
             style: TextStyle(
               color: Color(0xFF1D4ED8),
@@ -1066,21 +2116,14 @@ class _AllBerriesCard extends StatelessWidget {
               fontWeight: FontWeight.w900,
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 10),
           Wrap(
-            spacing: 5,
-            runSpacing: 5,
-            children: [
-              Text('🍓', style: TextStyle(fontSize: 24)),
-              Text('🍓', style: TextStyle(fontSize: 24)),
-              Text('🍓', style: TextStyle(fontSize: 24)),
-              Text('🍓', style: TextStyle(fontSize: 24)),
-              Text('🍓', style: TextStyle(fontSize: 24)),
-              Text('🍓', style: TextStyle(fontSize: 24)),
-            ],
+            spacing: 7,
+            runSpacing: 7,
+            children: [for (var i = 0; i < 6; i++) const _CounterDot()],
           ),
-          SizedBox(height: 8),
-          Text(
+          const SizedBox(height: 10),
+          const Text(
             '6こ',
             style: TextStyle(
               color: Color(0xFF1D4ED8),
@@ -1107,8 +2150,8 @@ class _PlateCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: const Color(0xFFF0FDF4),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFF86EFAC), width: 2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFBBF7D0), width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1123,11 +2166,9 @@ class _PlateCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Wrap(
-            spacing: 5,
-            children: [
-              for (var i = 0; i < count; i++)
-                const Text('🍓', style: TextStyle(fontSize: 24)),
-            ],
+            spacing: 7,
+            runSpacing: 7,
+            children: [for (var i = 0; i < count; i++) const _CounterDot()],
           ),
           const SizedBox(height: 8),
           Text(
@@ -1141,6 +2182,122 @@ class _PlateCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _CounterDot extends StatelessWidget {
+  final double size;
+
+  const _CounterDot({this.size = 26});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(painter: _StrawberryPainter()),
+    );
+  }
+}
+
+class _StrawberryPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final bodyPaint = Paint()..color = const Color(0xFFEF4444);
+    final borderPaint = Paint()
+      ..color = const Color(0xFFB91C1C)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size.width * 0.045;
+    final leafPaint = Paint()..color = const Color(0xFF15803D);
+    final seedPaint = Paint()..color = const Color(0xFFFFF7ED);
+
+    final body = Path()
+      ..moveTo(size.width * 0.5, size.height * 0.96)
+      ..cubicTo(
+        size.width * 0.06,
+        size.height * 0.66,
+        size.width * 0.12,
+        size.height * 0.23,
+        size.width * 0.5,
+        size.height * 0.2,
+      )
+      ..cubicTo(
+        size.width * 0.88,
+        size.height * 0.23,
+        size.width * 0.94,
+        size.height * 0.66,
+        size.width * 0.5,
+        size.height * 0.96,
+      )
+      ..close();
+
+    canvas.drawPath(body, bodyPaint);
+    canvas.drawPath(body, borderPaint);
+
+    final leaf = Path()
+      ..moveTo(size.width * 0.5, size.height * 0.24)
+      ..lineTo(size.width * 0.28, size.height * 0.04)
+      ..lineTo(size.width * 0.46, size.height * 0.14)
+      ..lineTo(size.width * 0.5, 0)
+      ..lineTo(size.width * 0.54, size.height * 0.14)
+      ..lineTo(size.width * 0.72, size.height * 0.04)
+      ..close();
+    canvas.drawPath(leaf, leafPaint);
+
+    final seeds = [
+      Offset(size.width * 0.38, size.height * 0.42),
+      Offset(size.width * 0.6, size.height * 0.44),
+      Offset(size.width * 0.46, size.height * 0.62),
+      Offset(size.width * 0.66, size.height * 0.68),
+    ];
+    for (final seed in seeds) {
+      canvas.drawCircle(seed, size.width * 0.035, seedPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _PlatePainter extends CustomPainter {
+  final bool active;
+
+  const _PlatePainter({required this.active});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height * 0.5);
+    final outerRect = Rect.fromCenter(
+      center: center,
+      width: size.width * 0.82,
+      height: size.height * 0.62,
+    );
+    final innerRect = Rect.fromCenter(
+      center: center,
+      width: size.width * 0.58,
+      height: size.height * 0.36,
+    );
+
+    final outerPaint = Paint()
+      ..color = active ? const Color(0xFFEFF6FF) : const Color(0xFFF8FAFC)
+      ..style = PaintingStyle.fill;
+    final borderPaint = Paint()
+      ..color = active ? const Color(0xFF93C5FD) : const Color(0xFFCBD5E1)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    final innerPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.7)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+
+    canvas.drawOval(outerRect, outerPaint);
+    canvas.drawOval(outerRect, borderPaint);
+    canvas.drawOval(innerRect, innerPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _PlatePainter oldDelegate) {
+    return oldDelegate.active != active;
   }
 }
 
@@ -1202,31 +2359,47 @@ class _EquationChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 132,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      width: 144,
+      height: 116,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: textColor.withValues(alpha: 0.24), width: 2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: textColor.withValues(alpha: 0.24),
+          width: 1.5,
+        ),
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            value,
-            style: TextStyle(
-              color: textColor,
-              fontSize: 30,
-              fontWeight: FontWeight.w900,
+          Expanded(
+            child: Center(
+              child: Baseline(
+                baseline: 42,
+                baselineType: TextBaseline.alphabetic,
+                child: Text(
+                  value,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 48,
+                    height: 1,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text(
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: textColor,
-              fontSize: 12,
-              height: 1.25,
+              fontSize: 12.5,
+              height: 1.2,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -1538,44 +2711,114 @@ class _AnswerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = _isCompactChoice(rubyText);
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(14),
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 18 : 20,
+            vertical: compact ? 14 : 18,
+          ),
           decoration: BoxDecoration(
             color: backgroundColor,
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: borderColor, width: 2),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: borderColor, width: 1.5),
             boxShadow: const [
               BoxShadow(
-                color: Color(0x0F000000),
-                blurRadius: 12,
-                offset: Offset(0, 6),
+                color: Color(0x08000000),
+                blurRadius: 8,
+                offset: Offset(0, 3),
               ),
             ],
           ),
-          child: Row(
+          child: Stack(
+            alignment: Alignment.center,
             children: [
-              Expanded(
-                child: RubyText(
-                  text: rubyText,
-                  vocabularyEntries: vocabularyEntries,
-                  language: language,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: textColor,
-                  ),
-                ),
+              Center(
+                child: compact
+                    ? _CompactChoiceText(text: rubyText, color: textColor)
+                    : RubyText(
+                        text: rubyText,
+                        textAlign: TextAlign.center,
+                        vocabularyEntries: vocabularyEntries,
+                        language: language,
+                        style: TextStyle(
+                          fontSize: 19,
+                          height: 1.35,
+                          fontWeight: FontWeight.w800,
+                          color: textColor,
+                        ),
+                      ),
               ),
               if (trailingIcon != null)
-                Icon(trailingIcon, color: trailingColor, size: 26),
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Icon(trailingIcon, color: trailingColor, size: 26),
+                ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  bool _isCompactChoice(String value) {
+    final plain = value.replaceAll(RegExp(r'\{([^|{}]+)\|([^{}]+)\}'), r'$1');
+    return plain.length <= 8 &&
+        RegExp(r'^[0-9０-９一二三四五六七八九十+\-−×÷=＝、.．mcm本人こまい枚]+$').hasMatch(plain);
+  }
+}
+
+class _CompactChoiceText extends StatelessWidget {
+  final String text;
+  final Color color;
+
+  const _CompactChoiceText({required this.text, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final plain = text.replaceAllMapped(
+      RegExp(r'\{([^|{}]+)\|([^{}]+)\}'),
+      (match) => match.group(1) ?? '',
+    );
+    final match = RegExp(r'^([0-9０-９]+)(.*)$').firstMatch(plain);
+    final number = match?.group(1);
+    final suffix = match == null ? plain : match.group(2) ?? '';
+
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: RichText(
+        textAlign: TextAlign.center,
+        textHeightBehavior: const TextHeightBehavior(
+          applyHeightToFirstAscent: false,
+          applyHeightToLastDescent: false,
+        ),
+        text: TextSpan(
+          style: TextStyle(
+            color: color,
+            height: 1,
+            fontWeight: FontWeight.w900,
+          ),
+          children: [
+            if (number != null)
+              TextSpan(
+                text: number,
+                style: const TextStyle(fontSize: 42, letterSpacing: 0),
+              ),
+            TextSpan(
+              text: suffix,
+              style: TextStyle(
+                fontSize: number == null ? 38 : 36,
+                letterSpacing: 0,
+              ),
+            ),
+          ],
         ),
       ),
     );
