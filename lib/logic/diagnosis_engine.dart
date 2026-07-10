@@ -65,20 +65,11 @@ class DiagnosisEngine {
     final recommendations = <int>[];
 
     if (_hasAny(tagCounts, ['division', 'school_japanese_equally'])) {
-      recommendations.add(2);
-    }
-    if (_hasAny(tagCounts, ['multiplication', 'school_japanese_each'])) {
-      recommendations.add(3);
-    }
-    if (_hasAny(tagCounts, ['subtraction', 'comparison'])) {
-      recommendations.add(4);
-    }
-    if (_hasAny(tagCounts, ['fraction'])) {
-      recommendations.add(5);
+      recommendations.add(7);
     }
 
     if (recommendations.isEmpty && tagCounts.isNotEmpty) {
-      recommendations.add(2);
+      recommendations.add(7);
     }
 
     return recommendations;

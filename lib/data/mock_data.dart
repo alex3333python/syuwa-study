@@ -6,7 +6,7 @@ import 'diagnostic_questions.dart';
 import 'grade3_division_unit.dart';
 import 'grade3_division_remainder_unit.dart';
 
-final List<Lesson> mockLessons = [
+final List<Lesson> _allMockLessons = [
   const Lesson(
     id: 1,
     levelId: 1,
@@ -229,3 +229,9 @@ final List<Lesson> mockLessons = [
   ...grade3DivisionLessons,
   ...grade3DivisionRemainderLessons,
 ];
+
+const Set<int> _hiddenLessonIds = {2, 3, 4, 5, 6};
+
+final List<Lesson> mockLessons = _allMockLessons
+    .where((lesson) => !_hiddenLessonIds.contains(lesson.id))
+    .toList();

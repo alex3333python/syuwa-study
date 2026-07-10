@@ -191,7 +191,7 @@ class LessonMapScreen extends StatelessWidget {
           _buildUnitEntry(
             unitLessons: divisionLessons,
             title: 'わり算れっすん',
-            description: '同じ数ずつ分ける、何こずつ配る、文章題まで練習します。',
+            description: '同じ数ずつ分ける、何こずつ分ける、文章題まで練習します。',
             color1: const Color(0xFF14B8A6),
             color2: const Color(0xFF2563EB),
           ),

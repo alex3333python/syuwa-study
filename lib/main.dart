@@ -402,6 +402,32 @@ class _HomePageState extends State<HomePage> {
     return counts;
   }
 
+  void _normalizeActiveLessonLocks() {
+    if (mockLessons.isEmpty) return;
+
+    for (int i = 0; i < mockLessons.length; i++) {
+      final lesson = mockLessons[i];
+      final shouldBeUnlocked =
+          i == 0 || !lesson.locked || mockLessons[i - 1].completed;
+
+      if (!shouldBeUnlocked || !lesson.locked) continue;
+
+      mockLessons[i] = Lesson(
+        id: lesson.id,
+        levelId: lesson.levelId,
+        type: lesson.type,
+        title: lesson.title,
+        description: lesson.description,
+        completed: lesson.completed,
+        locked: false,
+        stars: lesson.stars,
+        maxStars: lesson.maxStars,
+        questions: lesson.questions,
+        steps: lesson.steps,
+      );
+    }
+  }
+
   Future<void> loadProgress() async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -428,6 +454,8 @@ class _HomePageState extends State<HomePage> {
         steps: lesson.steps,
       );
     }
+
+    _normalizeActiveLessonLocks();
 
     final savedXp = prefs.getInt('user_xp');
     final savedStreak = prefs.getInt('user_streak');
