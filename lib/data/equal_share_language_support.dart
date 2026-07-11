@@ -30,6 +30,33 @@ class EquationSupport {
   }
 }
 
+enum LessonVocabularyVisual {
+  equalGroups,
+  splitToPlates,
+  onePersonShare,
+  countQuestion,
+}
+
+class LessonVocabulary {
+  final String word;
+  final String reading;
+  final String explanation;
+  final Map<AppLanguage, String> translations;
+  final LessonVocabularyVisual visual;
+
+  const LessonVocabulary({
+    required this.word,
+    required this.reading,
+    required this.explanation,
+    required this.translations,
+    required this.visual,
+  });
+
+  String translationFor(AppLanguage language) {
+    return translations[language] ?? '';
+  }
+}
+
 const equalShareProblemLines = [
   SupportLine(
     japanese: 'いちごが6こあります。',
@@ -140,6 +167,53 @@ const equalShareEquationSupports = [
       AppLanguage.tagalog: 'bilang para sa bawat tao',
       AppLanguage.vietnamese: 'số quả mỗi người nhận',
     },
+  ),
+];
+
+const equalShareLessonVocabulary = [
+  LessonVocabulary(
+    word: '同じ数ずつ',
+    reading: 'おなじ かずずつ',
+    explanation: 'みんなが同じ数になるように分けます。',
+    translations: {
+      AppLanguage.portuguese: 'a mesma quantidade para cada pessoa',
+      AppLanguage.tagalog: 'parehong dami para sa bawat isa',
+      AppLanguage.vietnamese: 'cùng một số lượng cho mỗi người',
+    },
+    visual: LessonVocabularyVisual.equalGroups,
+  ),
+  LessonVocabulary(
+    word: '分ける',
+    reading: 'わける',
+    explanation: 'ものをいくつかのグループにします。',
+    translations: {
+      AppLanguage.portuguese: 'dividir / separar em grupos',
+      AppLanguage.tagalog: 'hatiin sa mga pangkat',
+      AppLanguage.vietnamese: 'chia thành các nhóm',
+    },
+    visual: LessonVocabularyVisual.splitToPlates,
+  ),
+  LessonVocabulary(
+    word: '1人分',
+    reading: 'ひとりぶん',
+    explanation: '1人がもらう数です。',
+    translations: {
+      AppLanguage.portuguese: 'quantidade para uma pessoa',
+      AppLanguage.tagalog: 'bahagi para sa isang tao',
+      AppLanguage.vietnamese: 'phần cho một người',
+    },
+    visual: LessonVocabularyVisual.onePersonShare,
+  ),
+  LessonVocabulary(
+    word: '何こ',
+    reading: 'なんこ',
+    explanation: 'ものの数を聞く言い方です。',
+    translations: {
+      AppLanguage.portuguese: 'quantos itens',
+      AppLanguage.tagalog: 'ilang piraso',
+      AppLanguage.vietnamese: 'bao nhiêu cái',
+    },
+    visual: LessonVocabularyVisual.countQuestion,
   ),
 ];
 

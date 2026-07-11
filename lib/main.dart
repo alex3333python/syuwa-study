@@ -17,6 +17,7 @@ import 'screens/records_screen.dart';
 import 'screens/report_screen.dart';
 import 'screens/review_screen.dart';
 import 'models/question.dart';
+import 'theme/app_fonts.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +34,61 @@ class MyApp extends StatelessWidget {
       title: '多言語算数学習',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        fontFamily: AppFonts.interface,
+        textTheme: const TextTheme(
+          headlineLarge: TextStyle(
+            fontFamily: AppFonts.display,
+            fontSize: 30,
+            fontWeight: FontWeight.w700,
+            height: 1.25,
+          ),
+          headlineMedium: TextStyle(
+            fontFamily: AppFonts.display,
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+            height: 1.3,
+          ),
+          headlineSmall: TextStyle(
+            fontFamily: AppFonts.display,
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+            height: 1.3,
+          ),
+          titleLarge: TextStyle(
+            fontFamily: AppFonts.display,
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+            height: 1.35,
+          ),
+          titleMedium: TextStyle(
+            fontFamily: AppFonts.interface,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            height: 1.4,
+          ),
+          bodyLarge: TextStyle(
+            fontFamily: AppFonts.interface,
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            height: 1.5,
+          ),
+          bodyMedium: TextStyle(
+            fontFamily: AppFonts.interface,
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            height: 1.5,
+          ),
+          labelLarge: TextStyle(
+            fontFamily: AppFonts.interface,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+          labelMedium: TextStyle(
+            fontFamily: AppFonts.interface,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         useMaterial3: true,
       ),
       home: const HomePage(),

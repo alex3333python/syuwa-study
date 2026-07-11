@@ -380,6 +380,11 @@ class _LessonScreenState extends State<LessonScreen> {
         ? '母語'
         : widget.selectedLanguage.label;
     final richLearnCard = _buildRichLearnCard(step, widget.selectedLanguage);
+    final actionLabel = step.id == 'division-equal-share-words'
+        ? 'もんだいをとく'
+        : currentStepIndex == widget.lesson.steps.length - 1
+        ? '完了'
+        : '次へ';
 
     return Column(
       children: [
@@ -475,9 +480,7 @@ class _LessonScreenState extends State<LessonScreen> {
                   ),
                 ),
                 child: Text(
-                  currentStepIndex == widget.lesson.steps.length - 1
-                      ? '完了'
-                      : '次へ',
+                  actionLabel,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
@@ -1462,7 +1465,7 @@ class _LanguageSupportActions extends StatelessWidget {
         if (language != AppLanguage.japanese)
           _InlineSupportButton(
             icon: Icons.translate_rounded,
-            label: showNative ? '日本語' : '${language.label}',
+            label: showNative ? '日本語' : language.label,
             onPressed: onToggleNative,
           ),
         _InlineSupportButton(
@@ -2181,13 +2184,6 @@ class _EqualShareWordsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final words = [
-      ('同じ数ずつ', 'みんなが同じ数になるようにする'),
-      ('分ける', 'ものをいくつかに分ける'),
-      ('1人分', '1人がもらう数'),
-      ('何こ', '数をたずねる言葉'),
-    ];
-
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
@@ -2204,7 +2200,7 @@ class _EqualShareWordsCard extends StatelessWidget {
               SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  '今日使うことば',
+                  'このレッスンで使うことば',
                   style: TextStyle(
                     color: Color(0xFF111827),
                     fontSize: 22,
@@ -2214,59 +2210,294 @@ class _EqualShareWordsCard extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 10),
+          const Text(
+            'このあと使うことばの意味を、絵と母語で確認しよう。',
+            style: TextStyle(
+              color: Color(0xFF4B5563),
+              fontSize: 16,
+              height: 1.5,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           const SizedBox(height: 16),
-          for (final word in words) ...[
-            _VocabularyRow(term: word.$1, meaning: word.$2),
-            const SizedBox(height: 10),
-          ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              const gap = 14.0;
+              final columns = constraints.maxWidth >= 720 ? 2 : 1;
+              final cardWidth =
+                  (constraints.maxWidth - gap * (columns - 1)) / columns;
+
+              return Wrap(
+                spacing: gap,
+                runSpacing: gap,
+                children: [
+                  for (final item in equalShareLessonVocabulary)
+                    SizedBox(
+                      width: cardWidth,
+                      child: _LessonVocabularyCard(
+                        vocabulary: item,
+                        selectedLanguage: selectedLanguage,
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
         ],
       ),
     );
   }
 }
 
-class _VocabularyRow extends StatelessWidget {
-  final String term;
-  final String meaning;
+class _LessonVocabularyCard extends StatelessWidget {
+  final LessonVocabulary vocabulary;
+  final AppLanguage selectedLanguage;
 
-  const _VocabularyRow({required this.term, required this.meaning});
+  const _LessonVocabularyCard({
+    required this.vocabulary,
+    required this.selectedLanguage,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final translation = vocabulary.translationFor(selectedLanguage);
+    final showNative =
+        selectedLanguage != AppLanguage.japanese && translation.isNotEmpty;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFAFAFA),
-        borderRadius: BorderRadius.circular(10),
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 132,
-            child: Text(
-              term,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      vocabulary.word,
+                      style: const TextStyle(
+                        color: Color(0xFF111827),
+                        fontSize: 22,
+                        height: 1.25,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      vocabulary.reading,
+                      style: const TextStyle(
+                        color: Color(0xFF6B7280),
+                        fontSize: 14,
+                        height: 1.25,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              _VocabularyVisual(visual: vocabulary.visual),
+            ],
+          ),
+          const SizedBox(height: 14),
+          if (showNative) ...[
+            Text(
+              selectedLanguage.label,
               style: const TextStyle(
-                color: Color(0xFF111827),
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
+                color: Color(0xFF2563EB),
+                fontSize: 13,
+                height: 1.3,
+                fontWeight: FontWeight.w800,
               ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              meaning,
+            const SizedBox(height: 3),
+            Text(
+              translation,
               style: const TextStyle(
-                color: Color(0xFF4B5563),
+                color: Color(0xFF1F2937),
                 fontSize: 16,
                 height: 1.35,
                 fontWeight: FontWeight.w700,
               ),
             ),
+            const SizedBox(height: 12),
+          ],
+          Text(
+            vocabulary.explanation,
+            style: const TextStyle(
+              color: Color(0xFF374151),
+              fontSize: 16,
+              height: 1.45,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _VocabularyVisual extends StatelessWidget {
+  final LessonVocabularyVisual visual;
+
+  const _VocabularyVisual({required this.visual});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 116,
+      height: 76,
+      child: switch (visual) {
+        LessonVocabularyVisual.equalGroups => const _EqualGroupsVisual(),
+        LessonVocabularyVisual.splitToPlates => const _SplitToPlatesVisual(),
+        LessonVocabularyVisual.onePersonShare => const _OnePersonShareVisual(),
+        LessonVocabularyVisual.countQuestion => const _CountQuestionVisual(),
+      },
+    );
+  }
+}
+
+class _EqualGroupsVisual extends StatelessWidget {
+  const _EqualGroupsVisual();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        for (var i = 0; i < 3; i++)
+          _MiniPlate(
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _CounterDot(size: 13),
+                SizedBox(width: 2),
+                _CounterDot(size: 13),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _SplitToPlatesVisual extends StatelessWidget {
+  const _SplitToPlatesVisual();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const SizedBox(
+          width: 36,
+          child: Wrap(
+            spacing: 2,
+            runSpacing: 2,
+            children: [
+              _CounterDot(size: 14),
+              _CounterDot(size: 14),
+              _CounterDot(size: 14),
+              _CounterDot(size: 14),
+            ],
+          ),
+        ),
+        const Icon(
+          Icons.arrow_forward_rounded,
+          color: Color(0xFF9CA3AF),
+          size: 22,
+        ),
+        Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [_MiniPlate(), SizedBox(height: 6), _MiniPlate()],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _OnePersonShareVisual extends StatelessWidget {
+  const _OnePersonShareVisual();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: const [
+        Icon(Icons.person_rounded, color: Color(0xFF4B5563), size: 30),
+        SizedBox(width: 8),
+        _MiniPlate(
+          width: 44,
+          height: 30,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _CounterDot(size: 16),
+              SizedBox(width: 3),
+              _CounterDot(size: 16),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CountQuestionVisual extends StatelessWidget {
+  const _CountQuestionVisual();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: const [
+        _CounterDot(size: 22),
+        SizedBox(width: 4),
+        _CounterDot(size: 22),
+        SizedBox(width: 8),
+        Text(
+          '?',
+          style: TextStyle(
+            color: Color(0xFF2563EB),
+            fontSize: 30,
+            height: 1,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MiniPlate extends StatelessWidget {
+  final Widget? child;
+  final double width;
+  final double height;
+
+  const _MiniPlate({this.child, this.width = 34, this.height = 26});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: const Color(0xFFD1D5DB)),
+      ),
+      child: child,
     );
   }
 }

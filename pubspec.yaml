@@ -59,6 +59,24 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  fonts:
+    - family: GenInterfaceJP
+      fonts:
+        - asset: assets/fonts/gen_interface_jp/standard/GenInterfaceJP-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/gen_interface_jp/standard/GenInterfaceJP-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/gen_interface_jp/standard/GenInterfaceJP-Bold.ttf
+          weight: 700
+    - family: GenInterfaceJPDisplay
+      fonts:
+        - asset: assets/fonts/gen_interface_jp/display/GenInterfaceJPDisplay-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/gen_interface_jp/display/GenInterfaceJPDisplay-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/gen_interface_jp/display/GenInterfaceJPDisplay-Bold.ttf
+          weight: 700
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
