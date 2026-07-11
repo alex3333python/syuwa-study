@@ -38,6 +38,7 @@ class Question {
   final String pictureDescription;
   final String diagramType;
   final Map<String, String> diagramData;
+  final List<Map<String, String>> choiceDiagramData;
   final List<String> vocabulary;
   final int? grade;
   final String subject;
@@ -91,6 +92,7 @@ class Question {
     this.pictureDescription = '',
     this.diagramType = '',
     this.diagramData = const {},
+    this.choiceDiagramData = const [],
     this.vocabulary = const [],
     this.grade,
     this.subject = '',

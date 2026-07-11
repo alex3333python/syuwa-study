@@ -70,7 +70,9 @@ final List<Lesson> grade3DivisionLessons = [
             vocabulary: ['ぜんぶで', '同じ数ずつ', '分ける'],
             tags: ['equal-sharing', 'select_equation'],
             equationHint: 'ぜんぶの数 ÷ 人数',
-            visualHint: '8このクッキーを4人に分ける場面です。',
+            visualHint: '',
+            diagramType: 'equal_share_boxes',
+            diagramData: {'total': '8', 'groups': '4', 'each': '2'},
           ),
           _q(
             id: 7103,
@@ -121,7 +123,9 @@ final List<Lesson> grade3DivisionLessons = [
             vocabulary: ['式', '分ける'],
             tags: ['equal-sharing', 'fill_blank'],
             equationHint: '15 ÷ 5',
-            visualHint: '15このカードを5人に分ける図',
+            visualHint: '',
+            diagramType: 'equal_share_boxes',
+            diagramData: {'total': '15', 'groups': '5', 'each': '3'},
           ),
           _q(
             id: 7105,
@@ -179,6 +183,11 @@ final List<Lesson> grade3DivisionLessons = [
             pictureDescription: '3人それぞれにシールが3こずつある図',
             diagramType: 'equal_share_boxes',
             diagramData: {'total': '9', 'groups': '3', 'each': '3'},
+            choiceDiagramData: [
+              {'total': '3', 'groups': '3', 'each': '1'},
+              {'total': '9', 'groups': '3', 'each': '3'},
+              {'total': '27', 'groups': '3', 'each': '9'},
+            ],
           ),
           _q(
             id: 7108,
@@ -1005,6 +1014,7 @@ Question _q({
   String pictureDescription = '',
   String diagramType = '',
   Map<String, String> diagramData = const {},
+  List<Map<String, String>> choiceDiagramData = const [],
 }) {
   return Question(
     id: id,
@@ -1045,6 +1055,7 @@ Question _q({
     pictureDescription: pictureDescription,
     diagramType: diagramType,
     diagramData: diagramData,
+    choiceDiagramData: choiceDiagramData,
     vocabulary: vocabulary,
     grade: 3,
     subject: 'math',
@@ -1104,9 +1115,38 @@ const _divisionSharingVocabulary = [
 ];
 
 Map<AppLanguage, String> _nativeText(String fallback) {
-  return {
-    AppLanguage.portuguese: '$fallback\nTODO: suporte em português',
-    AppLanguage.tagalog: '$fallback\nTODO: suporta sa Tagalog',
-    AppLanguage.vietnamese: '$fallback\nTODO: hỗ trợ tiếng Việt',
+  final portuguese = _portugueseText(fallback);
+  return portuguese == null ? const {} : {AppLanguage.portuguese: portuguese};
+}
+
+String? _portugueseText(String source) {
+  return switch (source) {
+    'りんごが6こあります。2人に同じ数で分けます。1人は何こもらいますか。' =>
+      'Há 6 maçãs. Vamos dividir igualmente entre 2 pessoas. Quantas maçãs cada pessoa recebe?',
+    '6こを2人で同じ数ずつ分けるので、6 ÷ 2 = 3。1人分は3こです。' =>
+      'Como dividimos 6 maçãs igualmente entre 2 pessoas, 6 ÷ 2 = 3. Cada pessoa recebe 3 maçãs.',
+    'クッキー8こを4人に同じ数で分けます。どの式ですか。' =>
+      'Há 8 biscoitos. Vamos dividir igualmente entre 4 pessoas. Qual é a conta correta?',
+    'ぜんぶの8こを4人で分けるので、式は8 ÷ 4です。' =>
+      'Como dividimos todos os 8 biscoitos entre 4 pessoas, a conta é 8 ÷ 4.',
+    'あめが12こあります。3人に同じ数で分けます。1人は何こですか。' =>
+      'Há 12 balas. Vamos dividir igualmente entre 3 pessoas. Quantas balas cada pessoa recebe?',
+    '12 ÷ 3 = 4。1人分は4こです。' => '12 ÷ 3 = 4. Cada pessoa recebe 4.',
+    'カード15こを5人で分けます。15 ÷ □ の□は何ですか。' =>
+      'Há 15 cartões. Vamos dividir entre 5 pessoas. Que número entra no □ em 15 ÷ □?',
+    '分ける人数は5人なので、式は15 ÷ 5です。' =>
+      'Como o número de pessoas é 5, a conta é 15 ÷ 5.',
+    'みかん20こを4人に同じ数で分けます。どの式ですか。' =>
+      'Há 20 mexericas. Vamos dividir igualmente entre 4 pessoas. Qual é a conta correta?',
+    '20はぜんぶの数、4は分ける人数です。式は20 ÷ 4。答えは5こです。' =>
+      '20 é o total, e 4 é o número de pessoas. A conta é 20 ÷ 4. A resposta é 5.',
+    'シール9こを3人に同じ数で分けます。合う図はどれですか。' =>
+      'Há 9 adesivos. Vamos dividir igualmente entre 3 pessoas. Qual desenho combina?',
+    '3人に3こずつ入っている図が正しいです。' =>
+      'O desenho correto mostra 3 adesivos para cada uma das 3 pessoas.',
+    'えんぴつ18本を6人に同じ数で分けます。1人は何本ですか。' =>
+      'Há 18 lápis. Vamos dividir igualmente entre 6 pessoas. Quantos lápis cada pessoa recebe?',
+    '18 ÷ 6 = 3。1人分は3本です。' => '18 ÷ 6 = 3. Cada pessoa recebe 3 lápis.',
+    _ => null,
   };
 }

@@ -85,8 +85,10 @@ class _DiagramDivisionVisual extends StatelessWidget {
     }
 
     final itemEmoji = _diagramItemEmoji(question);
-    final itemLabel = _diagramItemLabel(question);
     final groupLabel = mode == _DiagramDivisionMode.equalShare ? '人目' : '組目';
+    final cardWidth = compact ? 132.0 : 160.0;
+    const cardGap = 10.0;
+    final totalWidth = groups * cardWidth + (groups - 1) * cardGap;
 
     return Container(
       padding: EdgeInsets.all(compact ? 14 : 20),
@@ -95,55 +97,46 @@ class _DiagramDivisionVisual extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            question.visualTitle.isEmpty ? '図で見てみよう' : question.visualTitle,
-            style: TextStyle(
-              color: const Color(0xFF111827),
-              fontSize: compact ? 16 : 20,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          SizedBox(height: compact ? 10 : 14),
-          _TotalItemsRow(
-            count: total,
-            itemEmoji: itemEmoji,
-            itemLabel: itemLabel,
-            itemUnit: question.itemUnit,
-            compact: compact,
-          ),
-          SizedBox(height: compact ? 12 : 16),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              for (var index = 0; index < groups; index++)
-                _GroupCard(
-                  label: '${index + 1}$groupLabel',
-                  count: each,
-                  itemEmoji: itemEmoji,
-                  compact: compact,
-                  showSolution: showSolution,
-                ),
-            ],
-          ),
-          if (showSolution) ...[
-            SizedBox(height: compact ? 10 : 14),
-            Text(
-              mode == _DiagramDivisionMode.equalShare
-                  ? '$total${question.itemUnit}を$groups人に同じ数ずつ分けると、1人分は$each${question.itemUnit}です。'
-                  : '$total${question.itemUnit}を$each${question.itemUnit}ずつにすると、$groups組できます。',
-              style: TextStyle(
-                color: const Color(0xFF374151),
-                fontSize: compact ? 15 : 17,
-                height: 1.4,
-                fontWeight: FontWeight.w800,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final canUseFixedWidth = totalWidth <= constraints.maxWidth;
+
+          return Align(
+            alignment: Alignment.centerLeft,
+            child: SizedBox(
+              width: canUseFixedWidth ? totalWidth : constraints.maxWidth,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _TotalItemsRow(
+                    count: total,
+                    itemEmoji: itemEmoji,
+                    itemUnit: question.itemUnit,
+                    compact: compact,
+                  ),
+                  SizedBox(height: compact ? 12 : 16),
+                  Wrap(
+                    spacing: cardGap,
+                    runSpacing: 10,
+                    children: [
+                      for (var index = 0; index < groups; index++)
+                        SizedBox(
+                          width: canUseFixedWidth ? cardWidth : null,
+                          child: _GroupCard(
+                            label: '${index + 1}$groupLabel',
+                            count: each,
+                            itemEmoji: itemEmoji,
+                            compact: compact,
+                            showSolution: showSolution,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          ],
-        ],
+          );
+        },
       ),
     );
   }
@@ -167,12 +160,8 @@ class _DivisionVisual extends StatelessWidget {
     final remainderCount = question.remainderCount ?? 0;
     final totalCount =
         question.totalCount ?? groupCount * perGroupCount + remainderCount;
-    final itemLabel = question.itemLabel.isEmpty ? 'もの' : question.itemLabel;
     final itemEmoji = question.itemEmoji;
     final itemUnit = question.itemUnit;
-    final hasRemainder =
-        question.visualType == QuestionVisualType.divisionRemainder &&
-        remainderCount > 0;
     final shouldShowRemainderBox =
         question.visualType == QuestionVisualType.divisionRemainder &&
         (showSolution ? remainderCount > 0 : true);
@@ -180,6 +169,13 @@ class _DivisionVisual extends StatelessWidget {
     if (groupCount <= 0 || perGroupCount <= 0 || totalCount <= 0) {
       return const SizedBox.shrink();
     }
+
+    final groupCardWidth = compact ? 132.0 : 160.0;
+    const groupCardGap = 12.0;
+    final remainderSlots = shouldShowRemainderBox ? 1 : 0;
+    final visualCardCount = groupCount + remainderSlots;
+    final visualWidth =
+        visualCardCount * groupCardWidth + (visualCardCount - 1) * groupCardGap;
 
     return Container(
       padding: EdgeInsets.all(compact ? 14 : 20),
@@ -195,117 +191,56 @@ class _DivisionVisual extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.grid_view_rounded,
-                color: Color(0xFF2563EB),
-                size: 30,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  question.visualTitle.isEmpty
-                      ? '図で見てみよう'
-                      : question.visualTitle,
-                  style: TextStyle(
-                    color: const Color(0xFF111827),
-                    fontSize: compact ? 18 : 22,
-                    fontWeight: FontWeight.w900,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final canUseFixedWidth = visualWidth <= constraints.maxWidth;
+
+          return Align(
+            alignment: Alignment.centerLeft,
+            child: SizedBox(
+              width: canUseFixedWidth ? visualWidth : constraints.maxWidth,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _TotalItemsRow(
+                    count: totalCount,
+                    itemEmoji: itemEmoji,
+                    itemUnit: itemUnit,
+                    compact: compact,
                   ),
-                ),
-              ),
-            ],
-          ),
-          if (showSolution && question.visualDescription.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              question.visualDescription,
-              style: TextStyle(
-                color: const Color(0xFF4B5563),
-                fontSize: compact ? 14 : 16,
-                height: 1.4,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-          SizedBox(height: compact ? 12 : 18),
-          _TotalItemsRow(
-            count: totalCount,
-            itemEmoji: itemEmoji,
-            itemLabel: itemLabel,
-            itemUnit: itemUnit,
-            compact: compact,
-          ),
-          SizedBox(height: compact ? 14 : 18),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              for (var index = 0; index < groupCount; index++)
-                _GroupCard(
-                  label: '${index + 1}人目',
-                  count: perGroupCount,
-                  itemEmoji: itemEmoji,
-                  compact: compact,
-                  showSolution: showSolution,
-                ),
-              if (shouldShowRemainderBox)
-                _RemainderCard(
-                  count: remainderCount,
-                  itemEmoji: itemEmoji,
-                  compact: compact,
-                  showSolution: showSolution,
-                ),
-            ],
-          ),
-          if (showSolution) ...[
-            SizedBox(height: compact ? 12 : 16),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEFF6FF),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFBFDBFE)),
-              ),
-              child: Text(
-                hasRemainder
-                    ? '$totalCount$itemUnitを$groupCount人に分けると、1人$perGroupCount$itemUnitずつ、あまり$remainderCount$itemUnit。'
-                    : '$totalCount$itemUnitを$groupCount人に分けると、1人$perGroupCount$itemUnitずつ。',
-                style: TextStyle(
-                  color: const Color(0xFF1E3A8A),
-                  fontSize: compact ? 15 : 17,
-                  height: 1.35,
-                  fontWeight: FontWeight.w900,
-                ),
+                  SizedBox(height: compact ? 14 : 18),
+                  Wrap(
+                    spacing: groupCardGap,
+                    runSpacing: 12,
+                    children: [
+                      for (var index = 0; index < groupCount; index++)
+                        SizedBox(
+                          width: canUseFixedWidth ? groupCardWidth : null,
+                          child: _GroupCard(
+                            label: '${index + 1}人目',
+                            count: perGroupCount,
+                            itemEmoji: itemEmoji,
+                            compact: compact,
+                            showSolution: showSolution,
+                          ),
+                        ),
+                      if (shouldShowRemainderBox)
+                        SizedBox(
+                          width: canUseFixedWidth ? groupCardWidth : null,
+                          child: _RemainderCard(
+                            count: remainderCount,
+                            itemEmoji: itemEmoji,
+                            compact: compact,
+                            showSolution: showSolution,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          ] else ...[
-            SizedBox(height: compact ? 12 : 16),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFFBEB),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFFDE68A)),
-              ),
-              child: Text(
-                question.visualType == QuestionVisualType.divisionRemainder
-                    ? '$totalCount$itemUnitを$groupCount人に同じ数ずつ分けます。1人分と、あまりを考えましょう。'
-                    : '$totalCount$itemUnitを$groupCount人に同じ数ずつ分けます。1人分を考えましょう。',
-                style: TextStyle(
-                  color: const Color(0xFF92400E),
-                  fontSize: compact ? 15 : 17,
-                  height: 1.35,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ),
-          ],
-        ],
+          );
+        },
       ),
     );
   }
@@ -359,30 +294,7 @@ class _NumberLineVisual extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.timeline_rounded,
-                color: Color(0xFF2563EB),
-                size: 30,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  question.visualTitle.isEmpty
-                      ? '図で見てみよう'
-                      : question.visualTitle,
-                  style: TextStyle(
-                    color: const Color(0xFF111827),
-                    fontSize: compact ? 18 : 22,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-            ],
-          ),
           if (showSolution && question.visualDescription.isNotEmpty) ...[
-            const SizedBox(height: 8),
             Text(
               question.visualDescription,
               style: TextStyle(
@@ -392,8 +304,8 @@ class _NumberLineVisual extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
             ),
+            SizedBox(height: compact ? 10 : 14),
           ],
-          SizedBox(height: compact ? 14 : 20),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Column(
@@ -582,35 +494,15 @@ String _diagramItemEmoji(Question question) {
   return '●';
 }
 
-String _diagramItemLabel(Question question) {
-  if (question.itemLabel.isNotEmpty) return question.itemLabel;
-  final text = [
-    question.promptSchoolJa,
-    question.promptEasyJa,
-    question.visualHint,
-    question.pictureDescription,
-  ].join(' ');
-  if (text.contains('りんご')) return 'りんご';
-  if (text.contains('あめ')) return 'あめ';
-  if (text.contains('クッキー')) return 'クッキー';
-  if (text.contains('シール')) return 'シール';
-  if (text.contains('カード')) return 'カード';
-  if (text.contains('えんぴつ')) return 'えんぴつ';
-  if (text.contains('みかん')) return 'みかん';
-  return 'もの';
-}
-
 class _TotalItemsRow extends StatelessWidget {
   final int count;
   final String itemEmoji;
-  final String itemLabel;
   final String itemUnit;
   final bool compact;
 
   const _TotalItemsRow({
     required this.count,
     required this.itemEmoji,
-    required this.itemLabel,
     required this.itemUnit,
     required this.compact,
   });
@@ -643,14 +535,6 @@ class _TotalItemsRow extends StatelessWidget {
               for (var i = 0; i < count; i++)
                 _ItemChip(itemEmoji: itemEmoji, compact: compact),
             ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            itemLabel,
-            style: const TextStyle(
-              color: Color(0xFF6B7280),
-              fontWeight: FontWeight.w700,
-            ),
           ),
         ],
       ),

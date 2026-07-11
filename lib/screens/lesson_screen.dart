@@ -6,6 +6,7 @@ import '../models/app_language.dart';
 import '../models/lesson.dart';
 import '../models/question.dart';
 import '../services/audio_service.dart';
+import '../theme/app_fonts.dart';
 import '../widgets/question_visual.dart';
 import '../widgets/ruby_text.dart';
 import '../widgets/sign_video_player.dart';
@@ -254,9 +255,9 @@ class _LessonScreenState extends State<LessonScreen> {
                         ] else ...[
                           _IndependentPracticeHeader(
                             showHint: showIndependentHint,
-                            hintText: question.promptFor(
+                            hintText: _independentPracticeHint(
+                              question,
                               widget.selectedLanguage,
-                              QuestionPromptMode.easyJa,
                             ),
                             onToggleHint: () {
                               setState(() {
@@ -299,7 +300,7 @@ class _LessonScreenState extends State<LessonScreen> {
                             ),
                           ),
                         ],
-                        if (question.hasVisual) ...[
+                        if (question.hasVisual && !isIndependent) ...[
                           const SizedBox(height: 24),
                           QuestionVisual(question: question),
                         ],
@@ -312,7 +313,16 @@ class _LessonScreenState extends State<LessonScreen> {
                           _QuestionImage(imageUrl: question.imageUrl!),
                           const SizedBox(height: 28),
                         ],
-                        if (question.type == 'text-to-image' &&
+                        if (question.choiceDiagramData.length ==
+                            options.length)
+                          _buildDiagramOptions(
+                            options: options,
+                            optionRubies: optionRubies,
+                            diagrams: question.choiceDiagramData,
+                            correctAnswer: correctAnswer,
+                            isCorrect: isCorrect,
+                          )
+                        else if (question.type == 'text-to-image' &&
                             question.optionImageUrls != null &&
                             question.optionImageUrls!.length == options.length)
                           _buildImageOptions(
@@ -586,6 +596,52 @@ class _LessonScreenState extends State<LessonScreen> {
     );
   }
 
+  Widget _buildDiagramOptions({
+    required List<String> options,
+    required List<String> optionRubies,
+    required List<Map<String, String>> diagrams,
+    required int correctAnswer,
+    required bool isCorrect,
+  }) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 700;
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: options.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: isWide ? 2 : 1,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: isWide ? 1.35 : 1.55,
+          ),
+          itemBuilder: (context, index) {
+            final style = _answerStyle(
+              index: index,
+              correctAnswer: correctAnswer,
+              isCorrect: isCorrect,
+            );
+
+            return _DiagramAnswerCard(
+              labelRuby: optionRubies[index],
+              vocabularyEntries: currentQuestion.vocabularyEntries,
+              language: widget.selectedLanguage,
+              diagram: diagrams[index],
+              backgroundColor: style.backgroundColor,
+              borderColor: style.borderColor,
+              textColor: style.textColor,
+              trailingIcon: style.trailingIcon,
+              trailingColor: style.trailingColor,
+              onTap: showFeedback ? null : () => handleAnswerSelect(index),
+            );
+          },
+        );
+      },
+    );
+  }
+
   _AnswerStyle _answerStyle({
     required int index,
     required int correctAnswer,
@@ -656,15 +712,6 @@ class _PromptModeCards extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
-          '問題文の見かたをえらぶ',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Color(0xFF6B7280),
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: 10),
         LayoutBuilder(
           builder: (context, constraints) {
             final isWide = constraints.maxWidth >= 720;
@@ -674,7 +721,6 @@ class _PromptModeCards extends StatelessWidget {
                 selectedMode: effectiveSelectedMode,
                 icon: Icons.school_rounded,
                 title: '日本語',
-                subtitle: '日本語で確認',
                 onTap: onChanged,
               ),
               _PromptModeCard(
@@ -682,7 +728,6 @@ class _PromptModeCards extends StatelessWidget {
                 selectedMode: effectiveSelectedMode,
                 icon: Icons.translate_rounded,
                 title: selectedLanguage.label,
-                subtitle: '${selectedLanguage.label}で確認',
                 onTap: onChanged,
               ),
             ];
@@ -750,14 +795,25 @@ class _IndependentPracticeHeader extends StatelessWidget {
                   ),
                 ),
               ),
-              TextButton.icon(
-                onPressed: onToggleHint,
-                icon: Icon(
-                  showHint
-                      ? Icons.visibility_off_rounded
-                      : Icons.lightbulb_outline_rounded,
+              Tooltip(
+                message: showHint ? 'ヒントを隠す' : 'ヒントを見る',
+                child: SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: IconButton(
+                    onPressed: onToggleHint,
+                    icon: Icon(
+                      showHint
+                          ? Icons.visibility_off_rounded
+                          : Icons.lightbulb_outline_rounded,
+                    ),
+                    color: const Color(0xFF6D4C9B),
+                    style: IconButton.styleFrom(
+                      tapTargetSize: MaterialTapTargetSize.padded,
+                      padding: EdgeInsets.zero,
+                    ),
+                  ),
                 ),
-                label: Text(showHint ? 'ヒントを隠す' : 'ヒントを見る'),
               ),
             ],
           ),
@@ -778,6 +834,122 @@ class _IndependentPracticeHeader extends StatelessWidget {
     );
   }
 }
+
+String _independentPracticeHint(Question question, AppLanguage language) {
+  final text =
+      '${question.promptSchoolJa} ${question.promptEasyJa} '
+      '${question.vocabulary.join(' ')}';
+
+  for (final entry in question.vocabularyEntries) {
+    if (entry.term.isEmpty || !text.contains(entry.term)) continue;
+    final native = entry.translations[language];
+    if (language != AppLanguage.japanese &&
+        native != null &&
+        native.trim().isNotEmpty) {
+      return '「${entry.term}」は、${language.label}で $native です。';
+    }
+    return '「${entry.term}」は、${entry.simpleJapanese}';
+  }
+
+  for (final support in _independentHintSupports) {
+    if (!support.matches(text)) continue;
+    final native = support.translations[language];
+    if (language != AppLanguage.japanese &&
+        native != null &&
+        native.trim().isNotEmpty) {
+      return '「${support.term}」は、${language.label}で $native です。';
+    }
+    return '「${support.term}」は、${support.simpleJapanese}';
+  }
+
+  return '問題文の大事なことばを見て、何を聞かれているかをたしかめましょう。';
+}
+
+class _IndependentHintSupport {
+  final String term;
+  final List<String> aliases;
+  final String simpleJapanese;
+  final Map<AppLanguage, String> translations;
+
+  const _IndependentHintSupport({
+    required this.term,
+    this.aliases = const [],
+    required this.simpleJapanese,
+    required this.translations,
+  });
+
+  bool matches(String text) {
+    return text.contains(term) || aliases.any(text.contains);
+  }
+}
+
+const _independentHintSupports = [
+  _IndependentHintSupport(
+    term: '同じ数ずつ',
+    simpleJapanese: 'みんなが同じ数になるように分けることです。',
+    translations: {
+      AppLanguage.portuguese: 'a mesma quantidade para cada pessoa',
+      AppLanguage.tagalog: 'pare-parehong dami para sa bawat tao',
+      AppLanguage.vietnamese: 'cùng một số lượng cho mỗi người',
+    },
+  ),
+  _IndependentHintSupport(
+    term: '分ける',
+    simpleJapanese: 'ものをいくつかのグループにすることです。',
+    translations: {
+      AppLanguage.portuguese: 'dividir / separar em grupos',
+      AppLanguage.tagalog: 'hatiin sa mga grupo',
+      AppLanguage.vietnamese: 'chia thành các nhóm',
+    },
+  ),
+  _IndependentHintSupport(
+    term: '1人分',
+    aliases: ['一人分'],
+    simpleJapanese: '1人がもらう数です。',
+    translations: {
+      AppLanguage.portuguese: 'quantidade para uma pessoa',
+      AppLanguage.tagalog: 'bahagi para sa isang tao',
+      AppLanguage.vietnamese: 'phần cho một người',
+    },
+  ),
+  _IndependentHintSupport(
+    term: 'ぜんぶの数',
+    aliases: ['全部の数'],
+    simpleJapanese: 'はじめにあるものを全部数えた数です。',
+    translations: {
+      AppLanguage.portuguese: 'número total',
+      AppLanguage.tagalog: 'kabuuang bilang',
+      AppLanguage.vietnamese: 'tổng số',
+    },
+  ),
+  _IndependentHintSupport(
+    term: '分ける人数',
+    simpleJapanese: '何人に分けるかという数です。',
+    translations: {
+      AppLanguage.portuguese: 'número de pessoas',
+      AppLanguage.tagalog: 'bilang ng mga tao',
+      AppLanguage.vietnamese: 'số người',
+    },
+  ),
+  _IndependentHintSupport(
+    term: '式',
+    simpleJapanese: '計算を、数字や記号で書いたものです。',
+    translations: {
+      AppLanguage.portuguese: 'conta / expressão matemática',
+      AppLanguage.tagalog: 'pahayag sa matematika',
+      AppLanguage.vietnamese: 'phép tính / biểu thức',
+    },
+  ),
+  _IndependentHintSupport(
+    term: 'あまり',
+    simpleJapanese: '同じ数ずつ分けたあとに残る数です。',
+    translations: {
+      AppLanguage.portuguese: 'resto / sobra',
+      AppLanguage.tagalog: 'sobra / natira',
+      AppLanguage.vietnamese: 'số dư',
+    },
+  ),
+];
 
 Widget? _buildRichLearnCard(LessonStep step, AppLanguage selectedLanguage) {
   switch (step.id) {
@@ -922,13 +1094,41 @@ class _EqualShareInteractiveLearnState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      '同じ数ずつ分けてみよう',
-                      style: TextStyle(
-                        color: Color(0xFF111827),
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                      ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Flexible(
+                          child: Text(
+                            '同じ数ずつ分けてみよう',
+                            style: TextStyle(
+                              color: Color(0xFF111827),
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        _IconSupportActions(
+                          language: widget.selectedLanguage,
+                          showNative: _showProblemNative,
+                          translateLabel: _showProblemNative
+                              ? '日本語で見る'
+                              : '${widget.selectedLanguage.label}で見る',
+                          audioLabel: '問題文の音声',
+                          onToggleNative: () {
+                            setState(() {
+                              _showProblemNative = !_showProblemNative;
+                            });
+                          },
+                          onAudio: () => _showAudioPlaceholder(
+                            context,
+                            '問題文',
+                            equalShareProblemLines
+                                .map((line) => line.japanese)
+                                .join(' '),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 6),
                     _SupportedTextLines(
@@ -936,23 +1136,6 @@ class _EqualShareInteractiveLearnState
                       language: widget.selectedLanguage,
                       showNative: _showProblemNative,
                       vocabularyEntries: equalShareVocabularyEntries,
-                    ),
-                    const SizedBox(height: 8),
-                    _LanguageSupportActions(
-                      language: widget.selectedLanguage,
-                      showNative: _showProblemNative,
-                      onToggleNative: () {
-                        setState(() {
-                          _showProblemNative = !_showProblemNative;
-                        });
-                      },
-                      onAudio: () => _showAudioPlaceholder(
-                        context,
-                        '問題文',
-                        equalShareProblemLines
-                            .map((line) => line.japanese)
-                            .join(' '),
-                      ),
                     ),
                   ],
                 ),
@@ -1171,7 +1354,7 @@ class _BerrySourceTray extends StatelessWidget {
       onAcceptWithDetails: (details) => onAccept(details.data),
       builder: (context, candidateData, rejectedData) {
         return Container(
-          constraints: const BoxConstraints(minHeight: 176),
+          height: 224,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -1182,22 +1365,18 @@ class _BerrySourceTray extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const _SectionLabel(text: 'いちご 6こ'),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: [for (final id in berryIds) _DraggableBerry(id: id)],
-              ),
-              if (berryIds.isEmpty) ...[
-                const SizedBox(height: 16),
-                const Text(
-                  ' ',
-                  style: TextStyle(
-                    color: Color(0xFF6B7280),
-                    fontWeight: FontWeight.w700,
+              Expanded(
+                child: Center(
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: [
+                      for (final id in berryIds) _DraggableBerry(id: id),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ],
           ),
         );
@@ -1296,7 +1475,7 @@ class _PlateDropTarget extends StatelessWidget {
         final active = candidateData.isNotEmpty;
         return AnimatedContainer(
           duration: const Duration(milliseconds: 160),
-          constraints: const BoxConstraints(minHeight: 176),
+          height: 224,
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: active ? const Color(0xFFEFF6FF) : Colors.white,
@@ -1429,35 +1608,40 @@ class _SupportedTextLines extends StatelessWidget {
   }
 }
 
-class _LanguageSupportActions extends StatelessWidget {
+class _IconSupportActions extends StatelessWidget {
   final AppLanguage language;
   final bool showNative;
+  final String translateLabel;
+  final String audioLabel;
   final VoidCallback onToggleNative;
   final VoidCallback onAudio;
 
-  const _LanguageSupportActions({
+  const _IconSupportActions({
     required this.language,
     required this.showNative,
+    required this.translateLabel,
+    required this.audioLabel,
     required this.onToggleNative,
     required this.onAudio,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      crossAxisAlignment: WrapCrossAlignment.center,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        if (language != AppLanguage.japanese)
-          _InlineSupportButton(
+        if (language != AppLanguage.japanese) ...[
+          _SupportIconButton(
             icon: Icons.translate_rounded,
-            label: showNative ? '日本語' : language.label,
+            label: translateLabel,
+            selected: showNative,
             onPressed: onToggleNative,
           ),
-        _InlineSupportButton(
+          const SizedBox(width: 6),
+        ],
+        _SupportIconButton(
           icon: Icons.volume_up_rounded,
-          label: '音声',
+          label: audioLabel,
           onPressed: onAudio,
         ),
       ],
@@ -1465,30 +1649,41 @@ class _LanguageSupportActions extends StatelessWidget {
   }
 }
 
-class _InlineSupportButton extends StatelessWidget {
+class _SupportIconButton extends StatelessWidget {
   final IconData icon;
   final String label;
+  final bool selected;
   final VoidCallback onPressed;
 
-  const _InlineSupportButton({
+  const _SupportIconButton({
     required this.icon,
     required this.label,
     required this.onPressed,
+    this.selected = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return TextButton.icon(
-      onPressed: onPressed,
-      icon: Icon(icon, size: 18),
-      label: Text(label),
-      style: TextButton.styleFrom(
-        minimumSize: const Size(44, 38),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        tapTargetSize: MaterialTapTargetSize.padded,
-        foregroundColor: const Color(0xFF374151),
-        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+    return Tooltip(
+      message: label,
+      child: SizedBox(
+        width: 40,
+        height: 40,
+        child: IconButton(
+          onPressed: onPressed,
+          style: IconButton.styleFrom(
+            padding: EdgeInsets.zero,
+            backgroundColor: selected ? const Color(0xFFEFF6FF) : Colors.white,
+            foregroundColor: selected
+                ? const Color(0xFF2563EB)
+                : const Color(0xFF374151),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(11),
+              side: const BorderSide(color: Color(0xFFE5E7EB)),
+            ),
+          ),
+          icon: Icon(icon, size: 21),
+        ),
       ),
     );
   }
@@ -1613,15 +1808,14 @@ class _InstructionStrip extends StatelessWidget {
                   ),
                 ),
               ),
-              if (language != AppLanguage.japanese)
-                _InlineSupportButton(
-                  icon: Icons.translate_rounded,
-                  label: showNative ? '日本語' : language.label,
-                  onPressed: onToggleNative,
-                ),
-              _AudioIconButton(
-                label: '操作案内の音声',
-                onPressed: () {
+              const SizedBox(width: 10),
+              _IconSupportActions(
+                language: language,
+                showNative: showNative,
+                translateLabel: showNative ? '日本語で見る' : '${language.label}で見る',
+                audioLabel: '操作案内の音声',
+                onToggleNative: onToggleNative,
+                onAudio: () {
                   LearningAudio.speakJapanese(
                     context,
                     label: '操作案内',
@@ -1690,13 +1884,16 @@ class _DivisionResultCard extends StatelessWidget {
                   ),
                 ),
               ),
-              if (selectedLanguage != AppLanguage.japanese)
-                _InlineSupportButton(
-                  icon: Icons.translate_rounded,
-                  label: showNative ? '日本語' : selectedLanguage.label,
-                  onPressed: onToggleNative,
-                ),
-              _AudioIconButton(label: '正解説明の音声', onPressed: onAudio),
+              _IconSupportActions(
+                language: selectedLanguage,
+                showNative: showNative,
+                translateLabel: showNative
+                    ? '日本語で見る'
+                    : '${selectedLanguage.label}で見る',
+                audioLabel: '正解説明の音声',
+                onToggleNative: onToggleNative,
+                onAudio: onAudio,
+              ),
             ],
           ),
           const SizedBox(height: 10),
@@ -1970,6 +2167,7 @@ class _CountBadge extends StatelessWidget {
             applyHeightToLastDescent: false,
           ),
           text: TextSpan(
+            style: const TextStyle(fontFamily: AppFonts.interface),
             children: [
               TextSpan(
                 text: '$count',
@@ -2752,7 +2950,6 @@ class _PromptModeCard extends StatelessWidget {
   final QuestionPromptMode selectedMode;
   final IconData icon;
   final String title;
-  final String subtitle;
   final ValueChanged<QuestionPromptMode> onTap;
 
   const _PromptModeCard({
@@ -2760,7 +2957,6 @@ class _PromptModeCard extends StatelessWidget {
     required this.selectedMode,
     required this.icon,
     required this.title,
-    required this.subtitle,
     required this.onTap,
   });
 
@@ -2793,32 +2989,16 @@ class _PromptModeCard extends StatelessWidget {
               Icon(icon, color: iconColor, size: 24),
               const SizedBox(width: 10),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: selected
-                            ? const Color(0xFF1D4ED8)
-                            : const Color(0xFF111827),
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFF6B7280),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: selected
+                        ? const Color(0xFF1D4ED8)
+                        : const Color(0xFF111827),
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ),
               if (selected)
@@ -3019,8 +3199,11 @@ class _AnswerCard extends StatelessWidget {
 
   bool _isCompactChoice(String value) {
     final plain = value.replaceAll(RegExp(r'\{([^|{}]+)\|([^{}]+)\}'), r'$1');
+    if (RegExp(r'[+＋\-−×÷=＝]').hasMatch(plain)) {
+      return true;
+    }
     return plain.length <= 8 &&
-        RegExp(r'^[0-9０-９一二三四五六七八九十+\-−×÷=＝、.．mcm本人こまい枚]+$').hasMatch(plain);
+        RegExp(r'^[0-9０-９一二三四五六七八九十+＋\-−×÷=＝、.．mcm本人こまい枚]+$').hasMatch(plain);
   }
 }
 
@@ -3036,6 +3219,33 @@ class _CompactChoiceText extends StatelessWidget {
       RegExp(r'\{([^|{}]+)\|([^{}]+)\}'),
       (match) => match.group(1) ?? '',
     );
+    final isExpression = RegExp(r'[+＋\-−×÷=＝]').hasMatch(plain);
+    if (isExpression) {
+      return Center(
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            plain,
+            textAlign: TextAlign.center,
+            strutStyle: const StrutStyle(
+              fontSize: 44,
+              height: 1,
+              forceStrutHeight: true,
+              fontFamily: AppFonts.interface,
+            ),
+            style: TextStyle(
+              color: color,
+              fontFamily: AppFonts.interface,
+              fontSize: 44,
+              height: 1,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0,
+            ),
+          ),
+        ),
+      );
+    }
+
     final match = RegExp(r'^([0-9０-９]+)(.*)$').firstMatch(plain);
     final number = match?.group(1);
     final suffix = match == null ? plain : match.group(2) ?? '';
@@ -3051,6 +3261,7 @@ class _CompactChoiceText extends StatelessWidget {
         text: TextSpan(
           style: TextStyle(
             color: color,
+            fontFamily: AppFonts.interface,
             height: 1,
             fontWeight: FontWeight.w900,
           ),
@@ -3166,6 +3377,191 @@ class _ImageAnswerCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _DiagramAnswerCard extends StatelessWidget {
+  final String labelRuby;
+  final List<VocabularyEntry> vocabularyEntries;
+  final AppLanguage language;
+  final Map<String, String> diagram;
+  final Color backgroundColor;
+  final Color borderColor;
+  final Color textColor;
+  final IconData? trailingIcon;
+  final Color? trailingColor;
+  final VoidCallback? onTap;
+
+  const _DiagramAnswerCard({
+    required this.labelRuby,
+    required this.vocabularyEntries,
+    required this.language,
+    required this.diagram,
+    required this.backgroundColor,
+    required this.borderColor,
+    required this.textColor,
+    required this.trailingIcon,
+    required this.trailingColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final groups = int.tryParse(diagram['groups'] ?? '') ?? 0;
+    final each = int.tryParse(diagram['each'] ?? '') ?? 0;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: borderColor, width: 1.5),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x08000000),
+                blurRadius: 8,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  RubyText(
+                    text: labelRuby,
+                    textAlign: TextAlign.center,
+                    vocabularyEntries: vocabularyEntries,
+                    language: language,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 18,
+                      height: 1.25,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Expanded(
+                    child: _ChoiceEqualShareDiagram(groups: groups, each: each),
+                  ),
+                ],
+              ),
+              if (trailingIcon != null)
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Icon(trailingIcon, color: trailingColor, size: 26),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ChoiceEqualShareDiagram extends StatelessWidget {
+  final int groups;
+  final int each;
+
+  const _ChoiceEqualShareDiagram({required this.groups, required this.each});
+
+  @override
+  Widget build(BuildContext context) {
+    if (groups <= 0 || each <= 0) return const SizedBox.shrink();
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = groups <= 3 ? groups : 3;
+        final cardWidth =
+            (constraints.maxWidth - (columns - 1) * 8) / columns;
+
+        return Align(
+          alignment: Alignment.topCenter,
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (var index = 0; index < groups; index++)
+                SizedBox(
+                  width: cardWidth.clamp(72, 120).toDouble(),
+                  child: _MiniPersonShareBox(index: index, count: each),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _MiniPersonShareBox extends StatelessWidget {
+  final int index;
+  final int count;
+
+  const _MiniPersonShareBox({required this.index, required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 82),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${index + 1}人目',
+            style: const TextStyle(
+              color: Color(0xFF374151),
+              fontSize: 12,
+              height: 1,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 4,
+            runSpacing: 4,
+            children: [
+              for (var i = 0; i < count; i++) const _MiniSealDot(),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MiniSealDot extends StatelessWidget {
+  const _MiniSealDot();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 14,
+      height: 14,
+      decoration: BoxDecoration(
+        color: const Color(0xFF60A5FA),
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 2),
+        boxShadow: const [
+          BoxShadow(color: Color(0x14000000), blurRadius: 3),
+        ],
       ),
     );
   }
@@ -3440,6 +3836,12 @@ class _SolutionExplanationCard extends StatefulWidget {
 class _SolutionExplanationCardState extends State<_SolutionExplanationCard> {
   bool showNative = false;
 
+  @override
+  void initState() {
+    super.initState();
+    showNative = hasNativeExplanation;
+  }
+
   bool get hasNativeExplanation {
     return widget.language != AppLanguage.japanese &&
         widget.nativeExplanation != null &&
@@ -3529,9 +3931,9 @@ class _SolutionExplanationCardState extends State<_SolutionExplanationCard> {
             const SizedBox(height: 14),
           ],
           RubyText(
-            text: '答えは ${widget.question.resolvedCorrectAnswerTextRuby} です。',
+            text: _answerSummaryText(widget.question, visibleLanguage),
             vocabularyEntries: widget.question.vocabularyEntries,
-            language: AppLanguage.japanese,
+            language: visibleLanguage,
             style: const TextStyle(
               color: Color(0xFF374151),
               fontSize: 18,
@@ -3543,6 +3945,32 @@ class _SolutionExplanationCardState extends State<_SolutionExplanationCard> {
       ),
     );
   }
+}
+
+String _answerSummaryText(Question question, AppLanguage language) {
+  final answer = question.resolvedCorrectAnswerTextRuby;
+  if (language == AppLanguage.portuguese) {
+    final translatedAnswer = _portugueseAnswerText(question, answer);
+    return 'A resposta é $translatedAnswer.';
+  }
+  return '答えは $answer です。';
+}
+
+String _portugueseAnswerText(Question question, String answer) {
+  final questionText = '${question.promptSchoolJa} ${question.promptEasyJa}';
+  if ((question.itemEmoji == '🍎' || questionText.contains('りんご')) &&
+      answer.endsWith('こ')) {
+    return answer.replaceFirst('こ', ' maçãs');
+  }
+  if ((question.itemEmoji == '🍬' || questionText.contains('あめ')) &&
+      answer.endsWith('こ')) {
+    return answer.replaceFirst('こ', ' balas');
+  }
+  if ((question.itemEmoji == '🍪' || questionText.contains('クッキー')) &&
+      answer.endsWith('こ')) {
+    return answer.replaceFirst('こ', ' biscoitos');
+  }
+  return answer;
 }
 
 class _ExplanationLanguageToggle extends StatelessWidget {

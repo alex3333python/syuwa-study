@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/glossary.dart';
 import '../models/app_language.dart';
+import '../theme/app_fonts.dart';
 import 'word_popup.dart';
 
 class TappableSentence extends StatelessWidget {
@@ -66,7 +67,9 @@ class TappableSentence extends StatelessWidget {
     return RichText(
       textAlign: textAlign,
       text: TextSpan(
-        style: style ?? DefaultTextStyle.of(context).style,
+        style: (style ?? DefaultTextStyle.of(context).style).copyWith(
+          fontFamily: AppFonts.interface,
+        ),
         children: spans.isEmpty ? [TextSpan(text: text)] : spans,
       ),
     );

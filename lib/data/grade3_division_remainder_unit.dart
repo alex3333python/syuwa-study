@@ -1005,9 +1005,5 @@ const _remainderVocabulary = [
 ];
 
 Map<AppLanguage, String> _nativeText(String fallback) {
-  return {
-    AppLanguage.portuguese: '$fallback\nTODO: suporte em português',
-    AppLanguage.tagalog: '$fallback\nTODO: suporta sa Tagalog',
-    AppLanguage.vietnamese: '$fallback\nTODO: hỗ trợ tiếng Việt',
-  };
+  return const {};
 }
