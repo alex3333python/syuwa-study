@@ -195,6 +195,7 @@ class LessonMapScreen extends StatelessWidget {
             color1: const Color(0xFF14B8A6),
             color2: const Color(0xFF2563EB),
             restartFromFirstWhenCompleted: true,
+            alwaysStartFromFirst: true,
           ),
         );
         continue;
@@ -259,6 +260,7 @@ class LessonMapScreen extends StatelessWidget {
     required Color color1,
     required Color color2,
     bool restartFromFirstWhenCompleted = false,
+    bool alwaysStartFromFirst = false,
   }) {
     final allCompleted = unitLessons.every((lesson) => lesson.completed);
     final lessonToStart = unitLessons.where((lesson) {
@@ -305,7 +307,9 @@ class LessonMapScreen extends StatelessWidget {
         ],
         progressText: '$completedCount / ${unitLessons.length}',
       ),
-      lessonToStart: allCompleted
+      lessonToStart: alwaysStartFromFirst
+          ? reviewLesson
+          : allCompleted
           ? reviewLesson
           : lessonToStart ?? fallbackLesson,
     );

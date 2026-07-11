@@ -104,7 +104,8 @@ class Question {
 
   List<String> get options => choices;
 
-  bool get hasVisual => visualType != QuestionVisualType.none;
+  bool get hasVisual =>
+      visualType != QuestionVisualType.none || diagramType.isNotEmpty;
 
   String promptRubyFor(AppLanguage language, QuestionPromptMode mode) {
     if (questionTextRuby.isNotEmpty) return questionTextRuby;

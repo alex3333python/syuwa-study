@@ -147,6 +147,7 @@ class _HomePageState extends State<HomePage> {
 
   DateTime? lastPlayedDate;
   Lesson? selectedLesson;
+  int lessonSessionId = 0;
 
   int resultStars = 0;
   int resultCorrectAnswers = 0;
@@ -166,6 +167,7 @@ class _HomePageState extends State<HomePage> {
   void startLesson(Lesson lesson) {
     setState(() {
       selectedLesson = lesson;
+      lessonSessionId++;
       isWeakReviewMode = false;
       currentScreen = 'lesson';
     });
@@ -554,6 +556,7 @@ class _HomePageState extends State<HomePage> {
   void restartLesson() {
     if (selectedLesson == null) return;
     setState(() {
+      lessonSessionId++;
       currentScreen = 'lesson';
     });
   }
@@ -627,9 +630,12 @@ class _HomePageState extends State<HomePage> {
     if (index != -1 && index + 1 < mockLessons.length) {
       final nextLesson = mockLessons[index + 1];
 
+      if (_isDivisionLessonWaitingForRedesign(nextLesson)) return;
+
       if (!nextLesson.locked) {
         setState(() {
           selectedLesson = nextLesson;
+          lessonSessionId++;
           currentScreen = 'lesson';
         });
       }
@@ -671,6 +677,7 @@ class _HomePageState extends State<HomePage> {
         questions: weakQuestions,
       );
 
+      lessonSessionId++;
       currentScreen = 'lesson';
     });
   }
@@ -684,8 +691,13 @@ class _HomePageState extends State<HomePage> {
 
     final nextLesson = mockLessons[index + 1];
     if (nextLesson.locked) return null;
+    if (_isDivisionLessonWaitingForRedesign(nextLesson)) return null;
 
     return goToNextLesson;
+  }
+
+  bool _isDivisionLessonWaitingForRedesign(Lesson lesson) {
+    return lesson.id >= 8 && lesson.id <= 11;
   }
 
   void startReview() {
@@ -705,6 +717,7 @@ class _HomePageState extends State<HomePage> {
         questions: resultWrongQuestions,
       );
 
+      lessonSessionId++;
       currentScreen = 'lesson';
     });
   }
@@ -729,6 +742,7 @@ class _HomePageState extends State<HomePage> {
         questions: questions.take(3).toList(),
       );
       isWeakReviewMode = false;
+      lessonSessionId++;
       currentScreen = 'lesson';
     });
   }
@@ -761,6 +775,7 @@ class _HomePageState extends State<HomePage> {
       );
       selectedLesson = mockLessons[index];
       isWeakReviewMode = false;
+      lessonSessionId++;
       currentScreen = 'lesson';
     });
 
@@ -808,6 +823,7 @@ class _HomePageState extends State<HomePage> {
       );
     } else if (currentScreen == 'lesson' && selectedLesson != null) {
       body = LessonScreen(
+        key: ValueKey('lesson-${selectedLesson!.id}-$lessonSessionId'),
         lesson: selectedLesson!,
         onComplete: completeLesson,
         onClose: goHome,

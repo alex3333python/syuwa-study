@@ -191,6 +191,8 @@ class _LessonScreenState extends State<LessonScreen> {
     final isIndependent = stepType == LessonStepType.independentPractice;
     final promptModeForQuestion = isIndependent
         ? QuestionPromptMode.schoolJa
+        : promptMode == QuestionPromptMode.easyJa
+        ? QuestionPromptMode.schoolJa
         : promptMode;
     final promptRuby = question.promptRubyFor(
       widget.selectedLanguage,
@@ -647,6 +649,10 @@ class _PromptModeCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveSelectedMode = selectedMode == QuestionPromptMode.easyJa
+        ? QuestionPromptMode.schoolJa
+        : selectedMode;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -665,26 +671,18 @@ class _PromptModeCards extends StatelessWidget {
             final buttons = [
               _PromptModeCard(
                 mode: QuestionPromptMode.schoolJa,
-                selectedMode: selectedMode,
+                selectedMode: effectiveSelectedMode,
                 icon: Icons.school_rounded,
-                title: '学校日本語',
-                subtitle: '教科書に近い文',
-                onTap: onChanged,
-              ),
-              _PromptModeCard(
-                mode: QuestionPromptMode.easyJa,
-                selectedMode: selectedMode,
-                icon: Icons.lightbulb_outline_rounded,
-                title: 'やさしい日本語',
-                subtitle: '短い言葉で確認',
+                title: '日本語',
+                subtitle: '日本語で確認',
                 onTap: onChanged,
               ),
               _PromptModeCard(
                 mode: QuestionPromptMode.native,
-                selectedMode: selectedMode,
+                selectedMode: effectiveSelectedMode,
                 icon: Icons.translate_rounded,
                 title: selectedLanguage.label,
-                subtitle: '母語で確認',
+                subtitle: '${selectedLanguage.label}で確認',
                 onTap: onChanged,
               ),
             ];
@@ -793,20 +791,9 @@ Widget? _buildRichLearnCard(LessonStep step, AppLanguage selectedLanguage) {
       );
     case 'division-equal-share-words':
       return _EqualShareWordsCard(selectedLanguage: selectedLanguage);
-    case 'division-measure-learn':
-      return _DivisionLearnStoryboard(
-        mode: _DivisionLearnMode.measure,
-        selectedLanguage: selectedLanguage,
-        nativeText: step.explanationFor(
-          selectedLanguage,
-          QuestionPromptMode.native,
-        ),
-      );
   }
   return null;
 }
-
-enum _DivisionLearnMode { equalShare, measure }
 
 class _EqualShareInteractiveLearn extends StatefulWidget {
   final AppLanguage selectedLanguage;
@@ -2282,14 +2269,27 @@ class _LessonVocabularyCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      vocabulary.word,
-                      style: const TextStyle(
-                        color: Color(0xFF111827),
-                        fontSize: 22,
-                        height: 1.25,
-                        fontWeight: FontWeight.w900,
-                      ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            vocabulary.word,
+                            style: const TextStyle(
+                              color: Color(0xFF111827),
+                              fontSize: 22,
+                              height: 1.25,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _VocabularyAudioButton(
+                          word: vocabulary.word,
+                          reading: vocabulary.reading,
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -2341,6 +2341,43 @@ class _LessonVocabularyCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _VocabularyAudioButton extends StatelessWidget {
+  final String word;
+  final String reading;
+
+  const _VocabularyAudioButton({required this.word, required this.reading});
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: '$word の音声',
+      child: SizedBox(
+        width: 44,
+        height: 44,
+        child: IconButton(
+          onPressed: () {
+            final normalizedReading = reading.replaceAll(' ', '');
+            LearningAudio.speakJapanese(
+              context,
+              label: word,
+              text: normalizedReading.isEmpty ? word : normalizedReading,
+            );
+          },
+          style: IconButton.styleFrom(
+            backgroundColor: Colors.white,
+            foregroundColor: const Color(0xFF4B5563),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: Color(0xFFE5E7EB)),
+            ),
+          ),
+          icon: const Icon(Icons.volume_up_rounded, size: 22),
+        ),
       ),
     );
   }
@@ -2523,347 +2560,6 @@ class _LearnHeaderIcon extends StatelessWidget {
   }
 }
 
-class _DivisionLearnStoryboard extends StatelessWidget {
-  final _DivisionLearnMode mode;
-  final AppLanguage selectedLanguage;
-  final String nativeText;
-
-  const _DivisionLearnStoryboard({
-    required this.mode,
-    required this.selectedLanguage,
-    required this.nativeText,
-  });
-
-  bool get isEqualShare => mode == _DivisionLearnMode.equalShare;
-
-  @override
-  Widget build(BuildContext context) {
-    final title = isEqualShare ? '例題で見てみよう' : '何人分できるかな';
-    final problem = isEqualShare
-        ? 'いちごが6こあります。3人で同じ数ずつ分けると、1人分は何こになりますか。'
-        : 'いちごが6こあります。1人に2こずつ分けると、何人に分けられますか。';
-    final action = isEqualShare
-        ? '1こずつ、3人のお皿に入れます。もう一度1こずつ入れると、どのお皿も2こです。'
-        : '1人に2こずつ持たせます。2こ、2こ、2こと分けると、3人分できます。';
-    final reading = isEqualShare ? '6わる3は2' : '6わる2は3';
-    final nativeTitle = selectedLanguage == AppLanguage.japanese
-        ? '母語サポート'
-        : selectedLanguage.label;
-
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE5E7EB), width: 1.5),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A000000),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFBFDBFE)),
-                ),
-                child: const Icon(
-                  Icons.school_rounded,
-                  color: Color(0xFF2563EB),
-                  size: 28,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    color: Color(0xFF111827),
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _StoryboardPanel(
-            stepLabel: '1',
-            title: 'もんだい',
-            child: RubyText(
-              text: problem,
-              style: const TextStyle(
-                color: Color(0xFF111827),
-                fontSize: 21,
-                height: 1.45,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          _StoryboardPanel(
-            stepLabel: '2',
-            title: '分ける動き',
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  action,
-                  style: const TextStyle(
-                    color: Color(0xFF374151),
-                    fontSize: 17,
-                    height: 1.45,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                _StrawberryDistribution(mode: mode),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          _StoryboardPanel(
-            stepLabel: '3',
-            title: '式で表す',
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _DivisionEquation(mode: mode),
-                const SizedBox(height: 10),
-                Text(
-                  '読み方：$reading。これは「わり算」といいます。',
-                  style: const TextStyle(
-                    color: Color(0xFF111827),
-                    fontSize: 18,
-                    height: 1.45,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  '九九を使って、答えをたしかめることもできます。',
-                  style: TextStyle(
-                    color: Color(0xFF4B5563),
-                    fontSize: 16,
-                    height: 1.45,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          _StoryboardPanel(
-            stepLabel: '🌐',
-            title: nativeTitle,
-            child: Text(
-              nativeText,
-              style: const TextStyle(
-                color: Color(0xFF374151),
-                fontSize: 16,
-                height: 1.45,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StoryboardPanel extends StatelessWidget {
-  final String stepLabel;
-  final String title;
-  final Widget child;
-
-  const _StoryboardPanel({
-    required this.stepLabel,
-    required this.title,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFAFAFA),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: const Color(0xFFEFF6FF),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(
-              stepLabel,
-              style: const TextStyle(
-                color: Color(0xFF2563EB),
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Color(0xFF2563EB),
-                    fontSize: 15,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                child,
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StrawberryDistribution extends StatelessWidget {
-  final _DivisionLearnMode mode;
-
-  const _StrawberryDistribution({required this.mode});
-
-  bool get isEqualShare => mode == _DivisionLearnMode.equalShare;
-
-  @override
-  Widget build(BuildContext context) {
-    final groupCount = isEqualShare ? 3 : 3;
-    final berriesPerGroup = isEqualShare ? 2 : 2;
-
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: [
-        _AllBerriesCard(),
-        for (var index = 0; index < groupCount; index++)
-          _PlateCard(
-            label: isEqualShare ? '${index + 1}人目のお皿' : '${index + 1}人目',
-            count: berriesPerGroup,
-          ),
-      ],
-    );
-  }
-}
-
-class _AllBerriesCard extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 156,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEFF6FF),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFBFDBFE), width: 1.5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'ぜんぶ',
-            style: TextStyle(
-              color: Color(0xFF1D4ED8),
-              fontSize: 15,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 7,
-            runSpacing: 7,
-            children: [for (var i = 0; i < 6; i++) const _CounterDot()],
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            '6こ',
-            style: TextStyle(
-              color: Color(0xFF1D4ED8),
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PlateCard extends StatelessWidget {
-  final String label;
-  final int count;
-
-  const _PlateCard({required this.label, required this.count});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 156,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF0FDF4),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFBBF7D0), width: 1.5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFF166534),
-              fontSize: 15,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 7,
-            runSpacing: 7,
-            children: [for (var i = 0; i < count; i++) const _CounterDot()],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '$countこ',
-            style: const TextStyle(
-              color: Color(0xFF166534),
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _CounterDot extends StatelessWidget {
   final double size;
 
@@ -2977,132 +2673,6 @@ class _PlatePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _PlatePainter oldDelegate) {
     return oldDelegate.active != active;
-  }
-}
-
-class _DivisionEquation extends StatelessWidget {
-  final _DivisionLearnMode mode;
-
-  const _DivisionEquation({required this.mode});
-
-  bool get isEqualShare => mode == _DivisionLearnMode.equalShare;
-
-  @override
-  Widget build(BuildContext context) {
-    final divisor = isEqualShare ? '3' : '2';
-    final answer = isEqualShare ? '2' : '3';
-
-    return Wrap(
-      crossAxisAlignment: WrapCrossAlignment.center,
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        const _EquationChip(
-          value: '6',
-          label: 'ぜんぶの数\nわられる数',
-          color: Color(0xFFEFF6FF),
-          textColor: Color(0xFF1D4ED8),
-        ),
-        const _EquationSymbol('÷'),
-        _EquationChip(
-          value: divisor,
-          label: isEqualShare ? '分ける人数\nわる数' : '1人分の数\nわる数',
-          color: const Color(0xFFFFF7ED),
-          textColor: const Color(0xFFC2410C),
-        ),
-        const _EquationSymbol('='),
-        _EquationChip(
-          value: answer,
-          label: isEqualShare ? '1人分の数\n答え' : '分けられる人数\n答え',
-          color: const Color(0xFFF0FDF4),
-          textColor: const Color(0xFF15803D),
-        ),
-      ],
-    );
-  }
-}
-
-class _EquationChip extends StatelessWidget {
-  final String value;
-  final String label;
-  final Color color;
-  final Color textColor;
-
-  const _EquationChip({
-    required this.value,
-    required this.label,
-    required this.color,
-    required this.textColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 144,
-      height: 116,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: textColor.withValues(alpha: 0.24),
-          width: 1.5,
-        ),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Center(
-              child: Baseline(
-                baseline: 42,
-                baselineType: TextBaseline.alphabetic,
-                child: Text(
-                  value,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 48,
-                    height: 1,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: textColor,
-              fontSize: 12.5,
-              height: 1.2,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _EquationSymbol extends StatelessWidget {
-  final String symbol;
-
-  const _EquationSymbol(this.symbol);
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      symbol,
-      style: const TextStyle(
-        color: Color(0xFF111827),
-        fontSize: 30,
-        fontWeight: FontWeight.w900,
-      ),
-    );
   }
 }
 
@@ -3736,62 +3306,21 @@ class _ExplanationOverlay extends StatelessWidget {
                                 ],
                               ),
                               const SizedBox(height: 18),
-                              _ExplanationSection(
-                                icon: Icons.fact_check_rounded,
-                                title: '正しい答え',
+                              _CorrectAnswerCard(
                                 text: correctAnswerText,
                                 vocabularyEntries: question.vocabularyEntries,
                                 language: questionLanguage,
-                                accentColor: const Color(0xFF16A34A),
                               ),
-                              if (question.hasVisual) ...[
-                                const SizedBox(height: 12),
-                                QuestionVisual(
-                                  question: question,
-                                  compact: true,
-                                  showSolution: true,
-                                ),
-                              ] else if (visualHint.isNotEmpty) ...[
-                                const SizedBox(height: 12),
-                                _ExplanationSection(
-                                  icon: Icons.grid_view_rounded,
-                                  title: '図や補助説明',
-                                  text: visualHint,
-                                  vocabularyEntries: question.vocabularyEntries,
-                                  language: questionLanguage,
-                                  accentColor: const Color(0xFF0891B2),
-                                ),
-                              ],
-                              if (explanationText.isNotEmpty) ...[
-                                const SizedBox(height: 12),
-                                _ExplanationSection(
-                                  icon: Icons.tips_and_updates_rounded,
-                                  title: '解き方の説明',
-                                  text: explanationText,
-                                  vocabularyEntries: question.vocabularyEntries,
-                                  language: questionLanguage,
-                                  accentColor: const Color(0xFF2563EB),
-                                ),
-                              ],
-                              if (formulaExplanation.isNotEmpty) ...[
-                                const SizedBox(height: 12),
-                                _ExplanationSection(
-                                  icon: Icons.functions_rounded,
-                                  title: '式の説明',
-                                  text: formulaExplanation,
-                                  vocabularyEntries: question.vocabularyEntries,
-                                  language: questionLanguage,
-                                  accentColor: const Color(0xFF7C3AED),
-                                ),
-                              ],
                               const SizedBox(height: 12),
-                              _ExplanationSection(
-                                icon: Icons.menu_book_rounded,
-                                title: '日本語のポイント',
-                                text: languagePoint,
-                                vocabularyEntries: question.vocabularyEntries,
+                              _SolutionExplanationCard(
+                                question: question,
                                 language: questionLanguage,
-                                accentColor: const Color(0xFFF97316),
+                                japaneseExplanation: question
+                                    .explanationRubyFor(AppLanguage.japanese),
+                                nativeExplanation: question
+                                    .explanationNative[questionLanguage],
+                                formulaText: formulaExplanation,
+                                visualHint: visualHint,
                               ),
                             ],
                           ),
@@ -3837,65 +3366,311 @@ class _ExplanationOverlay extends StatelessWidget {
   }
 }
 
-class _ExplanationSection extends StatelessWidget {
-  final IconData icon;
-  final String title;
+class _CorrectAnswerCard extends StatelessWidget {
   final String text;
   final List<VocabularyEntry> vocabularyEntries;
   final AppLanguage language;
-  final Color accentColor;
 
-  const _ExplanationSection({
-    required this.icon,
-    required this.title,
+  const _CorrectAnswerCard({
     required this.text,
     required this.vocabularyEntries,
     required this.language,
-    required this.accentColor,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: accentColor, size: 30),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
+          const Text(
+            '正しい答え',
+            style: TextStyle(
+              color: Color(0xFF16A34A),
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 8),
+          RubyText(
+            text: text,
+            vocabularyEntries: vocabularyEntries,
+            language: language,
+            style: const TextStyle(
+              color: Color(0xFF111827),
+              fontSize: 32,
+              height: 1.25,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SolutionExplanationCard extends StatefulWidget {
+  final Question question;
+  final AppLanguage language;
+  final String japaneseExplanation;
+  final String? nativeExplanation;
+  final String formulaText;
+  final String visualHint;
+
+  const _SolutionExplanationCard({
+    required this.question,
+    required this.language,
+    required this.japaneseExplanation,
+    required this.nativeExplanation,
+    required this.formulaText,
+    required this.visualHint,
+  });
+
+  @override
+  State<_SolutionExplanationCard> createState() =>
+      _SolutionExplanationCardState();
+}
+
+class _SolutionExplanationCardState extends State<_SolutionExplanationCard> {
+  bool showNative = false;
+
+  bool get hasNativeExplanation {
+    return widget.language != AppLanguage.japanese &&
+        widget.nativeExplanation != null &&
+        widget.nativeExplanation!.trim().isNotEmpty;
+  }
+
+  String get visibleExplanation {
+    if (showNative && hasNativeExplanation) {
+      return widget.nativeExplanation!;
+    }
+    return widget.japaneseExplanation;
+  }
+
+  AppLanguage get visibleLanguage {
+    return showNative && hasNativeExplanation
+        ? widget.language
+        : AppLanguage.japanese;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final formulaText = widget.formulaText.trim();
+    final visualHint = widget.visualHint.trim();
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  '解き方',
                   style: TextStyle(
-                    color: accentColor,
+                    color: Color(0xFF2563EB),
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
-                const SizedBox(height: 6),
-                RubyText(
-                  text: text,
-                  vocabularyEntries: vocabularyEntries,
-                  language: language,
-                  style: const TextStyle(
-                    color: Color(0xFF111827),
-                    fontSize: 18,
-                    height: 1.5,
-                    fontWeight: FontWeight.w700,
-                  ),
+              ),
+              if (hasNativeExplanation)
+                _ExplanationLanguageToggle(
+                  showNative: showNative,
+                  language: widget.language,
+                  onChanged: (value) {
+                    setState(() {
+                      showNative = value;
+                    });
+                  },
                 ),
-              ],
+            ],
+          ),
+          const SizedBox(height: 14),
+          if (widget.question.hasVisual) ...[
+            QuestionVisual(
+              question: widget.question,
+              compact: true,
+              showSolution: true,
+            ),
+            const SizedBox(height: 14),
+          ] else if (visualHint.isNotEmpty) ...[
+            _VisualHintLine(text: visualHint),
+            const SizedBox(height: 14),
+          ],
+          if (visibleExplanation.isNotEmpty) ...[
+            RubyText(
+              text: visibleExplanation,
+              vocabularyEntries: widget.question.vocabularyEntries,
+              language: visibleLanguage,
+              style: const TextStyle(
+                color: Color(0xFF111827),
+                fontSize: 18,
+                height: 1.55,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 14),
+          ],
+          if (formulaText.isNotEmpty) ...[
+            _FormulaLine(text: formulaText),
+            const SizedBox(height: 14),
+          ],
+          RubyText(
+            text: '答えは ${widget.question.resolvedCorrectAnswerTextRuby} です。',
+            vocabularyEntries: widget.question.vocabularyEntries,
+            language: AppLanguage.japanese,
+            style: const TextStyle(
+              color: Color(0xFF374151),
+              fontSize: 18,
+              height: 1.45,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ExplanationLanguageToggle extends StatelessWidget {
+  final bool showNative;
+  final AppLanguage language;
+  final ValueChanged<bool> onChanged;
+
+  const _ExplanationLanguageToggle({
+    required this.showNative,
+    required this.language,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _ExplanationLanguageOption(
+            label: '日本語',
+            selected: !showNative,
+            onTap: () => onChanged(false),
+          ),
+          _ExplanationLanguageOption(
+            label: language.label,
+            selected: showNative,
+            onTap: () => onChanged(true),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ExplanationLanguageOption extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ExplanationLanguageOption({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(999),
+      onTap: onTap,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 36, minWidth: 76),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: selected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? const Color(0xFF1D4ED8) : const Color(0xFF4B5563),
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _VisualHintLine extends StatelessWidget {
+  final String text;
+
+  const _VisualHintLine({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Color(0xFF374151),
+          fontSize: 16,
+          height: 1.45,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _FormulaLine extends StatelessWidget {
+  final String text;
+
+  const _FormulaLine({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Color(0xFF111827),
+          fontSize: 22,
+          height: 1.35,
+          fontWeight: FontWeight.w900,
+        ),
       ),
     );
   }

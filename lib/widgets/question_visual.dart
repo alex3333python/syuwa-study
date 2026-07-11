@@ -20,6 +20,24 @@ class QuestionVisual extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    if (question.visualType == QuestionVisualType.none) {
+      return switch (question.diagramType) {
+        'equal_share_boxes' => _DiagramDivisionVisual(
+          question: question,
+          compact: compact,
+          showSolution: showSolution,
+          mode: _DiagramDivisionMode.equalShare,
+        ),
+        'groups_of' => _DiagramDivisionVisual(
+          question: question,
+          compact: compact,
+          showSolution: showSolution,
+          mode: _DiagramDivisionMode.groupsOf,
+        ),
+        _ => const SizedBox.shrink(),
+      };
+    }
+
     switch (question.visualType) {
       case QuestionVisualType.divisionSharing:
       case QuestionVisualType.divisionRemainder:
@@ -39,6 +57,95 @@ class QuestionVisual extends StatelessWidget {
       case QuestionVisualType.fraction:
         return const SizedBox.shrink();
     }
+  }
+}
+
+enum _DiagramDivisionMode { equalShare, groupsOf }
+
+class _DiagramDivisionVisual extends StatelessWidget {
+  final Question question;
+  final bool compact;
+  final bool showSolution;
+  final _DiagramDivisionMode mode;
+
+  const _DiagramDivisionVisual({
+    required this.question,
+    required this.compact,
+    required this.showSolution,
+    required this.mode,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final total = _parseInt(question.diagramData['total']) ?? 0;
+    final groups = _parseInt(question.diagramData['groups']) ?? 0;
+    final each = _parseInt(question.diagramData['each']) ?? 0;
+    if (total <= 0 || groups <= 0 || each <= 0) {
+      return const SizedBox.shrink();
+    }
+
+    final itemEmoji = _diagramItemEmoji(question);
+    final itemLabel = _diagramItemLabel(question);
+    final groupLabel = mode == _DiagramDivisionMode.equalShare ? '人目' : '組目';
+
+    return Container(
+      padding: EdgeInsets.all(compact ? 14 : 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            question.visualTitle.isEmpty ? '図で見てみよう' : question.visualTitle,
+            style: TextStyle(
+              color: const Color(0xFF111827),
+              fontSize: compact ? 16 : 20,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          SizedBox(height: compact ? 10 : 14),
+          _TotalItemsRow(
+            count: total,
+            itemEmoji: itemEmoji,
+            itemLabel: itemLabel,
+            itemUnit: question.itemUnit,
+            compact: compact,
+          ),
+          SizedBox(height: compact ? 12 : 16),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              for (var index = 0; index < groups; index++)
+                _GroupCard(
+                  label: '${index + 1}$groupLabel',
+                  count: each,
+                  itemEmoji: itemEmoji,
+                  compact: compact,
+                  showSolution: showSolution,
+                ),
+            ],
+          ),
+          if (showSolution) ...[
+            SizedBox(height: compact ? 10 : 14),
+            Text(
+              mode == _DiagramDivisionMode.equalShare
+                  ? '$total${question.itemUnit}を$groups人に同じ数ずつ分けると、1人分は$each${question.itemUnit}です。'
+                  : '$total${question.itemUnit}を$each${question.itemUnit}ずつにすると、$groups組できます。',
+              style: TextStyle(
+                color: const Color(0xFF374151),
+                fontSize: compact ? 15 : 17,
+                height: 1.4,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 }
 
@@ -455,6 +562,42 @@ class _VisualBadge extends StatelessWidget {
 int? _parseInt(String? value) {
   if (value == null) return null;
   return int.tryParse(value);
+}
+
+String _diagramItemEmoji(Question question) {
+  if (question.itemEmoji != '●') return question.itemEmoji;
+  final text = [
+    question.promptSchoolJa,
+    question.promptEasyJa,
+    question.visualHint,
+    question.pictureDescription,
+  ].join(' ');
+  if (text.contains('りんご')) return '🍎';
+  if (text.contains('あめ')) return '🍬';
+  if (text.contains('クッキー')) return '🍪';
+  if (text.contains('シール')) return '◯';
+  if (text.contains('カード')) return '▣';
+  if (text.contains('えんぴつ')) return '✎';
+  if (text.contains('みかん')) return '🍊';
+  return '●';
+}
+
+String _diagramItemLabel(Question question) {
+  if (question.itemLabel.isNotEmpty) return question.itemLabel;
+  final text = [
+    question.promptSchoolJa,
+    question.promptEasyJa,
+    question.visualHint,
+    question.pictureDescription,
+  ].join(' ');
+  if (text.contains('りんご')) return 'りんご';
+  if (text.contains('あめ')) return 'あめ';
+  if (text.contains('クッキー')) return 'クッキー';
+  if (text.contains('シール')) return 'シール';
+  if (text.contains('カード')) return 'カード';
+  if (text.contains('えんぴつ')) return 'えんぴつ';
+  if (text.contains('みかん')) return 'みかん';
+  return 'もの';
 }
 
 class _TotalItemsRow extends StatelessWidget {
