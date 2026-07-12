@@ -35,6 +35,7 @@ class RubyText extends StatelessWidget {
     final lines = text.split('\n');
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: _crossAxisAlignment,
       children: [
         for (var i = 0; i < lines.length; i++) ...[
@@ -149,10 +150,24 @@ class RubyText extends StatelessWidget {
   }
 
   VocabularyEntry? _entryFor(String base) {
+    final normalized = _dictionaryBaseFor(base);
     for (final entry in vocabularyEntries) {
-      if (entry.term == base) return entry;
+      if (entry.term == normalized) return entry;
     }
     return null;
+  }
+
+  String _dictionaryBaseFor(String base) {
+    switch (base) {
+      case '分けます':
+      case '分けて':
+      case '分けた':
+      case '分けられた':
+      case '分け':
+        return '分ける';
+      default:
+        return base;
+    }
   }
 }
 
@@ -211,14 +226,7 @@ class _RubyPiece extends StatelessWidget {
             padding: EdgeInsets.only(top: (rubyStyle.fontSize ?? 8) + 2),
             child: Text(part.base, style: _baseStyle),
           )
-        : Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(part.ruby!, style: rubyStyle, textAlign: TextAlign.center),
-              const SizedBox(height: 1),
-              Text(part.base, style: _baseStyle, textAlign: TextAlign.center),
-            ],
-          );
+        : _buildRubyChild();
 
     if (part.entry == null) return child;
 
@@ -227,6 +235,98 @@ class _RubyPiece extends StatelessWidget {
       onTap: () => _showVocabularySheet(context, part.entry!),
       child: child,
     );
+  }
+
+  Widget _buildRubyChild() {
+    final segments = _splitRubySegments(part.base, part.ruby!);
+    if (segments.length == 1) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(part.ruby!, style: rubyStyle, textAlign: TextAlign.center),
+          const SizedBox(height: 1),
+          Text(part.base, style: _baseStyle, textAlign: TextAlign.center),
+        ],
+      );
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        for (final segment in segments)
+          if (segment.ruby == null)
+            Padding(
+              padding: EdgeInsets.only(top: (rubyStyle.fontSize ?? 8) + 2),
+              child: Text(segment.base, style: _baseStyle),
+            )
+          else
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  segment.ruby!,
+                  style: rubyStyle,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  segment.base,
+                  style: _baseStyle,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+      ],
+    );
+  }
+
+  List<_RubySegment> _splitRubySegments(String base, String ruby) {
+    switch (base) {
+      case '同じ数ずつ':
+        return const [
+          _RubySegment('同', 'おな'),
+          _RubySegment('じ'),
+          _RubySegment('数', 'かず'),
+          _RubySegment('ずつ'),
+        ];
+      case '同じ数':
+        return const [
+          _RubySegment('同', 'おな'),
+          _RubySegment('じ'),
+          _RubySegment('数', 'かず'),
+        ];
+      case '分けます':
+        return const [_RubySegment('分', 'わ'), _RubySegment('けます')];
+      case '分ける':
+        return const [_RubySegment('分', 'わ'), _RubySegment('ける')];
+      case '分けて':
+        return const [_RubySegment('分', 'わ'), _RubySegment('けて')];
+      case '分けた':
+        return const [_RubySegment('分', 'わ'), _RubySegment('けた')];
+      case '分けられた':
+        return const [_RubySegment('分', 'わ'), _RubySegment('けられた')];
+      case '分け':
+        return const [_RubySegment('分', 'わ'), _RubySegment('け')];
+      case '何こ':
+        return const [_RubySegment('何', 'なん'), _RubySegment('こ')];
+      case '人分':
+        return const [_RubySegment('人', 'ひとり'), _RubySegment('分', 'ぶん')];
+      case '正しい':
+        return const [_RubySegment('正', 'ただ'), _RubySegment('しい')];
+      case '書いて':
+        return const [_RubySegment('書', 'か'), _RubySegment('いて')];
+      case '余ります':
+        return const [_RubySegment('余', 'あま'), _RubySegment('ります')];
+      case '残ります':
+        return const [_RubySegment('残', 'のこ'), _RubySegment('ります')];
+      case '残った':
+        return const [_RubySegment('残', 'のこ'), _RubySegment('った')];
+      case '作れて':
+        return const [_RubySegment('作', 'つく'), _RubySegment('れて')];
+      default:
+        return [_RubySegment(base, ruby)];
+    }
   }
 
   TextStyle get _baseStyle {
@@ -340,6 +440,13 @@ class _RubyPart {
   final VocabularyEntry? entry;
 
   const _RubyPart({required this.base, this.ruby, this.entry});
+}
+
+class _RubySegment {
+  final String base;
+  final String? ruby;
+
+  const _RubySegment(this.base, [this.ruby]);
 }
 
 class _VocabularyBlock extends StatelessWidget {

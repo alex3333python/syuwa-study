@@ -51,10 +51,13 @@ class _LessonScreenState extends State<LessonScreen> {
   final List<AnswerRecord> answerRecords = [];
   QuestionPromptMode promptMode = QuestionPromptMode.schoolJa;
 
-  bool get hasSteps => widget.lesson.steps.isNotEmpty;
+  List<LessonStep> get visibleSteps => widget.lesson.steps
+      .where((step) => step.type != LessonStepType.summary)
+      .toList();
 
-  LessonStep? get currentStep =>
-      hasSteps ? widget.lesson.steps[currentStepIndex] : null;
+  bool get hasSteps => visibleSteps.isNotEmpty;
+
+  LessonStep? get currentStep => hasSteps ? visibleSteps[currentStepIndex] : null;
 
   List<Question> get currentQuestions =>
       hasSteps ? currentStep!.questions : widget.lesson.questions;
@@ -63,14 +66,14 @@ class _LessonScreenState extends State<LessonScreen> {
 
   int get totalPracticeQuestions {
     if (!hasSteps) return widget.lesson.questions.length;
-    return widget.lesson.steps.expand((step) => step.questions).length;
+    return visibleSteps.expand((step) => step.questions).length;
   }
 
   int get progressIndex =>
       hasSteps ? currentStepIndex + 1 : currentQuestionIndex + 1;
 
   int get progressTotal =>
-      hasSteps ? widget.lesson.steps.length : widget.lesson.questions.length;
+      hasSteps ? visibleSteps.length : widget.lesson.questions.length;
 
   void handleAnswerSelect(int answerIndex) {
     if (showFeedback) return;
@@ -108,7 +111,7 @@ class _LessonScreenState extends State<LessonScreen> {
       return;
     }
 
-    if (hasSteps && currentStepIndex < widget.lesson.steps.length - 1) {
+    if (hasSteps && currentStepIndex < visibleSteps.length - 1) {
       setState(() {
         currentStepIndex++;
         currentQuestionIndex = 0;
@@ -124,7 +127,7 @@ class _LessonScreenState extends State<LessonScreen> {
   }
 
   Future<void> _advanceStepOrComplete() async {
-    if (hasSteps && currentStepIndex < widget.lesson.steps.length - 1) {
+    if (hasSteps && currentStepIndex < visibleSteps.length - 1) {
       setState(() {
         currentStepIndex++;
         currentQuestionIndex = 0;
@@ -190,6 +193,9 @@ class _LessonScreenState extends State<LessonScreen> {
     final progress = progressIndex / progressTotal;
     final stepType = currentStep?.type;
     final isIndependent = stepType == LessonStepType.independentPractice;
+    final isJapaneseOnlyChallenge =
+        currentStep?.title == '日本語だけで挑戦' ||
+        (currentStep?.id.contains('japanese') ?? false);
     final promptModeForQuestion = isIndependent
         ? QuestionPromptMode.schoolJa
         : promptMode == QuestionPromptMode.easyJa
@@ -252,7 +258,7 @@ class _LessonScreenState extends State<LessonScreen> {
                             },
                           ),
                           const SizedBox(height: 22),
-                        ] else ...[
+                        ] else if (!isJapaneseOnlyChallenge) ...[
                           _IndependentPracticeHeader(
                             showHint: showIndependentHint,
                             hintText: _independentPracticeHint(
@@ -367,7 +373,7 @@ class _LessonScreenState extends State<LessonScreen> {
                 : question.resolvedLanguagePointRuby,
             isLastQuestion: !hasSteps
                 ? currentQuestionIndex == widget.lesson.questions.length - 1
-                : currentStepIndex == widget.lesson.steps.length - 1 &&
+                : currentStepIndex == visibleSteps.length - 1 &&
                       currentQuestionIndex == currentQuestions.length - 1,
             onNext: handleNext,
           ),
@@ -386,7 +392,6 @@ class _LessonScreenState extends State<LessonScreen> {
 
   Widget _buildStepOnlyView() {
     final step = currentStep!;
-    final isSummary = step.type == LessonStepType.summary;
     final progress = progressIndex / progressTotal;
     final nativeTitle = widget.selectedLanguage == AppLanguage.japanese
         ? '母語'
@@ -394,7 +399,7 @@ class _LessonScreenState extends State<LessonScreen> {
     final richLearnCard = _buildRichLearnCard(step, widget.selectedLanguage);
     final actionLabel = step.id == 'division-equal-share-words'
         ? 'もんだいをとく'
-        : currentStepIndex == widget.lesson.steps.length - 1
+        : currentStepIndex == visibleSteps.length - 1
         ? '完了'
         : '次へ';
 
@@ -426,7 +431,7 @@ class _LessonScreenState extends State<LessonScreen> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      isSummary ? '今日できたこと' : step.title,
+                      step.title,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 28,
@@ -440,35 +445,31 @@ class _LessonScreenState extends State<LessonScreen> {
                       const SizedBox(height: 16),
                     ] else ...[
                       _StepExplanationCard(
-                        icon: isSummary
-                            ? Icons.flag_rounded
-                            : Icons.school_rounded,
-                        title: isSummary ? 'まとめ' : '学校日本語',
+                        icon: Icons.school_rounded,
+                        title: '学校日本語',
                         text: step.explanationFor(
                           widget.selectedLanguage,
                           QuestionPromptMode.schoolJa,
                         ),
                       ),
-                      if (!isSummary) ...[
-                        const SizedBox(height: 12),
-                        _StepExplanationCard(
-                          icon: Icons.lightbulb_outline_rounded,
-                          title: 'やさしい日本語',
-                          text: step.explanationFor(
-                            widget.selectedLanguage,
-                            QuestionPromptMode.easyJa,
-                          ),
+                      const SizedBox(height: 12),
+                      _StepExplanationCard(
+                        icon: Icons.lightbulb_outline_rounded,
+                        title: 'やさしい日本語',
+                        text: step.explanationFor(
+                          widget.selectedLanguage,
+                          QuestionPromptMode.easyJa,
                         ),
-                        const SizedBox(height: 12),
-                        _StepExplanationCard(
-                          icon: Icons.translate_rounded,
-                          title: nativeTitle,
-                          text: step.explanationFor(
-                            widget.selectedLanguage,
-                            QuestionPromptMode.native,
-                          ),
+                      ),
+                      const SizedBox(height: 12),
+                      _StepExplanationCard(
+                        icon: Icons.translate_rounded,
+                        title: nativeTitle,
+                        text: step.explanationFor(
+                          widget.selectedLanguage,
+                          QuestionPromptMode.native,
                         ),
-                      ],
+                      ),
                     ],
                   ],
                 ),
@@ -535,7 +536,7 @@ class _LessonScreenState extends State<LessonScreen> {
 
             return _AnswerCard(
               rubyText: optionRubies[index],
-              vocabularyEntries: currentQuestion.vocabularyEntries,
+              vocabularyEntries: const [],
               language: widget.selectedLanguage,
               backgroundColor: style.backgroundColor,
               borderColor: style.borderColor,
@@ -580,7 +581,7 @@ class _LessonScreenState extends State<LessonScreen> {
 
             return _ImageAnswerCard(
               labelRuby: optionRubies[index],
-              vocabularyEntries: currentQuestion.vocabularyEntries,
+              vocabularyEntries: const [],
               language: widget.selectedLanguage,
               imageUrl: imageUrls[index],
               backgroundColor: style.backgroundColor,
@@ -625,9 +626,6 @@ class _LessonScreenState extends State<LessonScreen> {
             );
 
             return _DiagramAnswerCard(
-              labelRuby: optionRubies[index],
-              vocabularyEntries: currentQuestion.vocabularyEntries,
-              language: widget.selectedLanguage,
               diagram: diagrams[index],
               backgroundColor: style.backgroundColor,
               borderColor: style.borderColor,
@@ -913,8 +911,8 @@ const _independentHintSupports = [
     },
   ),
   _IndependentHintSupport(
-    term: 'ぜんぶの数',
-    aliases: ['全部の数'],
+    term: '全部の数',
+    aliases: ['ぜんぶの数'],
     simpleJapanese: 'はじめにあるものを全部数えた数です。',
     translations: {
       AppLanguage.portuguese: 'número total',
@@ -1476,7 +1474,7 @@ class _PlateDropTarget extends StatelessWidget {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 160),
           height: 224,
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: active ? const Color(0xFFEFF6FF) : Colors.white,
             borderRadius: BorderRadius.circular(12),
@@ -1490,7 +1488,7 @@ class _PlateDropTarget extends StatelessWidget {
           child: Stack(
             children: [
               Positioned.fill(
-                top: 30,
+                top: 34,
                 child: CustomPaint(painter: _PlatePainter(active: active)),
               ),
               Column(
@@ -1501,9 +1499,9 @@ class _PlateDropTarget extends StatelessWidget {
                     language: language,
                     showNative: showNative,
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 6),
                   SizedBox(
-                    height: 84,
+                    height: 76,
                     child: Center(
                       child: Wrap(
                         alignment: WrapAlignment.center,
@@ -1523,7 +1521,7 @@ class _PlateDropTarget extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 6),
                   Center(child: _CountBadge(count: count)),
                 ],
               ),
@@ -1577,7 +1575,7 @@ class _SupportedTextLines extends StatelessWidget {
       children: [
         for (final line in lines) ...[
           RubyText(
-            text: line.japanese,
+            text: line.rubyText,
             vocabularyEntries: vocabularyEntries,
             language: language,
             style: const TextStyle(
@@ -2152,7 +2150,7 @@ class _CountBadge extends StatelessWidget {
     return Container(
       alignment: Alignment.center,
       width: 112,
-      height: 64,
+      height: 56,
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -2173,7 +2171,7 @@ class _CountBadge extends StatelessWidget {
                 text: '$count',
                 style: const TextStyle(
                   color: Color(0xFF111827),
-                  fontSize: 38,
+                  fontSize: 34,
                   height: 1,
                   fontWeight: FontWeight.w900,
                 ),
@@ -2182,7 +2180,7 @@ class _CountBadge extends StatelessWidget {
                 text: 'こ',
                 style: TextStyle(
                   color: Color(0xFF111827),
-                  fontSize: 22,
+                  fontSize: 20,
                   height: 1,
                   fontWeight: FontWeight.w900,
                 ),
@@ -2323,10 +2321,10 @@ class _StaticBerryTray extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minHeight: 176),
+      height: 224,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
@@ -2334,11 +2332,17 @@ class _StaticBerryTray extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const _SectionLabel(text: 'いちご 6こ'),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [for (final _ in berryIds) const _CounterDot(size: 42)],
+          Expanded(
+            child: Center(
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  for (final _ in berryIds) const _CounterDot(size: 42),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -2353,11 +2357,89 @@ class _StaticPlateRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _PlateTargets(
-      plateBerryIds: plateBerryIds,
-      plateCounts: [for (final ids in plateBerryIds) ids.length],
-      isCorrect: plateBerryIds.every((ids) => ids.length == 2),
-      onMoveBerry: (_, _) {},
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 560;
+        final cards = [
+          for (var i = 0; i < plateBerryIds.length; i++)
+            _StaticPlateCard(index: i, berryIds: plateBerryIds[i]),
+        ];
+
+        if (isWide) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (var i = 0; i < cards.length; i++) ...[
+                Expanded(child: cards[i]),
+                if (i != cards.length - 1) const SizedBox(width: 12),
+              ],
+            ],
+          );
+        }
+
+        return Column(
+          children: [
+            for (var i = 0; i < cards.length; i++) ...[
+              cards[i],
+              if (i != cards.length - 1) const SizedBox(height: 12),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _StaticPlateCard extends StatelessWidget {
+  final int index;
+  final List<int> berryIds;
+
+  const _StaticPlateCard({required this.index, required this.berryIds});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 224,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFD1D5DB), width: 1.5),
+      ),
+      child: Stack(
+        children: [
+          const Positioned.fill(
+            top: 34,
+            child: CustomPaint(painter: _PlatePainter(active: false)),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _PersonPlateLabel(
+                index: index,
+                language: AppLanguage.japanese,
+                showNative: false,
+              ),
+              const SizedBox(height: 6),
+              SizedBox(
+                height: 76,
+                child: Center(
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      for (final _ in berryIds) const _CounterDot(size: 42),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Center(child: _CountBadge(count: berryIds.length)),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -3177,9 +3259,9 @@ class _AnswerCard extends StatelessWidget {
                         vocabularyEntries: vocabularyEntries,
                         language: language,
                         style: TextStyle(
-                          fontSize: 19,
-                          height: 1.35,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 23,
+                          height: 1.25,
+                          fontWeight: FontWeight.w900,
                           color: textColor,
                         ),
                       ),
@@ -3383,9 +3465,6 @@ class _ImageAnswerCard extends StatelessWidget {
 }
 
 class _DiagramAnswerCard extends StatelessWidget {
-  final String labelRuby;
-  final List<VocabularyEntry> vocabularyEntries;
-  final AppLanguage language;
   final Map<String, String> diagram;
   final Color backgroundColor;
   final Color borderColor;
@@ -3395,9 +3474,6 @@ class _DiagramAnswerCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const _DiagramAnswerCard({
-    required this.labelRuby,
-    required this.vocabularyEntries,
-    required this.language,
     required this.diagram,
     required this.backgroundColor,
     required this.borderColor,
@@ -3437,19 +3513,6 @@ class _DiagramAnswerCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  RubyText(
-                    text: labelRuby,
-                    textAlign: TextAlign.center,
-                    vocabularyEntries: vocabularyEntries,
-                    language: language,
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: 18,
-                      height: 1.25,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
                   Expanded(
                     child: _ChoiceEqualShareDiagram(groups: groups, each: each),
                   ),

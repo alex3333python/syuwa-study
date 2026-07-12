@@ -3,9 +3,16 @@ import '../models/question.dart';
 
 class SupportLine {
   final String japanese;
+  final String ruby;
   final Map<AppLanguage, String> native;
 
-  const SupportLine({required this.japanese, this.native = const {}});
+  const SupportLine({
+    required this.japanese,
+    this.ruby = '',
+    this.native = const {},
+  });
+
+  String get rubyText => ruby.isNotEmpty ? ruby : japanese;
 
   String nativeFor(AppLanguage language) {
     return native[language] ?? '';
@@ -60,6 +67,7 @@ class LessonVocabulary {
 const equalShareProblemLines = [
   SupportLine(
     japanese: 'いちごが6こあります。',
+    ruby: 'いちごが6こあります。',
     native: {
       AppLanguage.portuguese: 'Há 6 morangos.',
       AppLanguage.tagalog: 'May 6 na strawberry.',
@@ -68,6 +76,8 @@ const equalShareProblemLines = [
   ),
   SupportLine(
     japanese: '3人で同じ数ずつ分けると、1人分は何こになりますか。',
+    ruby:
+        '3{人|にん}で{同じ数ずつ|おなじかずずつ}{分ける|わける}と、{1人|ひとり}{分|ぶん}は{何こ|なんこ}になりますか。',
     native: {
       AppLanguage.portuguese:
           'Se forem divididos igualmente entre 3 pessoas, quantos morangos cada pessoa recebe?',
@@ -81,6 +91,7 @@ const equalShareProblemLines = [
 
 const equalShareInstruction = SupportLine(
   japanese: 'いちごをおさらに分けてみよう！',
+  ruby: 'いちごをお{皿|さら}に{分けて|わけて}みよう！',
   native: {
     AppLanguage.portuguese: 'Vamos dividir os morangos nos pratos!',
     AppLanguage.tagalog: 'Igalaw natin ang mga strawberry!',
@@ -91,6 +102,7 @@ const equalShareInstruction = SupportLine(
 const equalShareResultLines = [
   SupportLine(
     japanese: '同じ数ずつ分けられたね！',
+    ruby: '{同じ数ずつ|おなじかずずつ}{分けられた|わけられた}ね！',
     native: {
       AppLanguage.portuguese: 'Você conseguiu dividir igualmente!',
       AppLanguage.tagalog: 'Nahati mo nang pantay!',
@@ -99,6 +111,7 @@ const equalShareResultLines = [
   ),
   SupportLine(
     japanese: 'どのお皿にも、いちごが2こずつあるね。',
+    ruby: 'どのお{皿|さら}にも、いちごが2こずつあるね。',
     native: {
       AppLanguage.portuguese: 'Cada prato tem 2 morangos.',
       AppLanguage.tagalog: 'May tig-2 strawberry sa bawat plato.',
@@ -107,6 +120,8 @@ const equalShareResultLines = [
   ),
   SupportLine(
     japanese: 'いちご6こを、3人で同じ数ずつ分けると、1人分は2こになります。',
+    ruby:
+        'いちご6こを、3{人|にん}で{同じ数ずつ|おなじかずずつ}{分ける|わける}と、{1人|ひとり}{分|ぶん}は2こになります。',
     native: {
       AppLanguage.portuguese:
           'Quando 6 morangos são divididos igualmente entre 3 pessoas, cada pessoa recebe 2.',
@@ -118,6 +133,8 @@ const equalShareResultLines = [
   ),
   SupportLine(
     japanese: 'このことを式で 6 ÷ 3 = 2 と書いて、「6わる3は2」といいます。',
+    ruby:
+        'このことを{式|しき}で 6 ÷ 3 = 2 と{書いて|かいて}、「6わる3は2」といいます。',
     native: {
       AppLanguage.portuguese:
           'Escrevemos isso como 6 ÷ 3 = 2 e lemos: “seis dividido por três é dois”.',
@@ -140,7 +157,7 @@ const equalShareEquationReading = SupportLine(
 const equalShareEquationSupports = [
   EquationSupport(
     value: '6',
-    label: 'ぜんぶの数',
+    label: '全部の数',
     meaning: 'この問題に出てくる、いちご全部の数',
     native: {
       AppLanguage.portuguese: 'o número total de morangos',
@@ -219,6 +236,30 @@ const equalShareLessonVocabulary = [
 
 const equalShareVocabularyEntries = [
   VocabularyEntry(
+    term: 'いちご',
+    reading: 'いちご',
+    simpleJapanese: '赤いくだものです。',
+    translations: {
+      AppLanguage.portuguese: 'morango',
+      AppLanguage.tagalog: 'strawberry',
+      AppLanguage.vietnamese: 'quả dâu',
+    },
+    exampleSentence: 'いちごが6こあります。',
+    category: 'noun',
+  ),
+  VocabularyEntry(
+    term: 'お皿',
+    reading: 'さら',
+    simpleJapanese: '食べものをのせるものです。',
+    translations: {
+      AppLanguage.portuguese: 'prato',
+      AppLanguage.tagalog: 'plato',
+      AppLanguage.vietnamese: 'cái đĩa',
+    },
+    exampleSentence: 'お皿にいちごを置きます。',
+    category: 'noun',
+  ),
+  VocabularyEntry(
     term: '同じ数ずつ',
     reading: 'おなじかずずつ',
     simpleJapanese: 'みんなが同じ数になるように',
@@ -256,6 +297,18 @@ const equalShareVocabularyEntries = [
     category: 'math_language',
   ),
   VocabularyEntry(
+    term: '人',
+    reading: 'にん',
+    simpleJapanese: '人の数を数える言い方です。',
+    translations: {
+      AppLanguage.portuguese: 'pessoa(s)',
+      AppLanguage.tagalog: 'tao',
+      AppLanguage.vietnamese: 'người',
+    },
+    exampleSentence: '3人で分けます。',
+    category: 'school_japanese',
+  ),
+  VocabularyEntry(
     term: '何こ',
     reading: 'なんこ',
     simpleJapanese: '数を聞く言葉',
@@ -268,9 +321,21 @@ const equalShareVocabularyEntries = [
     category: 'math_language',
   ),
   VocabularyEntry(
+    term: '式',
+    reading: 'しき',
+    simpleJapanese: '計算を、数字や記号で書いたものです。',
+    translations: {
+      AppLanguage.portuguese: 'conta / expressão matemática',
+      AppLanguage.tagalog: 'pahayag sa matematika',
+      AppLanguage.vietnamese: 'phép tính / biểu thức',
+    },
+    exampleSentence: '6 ÷ 3 = 2 は式です。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
     term: '全部の数',
     reading: 'ぜんぶのかず',
-    simpleJapanese: 'はじめにある、ぜんぶの数',
+    simpleJapanese: 'はじめにある、全部の数',
     translations: {
       AppLanguage.portuguese: 'número total',
       AppLanguage.tagalog: 'kabuuang bilang',
