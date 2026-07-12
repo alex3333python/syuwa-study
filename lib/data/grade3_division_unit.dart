@@ -1,6 +1,7 @@
 import '../models/app_language.dart';
 import '../models/lesson.dart';
 import '../models/question.dart';
+import 'equal_share_language_support.dart';
 
 // Grade 3 division lessons use the existing choice-based LessonScreen while
 // keeping metadata for future number input, diagram, and written-answer UIs.
@@ -173,24 +174,22 @@ final List<Lesson> grade3DivisionLessons = [
           ),
           _q(
             id: 7106,
-            type: 'select_word_meaning',
-            school: '6 ÷ 3 = 2 の「6」は何の数ですか。',
-            easy: '6 ÷ 3 = 2 の6は、どんな数ですか。',
-            questionTextRuby: '6 ÷ 3 = 2 の「6」は{何|なん}の{数|かず}ですか。',
-            choices: ['全部の数', '分ける人数', '1人分の数'],
-            choicesRuby: [
-              '{全部|ぜんぶ}の{数|かず}',
-              '{分ける|わける}{人数|にんずう}',
-              '{1人|ひとり}{分|ぶん}の{数|かず}',
-            ],
+            type: 'word_problem',
+            school: '6このいちごを3人で同じ数ずつ分けます。はじめにあるいちごは何こですか。',
+            easy: 'いちごが6こあります。3人で分けます。全部で何こありますか。',
+            questionTextRuby:
+                '6このいちごを3{人|にん}で{同じ数ずつ|おなじかずずつ}{分けます|わけます}。はじめにあるいちごは{何こ|なんこ}ですか。',
+            choices: ['6こ', '3こ', '2こ'],
             correct: 0,
-            explanation: '6 ÷ 3 = 2 の6は、分ける前にある全部の数です。',
+            explanation: 'はじめにあるいちごは6こです。6こを3人で分けるので、式は6 ÷ 3です。',
             explanationRuby:
-                '6 ÷ 3 = 2 の6は、{分ける|わける}{前|まえ}にある{全部|ぜんぶ}の{数|かず}です。',
+                'はじめにあるいちごは6こです。6こを3{人|にん}で{分ける|わける}ので、{式|しき}は6 ÷ 3です。',
             vocabularyEntries: _divisionSharingVocabulary,
-            vocabulary: ['全部の数', '式'],
-            tags: ['equal-sharing', 'equation_meaning', 'select_word_meaning'],
-            equationHint: '全部の数 ÷ 分ける人数 = 1人分',
+            vocabulary: ['いちご', '全部の数', '何こ'],
+            tags: ['equal-sharing', 'word_problem', 'quantity'],
+            equationHint: '6 ÷ 3',
+            diagramType: 'equal_share_boxes',
+            diagramData: {'total': '6', 'groups': '3', 'each': '2'},
           ),
         ],
       ),
@@ -283,9 +282,15 @@ final List<Lesson> grade3DivisionLessons = [
             type: 'select_picture',
             school: '8このクッキーがあります。1人に2こずつ分けます。何人に分けられますか。',
             easy: 'クッキー8こを、1人に2こずつ分けます。何人分できますか。',
+            questionTextRuby:
+                '8このクッキーがあります。{1人|ひとり}に2こずつ{分けます|わけます}。{何人|なんにん}に{分けられます|わけられます}か。',
+            choicesRuby: ['2{人|にん}', '4{人|にん}', '6{人|にん}'],
             choices: ['2人', '4人', '6人'],
             correct: 1,
             explanation: '8 ÷ 2 = 4。2こずつのまとまりが4つできるので、4人です。',
+            explanationRuby:
+                '8 ÷ 2 = 4。2こずつのまとまりが4つできるので、4{人|にん}です。',
+            vocabularyEntries: measureDivisionVocabularyEntries,
             vocabulary: ['何こずつ', '分ける', '何人'],
             tags: ['measurement-division', 'select_picture'],
             visualHint: '8このクッキーを2こずつの組にする。',
@@ -298,9 +303,14 @@ final List<Lesson> grade3DivisionLessons = [
             type: 'select_equation',
             school: '12このあめを1人に3こずつ分けます。正しい式はどれですか。',
             easy: 'あめ12こを、1人に3こずつ分けます。どの式ですか。',
+            questionTextRuby:
+                '12このあめを{1人|ひとり}に3こずつ{分けます|わけます}。{正|ただ}しい{式|しき}はどれですか。',
             choices: ['12÷3', '12×3', '12−3', '12＋3'],
             correct: 0,
             explanation: '全部の12こを、3こずつのまとまりにするので、12 ÷ 3です。',
+            explanationRuby:
+                '{全部|ぜんぶ}の12こを、3こずつのまとまりにするので、12 ÷ 3です。',
+            vocabularyEntries: measureDivisionVocabularyEntries,
             vocabulary: ['分ける', '何こずつ'],
             tags: ['measurement-division', 'select_equation'],
             equationHint: '全部の数 ÷ 1人分の数',
@@ -314,9 +324,14 @@ final List<Lesson> grade3DivisionLessons = [
             type: 'number_input',
             school: '15まいのカードを1人に5まいずつ分けます。何人に分けられますか。',
             easy: 'カード15まいを、1人に5まいずつ分けます。何人分できますか。',
+            questionTextRuby:
+                '15まいのカードを{1人|ひとり}に5まいずつ{分けます|わけます}。{何人|なんにん}に{分けられます|わけられます}か。',
             choices: ['3', '5', '10', '20'],
             correct: 0,
             explanation: '15 ÷ 5 = 3。3人に分けられます。',
+            explanationRuby:
+                '15 ÷ 5 = 3。3{人|にん}に{分けられます|わけられます}。',
+            vocabularyEntries: measureDivisionVocabularyEntries,
             vocabulary: ['まい', '何人に分けられる'],
             tags: ['measurement-division', 'number_input', 'unit'],
             equationHint: '15 ÷ 5',
@@ -339,9 +354,14 @@ final List<Lesson> grade3DivisionLessons = [
             type: 'fill_blank',
             school: '18このビー玉を1人に6こずつ分けます。式は 18 ÷ □ です。',
             easy: 'ビー玉18こを、1人に6こずつ分けます。18 ÷ □ の□は何ですか。',
+            questionTextRuby:
+                '18このビー{玉|だま}を{1人|ひとり}に6こずつ{分けます|わけます}。{式|しき}は 18 ÷ □ です。',
             choices: ['3', '6', '12', '18'],
             correct: 1,
             explanation: '1人に6こずつ分けるので、式は18 ÷ 6です。',
+            explanationRuby:
+                '{1人|ひとり}に6こずつ{分ける|わける}ので、{式|しき}は18 ÷ 6です。',
+            vocabularyEntries: measureDivisionVocabularyEntries,
             vocabulary: ['ずつ', '分ける'],
             tags: ['measurement-division', 'fill_blank'],
             equationHint: '18 ÷ 6',
@@ -355,9 +375,14 @@ final List<Lesson> grade3DivisionLessons = [
             type: 'select_equation',
             school: '24このシールを1人に4こずつ分けます。何人に分けられますか。正しい式はどれですか。',
             easy: 'シール24こを、1人に4こずつ分けます。どの式ですか。',
+            questionTextRuby:
+                '24このシールを{1人|ひとり}に4こずつ{分けます|わけます}。{何人|なんにん}に{分けられます|わけられます}か。{正|ただ}しい{式|しき}はどれですか。',
             choices: ['24÷4', '24÷6', '24×4'],
             correct: 0,
             explanation: '全部の24こを、1人分の4こで分けるので、式は24 ÷ 4です。',
+            explanationRuby:
+                '{全部|ぜんぶ}の24こを、{1人|ひとり}{分|ぶん}の4こで{分ける|わける}ので、{式|しき}は24 ÷ 4です。',
+            vocabularyEntries: measureDivisionVocabularyEntries,
             vocabulary: ['何人に分けられる', '式'],
             tags: ['measurement-division', 'select_equation'],
             equationHint: '24 ÷ 4',
@@ -373,9 +398,15 @@ final List<Lesson> grade3DivisionLessons = [
             type: 'word_problem',
             school: '6このいちごを1人に2こずつ分けます。何人に分けられますか。',
             easy: 'いちご6こを、1人に2こずつ分けます。何人分できますか。',
+            questionTextRuby:
+                '6このいちごを{1人|ひとり}に2こずつ{分けます|わけます}。{何人|なんにん}に{分けられます|わけられます}か。',
+            choicesRuby: ['3{人|にん}', '2{人|にん}', '6{人|にん}'],
             choices: ['3人', '2人', '6人'],
             correct: 0,
             explanation: '6こを2こずつのまとまりにすると、3つのまとまりができます。だから、3人に分けられます。',
+            explanationRuby:
+                '6こを2こずつのまとまりにすると、3つのまとまりができます。だから、3{人|にん}に{分けられます|わけられます}。',
+            vocabularyEntries: measureDivisionVocabularyEntries,
             vocabulary: ['いちご', '何人'],
             tags: [
               'measurement-division',
@@ -1430,6 +1461,10 @@ String? _portugueseText(String source) {
       'Há 20 mexericas. Vamos dividir igualmente entre 4 pessoas. Qual é a conta correta?',
     '20は全部の数、4は分ける人数です。式は20 ÷ 4。答えは5こです。' =>
       '20 é o total, e 4 é o número de pessoas. A conta é 20 ÷ 4. A resposta é 5.',
+    'いちごが6こあります。3人で分けます。全部で何こありますか。' =>
+      'Há 6 morangos. Vamos dividir entre 3 pessoas. Quantos morangos há no total?',
+    'はじめにあるいちごは6こです。6こを3人で分けるので、式は6 ÷ 3です。' =>
+      'No começo, há 6 morangos. Como dividimos 6 morangos entre 3 pessoas, a conta é 6 ÷ 3.',
     'シール9こを3人に同じ数で分けます。合う図はどれですか。' =>
       'Há 9 adesivos. Vamos dividir igualmente entre 3 pessoas. Qual desenho combina?',
     '3人に3こずつ入っている図が正しいです。' =>

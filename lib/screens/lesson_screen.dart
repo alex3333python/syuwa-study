@@ -2890,21 +2890,31 @@ class _OnePersonShareVisual extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: const [
-        Icon(Icons.person_rounded, color: Color(0xFF4B5563), size: 30),
-        SizedBox(width: 8),
+        Icon(Icons.person_rounded, color: Color(0xFF4B5563), size: 22),
+        SizedBox(height: 3),
         _MiniPlate(
-          width: 44,
-          height: 30,
+          width: 58,
+          height: 32,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _CounterDot(size: 16),
-              SizedBox(width: 3),
+              SizedBox(width: 4),
               _CounterDot(size: 16),
             ],
+          ),
+        ),
+        SizedBox(height: 3),
+        Text(
+          '1人に2こ',
+          style: TextStyle(
+            color: Color(0xFF4B5563),
+            fontSize: 11,
+            height: 1,
+            fontWeight: FontWeight.w800,
           ),
         ),
       ],
@@ -2917,20 +2927,62 @@ class _CountQuestionVisual extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: const [
-        _CounterDot(size: 22),
-        SizedBox(width: 4),
-        _CounterDot(size: 22),
-        SizedBox(width: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _MiniPersonWithPlate(),
+            SizedBox(width: 4),
+            _MiniPersonWithPlate(),
+            SizedBox(width: 4),
+            Text(
+              '?',
+              style: TextStyle(
+                color: Color(0xFF2563EB),
+                fontSize: 28,
+                height: 1,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 4),
         Text(
-          '?',
+          '何人？',
           style: TextStyle(
-            color: Color(0xFF2563EB),
-            fontSize: 30,
+            color: Color(0xFF4B5563),
+            fontSize: 11,
             height: 1,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MiniPersonWithPlate extends StatelessWidget {
+  const _MiniPersonWithPlate();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: const [
+        Icon(Icons.person_rounded, color: Color(0xFF6B7280), size: 14),
+        SizedBox(height: 1),
+        _MiniPlate(
+          width: 30,
+          height: 20,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _CounterDot(size: 9),
+              SizedBox(width: 2),
+              _CounterDot(size: 9),
+            ],
           ),
         ),
       ],

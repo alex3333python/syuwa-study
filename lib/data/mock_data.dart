@@ -12,7 +12,7 @@ final List<Lesson> _allMockLessons = [
     levelId: 1,
     type: LessonType.diagnosis,
     title: '算数チェック',
-    description: '算数の考え方と、学校日本語のつまずきを分けて見ます。',
+    description: '',
     completed: false,
     locked: false,
     stars: 0,

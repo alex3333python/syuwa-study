@@ -441,6 +441,19 @@ const measureDivisionResultLines = [
       AppLanguage.vietnamese: 'Ta viết là 6 ÷ 2 = 3 và đọc: “6 waru 2 wa 3”.',
     },
   ),
+  SupportLine(
+    japanese: 'また、この式では、6を「わられる数」、2を「わる数」といいます。',
+    ruby:
+        'また、この{式|しき}では、6を「わられる{数|かず}」、2を「わる{数|かず}」といいます。',
+    native: {
+      AppLanguage.portuguese:
+          'Nesta conta, 6 é o número que será dividido, e 2 é o número pelo qual dividimos.',
+      AppLanguage.tagalog:
+          'Sa pangungusap na ito, ang 6 ang bilang na hinahati, at ang 2 ang bilang na pinaghahatuan.',
+      AppLanguage.vietnamese:
+          'Trong phép tính này, 6 là số bị chia, còn 2 là số chia.',
+    },
+  ),
 ];
 
 const measureDivisionEquationReading = SupportLine(
@@ -456,21 +469,21 @@ const measureDivisionEquationSupports = [
   EquationSupport(
     value: '6',
     label: '全部の数',
-    meaning: 'この問題に出てくる、いちご全部の数',
+    meaning: 'この式では、わられる数ともいいます',
     native: {
-      AppLanguage.portuguese: 'o número total de morangos',
-      AppLanguage.tagalog: 'kabuuang bilang ng mga strawberry',
-      AppLanguage.vietnamese: 'tổng số quả dâu',
+      AppLanguage.portuguese: 'número total / número que será dividido',
+      AppLanguage.tagalog: 'kabuuang bilang / bilang na hinahati',
+      AppLanguage.vietnamese: 'tổng số / số bị chia',
     },
   ),
   EquationSupport(
     value: '2',
     label: '1人分の数',
-    meaning: '1人がもらういちごの数',
+    meaning: 'この式では、わる数ともいいます',
     native: {
-      AppLanguage.portuguese: 'quantidade para cada pessoa',
-      AppLanguage.tagalog: 'bilang para sa bawat tao',
-      AppLanguage.vietnamese: 'số quả mỗi người nhận',
+      AppLanguage.portuguese: 'quantidade para cada pessoa / número divisor',
+      AppLanguage.tagalog: 'bilang para sa bawat tao / bilang na pinaghahatuan',
+      AppLanguage.vietnamese: 'số cho mỗi người / số chia',
     },
   ),
   EquationSupport(
@@ -512,6 +525,90 @@ const measureDivisionLessonVocabulary = [
 
 const measureDivisionVocabularyEntries = [
   ...equalShareVocabularyEntries,
+  VocabularyEntry(
+    term: 'クッキー',
+    reading: 'くっきー',
+    simpleJapanese: 'おかしの名前です。',
+    translations: {
+      AppLanguage.portuguese: 'biscoito',
+      AppLanguage.tagalog: 'cookie / biskwit',
+      AppLanguage.vietnamese: 'bánh quy',
+    },
+    exampleSentence: '8このクッキーがあります。',
+    category: 'noun',
+  ),
+  VocabularyEntry(
+    term: 'あめ',
+    reading: 'あめ',
+    simpleJapanese: '小さいおかしです。',
+    translations: {
+      AppLanguage.portuguese: 'bala / doce',
+      AppLanguage.tagalog: 'kendi',
+      AppLanguage.vietnamese: 'kẹo',
+    },
+    exampleSentence: '12このあめを分けます。',
+    category: 'noun',
+  ),
+  VocabularyEntry(
+    term: 'カード',
+    reading: 'かーど',
+    simpleJapanese: '紙の小さい札のようなものです。',
+    translations: {
+      AppLanguage.portuguese: 'cartão',
+      AppLanguage.tagalog: 'card',
+      AppLanguage.vietnamese: 'thẻ',
+    },
+    exampleSentence: '15まいのカードを分けます。',
+    category: 'noun',
+  ),
+  VocabularyEntry(
+    term: 'ビー玉',
+    reading: 'びーだま',
+    simpleJapanese: '小さい丸い玉です。',
+    translations: {
+      AppLanguage.portuguese: 'bolinha de gude',
+      AppLanguage.tagalog: 'holen',
+      AppLanguage.vietnamese: 'viên bi',
+    },
+    exampleSentence: '18このビー玉を分けます。',
+    category: 'noun',
+  ),
+  VocabularyEntry(
+    term: 'シール',
+    reading: 'しーる',
+    simpleJapanese: 'はって使うものです。',
+    translations: {
+      AppLanguage.portuguese: 'adesivo',
+      AppLanguage.tagalog: 'sticker',
+      AppLanguage.vietnamese: 'nhãn dán',
+    },
+    exampleSentence: '24このシールを分けます。',
+    category: 'noun',
+  ),
+  VocabularyEntry(
+    term: 'まとまり',
+    reading: 'まとまり',
+    simpleJapanese: 'いくつかを集めたグループ',
+    translations: {
+      AppLanguage.portuguese: 'grupo',
+      AppLanguage.tagalog: 'grupo',
+      AppLanguage.vietnamese: 'nhóm',
+    },
+    exampleSentence: '2こずつのまとまりを作ります。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: 'まい',
+    reading: 'まい',
+    simpleJapanese: '紙のように薄いものを数える言い方です。',
+    translations: {
+      AppLanguage.portuguese: 'contador para coisas finas',
+      AppLanguage.tagalog: 'bilang para manipis na bagay',
+      AppLanguage.vietnamese: 'từ đếm vật mỏng',
+    },
+    exampleSentence: '15まいのカードがあります。',
+    category: 'school_japanese',
+  ),
   VocabularyEntry(
     term: '何人',
     reading: 'なんにん',

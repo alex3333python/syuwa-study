@@ -95,13 +95,6 @@ class LessonMapScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 18),
-                    const Text(
-                      '算数と学校日本語を、ひとつずつ確認しましょう。',
-                      style: TextStyle(fontSize: 16, color: Color(0xFF6B7280)),
-                    ),
-                    const SizedBox(height: 28),
-
                     const SizedBox(height: 28),
 
                     for (int i = 0; i < lessonEntries.length; i++) ...[
@@ -190,8 +183,8 @@ class LessonMapScreen extends StatelessWidget {
         entries.add(
           _buildUnitEntry(
             unitLessons: divisionLessons,
-            title: 'わり算れっすん',
-            description: '同じ数ずつ分ける、何こずつ分ける、文章題まで練習します。',
+            title: 'わり算',
+            description: '',
             color1: const Color(0xFF14B8A6),
             color2: const Color(0xFF2563EB),
             restartFromFirstWhenCompleted: true,
@@ -210,7 +203,7 @@ class LessonMapScreen extends StatelessWidget {
         entries.add(
           _buildUnitEntry(
             unitLessons: remainderLessons,
-            title: 'あまりのあるわり算れっすん',
+            title: 'あまりのあるわり算',
             description: 'あまりの出るわり算と、文章題での答え方を練習します。',
             color1: const Color(0xFFF97316),
             color2: const Color(0xFFDB2777),
@@ -582,14 +575,16 @@ class _LessonCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
-                      Text(
-                        item.description,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          color: Color(0xFF6B7280),
+                      if (item.description.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        Text(
+                          item.description,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: Color(0xFF6B7280),
+                          ),
                         ),
-                      ),
+                      ],
                       if (item.subLessons.isNotEmpty) ...[
                         const SizedBox(height: 14),
                         _SubLessonList(items: item.subLessons),
