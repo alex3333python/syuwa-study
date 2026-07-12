@@ -195,7 +195,6 @@ class LessonMapScreen extends StatelessWidget {
             color1: const Color(0xFF14B8A6),
             color2: const Color(0xFF2563EB),
             restartFromFirstWhenCompleted: true,
-            alwaysStartFromFirst: true,
           ),
         );
         continue;
@@ -260,7 +259,6 @@ class LessonMapScreen extends StatelessWidget {
     required Color color1,
     required Color color2,
     bool restartFromFirstWhenCompleted = false,
-    bool alwaysStartFromFirst = false,
   }) {
     final allCompleted = unitLessons.every((lesson) => lesson.completed);
     final lessonToStart = unitLessons.where((lesson) {
@@ -303,13 +301,12 @@ class LessonMapScreen extends StatelessWidget {
               title: lesson.title,
               locked: lesson.locked,
               completed: lesson.completed,
+              onTap: lesson.locked ? null : () => onStartLesson(lesson),
             ),
         ],
         progressText: '$completedCount / ${unitLessons.length}',
       ),
-      lessonToStart: alwaysStartFromFirst
-          ? reviewLesson
-          : allCompleted
+      lessonToStart: allCompleted
           ? reviewLesson
           : lessonToStart ?? fallbackLesson,
     );
@@ -479,11 +476,13 @@ class LessonMapSubItem {
   final String title;
   final bool locked;
   final bool completed;
+  final VoidCallback? onTap;
 
   const LessonMapSubItem({
     required this.title,
     required this.locked,
     required this.completed,
+    this.onTap,
   });
 }
 
@@ -654,34 +653,43 @@ class _SubLessonTile extends StatelessWidget {
         ? const Color(0xFF9CA3AF)
         : const Color(0xFF2563EB);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-      decoration: BoxDecoration(
-        color: item.locked ? const Color(0xFFF9FAFB) : const Color(0xFFEFF6FF),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: item.onTap,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: item.locked
-              ? const Color(0xFFE5E7EB)
-              : const Color(0xFFBFDBFE),
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 19),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              item.title,
-              style: TextStyle(
-                color: item.locked
-                    ? const Color(0xFF6B7280)
-                    : const Color(0xFF111827),
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
-              ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+          decoration: BoxDecoration(
+            color: item.locked
+                ? const Color(0xFFF9FAFB)
+                : const Color(0xFFEFF6FF),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: item.locked
+                  ? const Color(0xFFE5E7EB)
+                  : const Color(0xFFBFDBFE),
             ),
           ),
-        ],
+          child: Row(
+            children: [
+              Icon(icon, color: color, size: 19),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  item.title,
+                  style: TextStyle(
+                    color: item.locked
+                        ? const Color(0xFF6B7280)
+                        : const Color(0xFF111827),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

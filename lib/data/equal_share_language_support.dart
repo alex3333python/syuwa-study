@@ -358,6 +358,186 @@ const equalShareVocabularyEntries = [
   ),
 ];
 
+const measureDivisionProblemLines = [
+  SupportLine(
+    japanese: 'いちごが6こあります。',
+    ruby: 'いちごが6こあります。',
+    native: {
+      AppLanguage.portuguese: 'Há 6 morangos.',
+      AppLanguage.tagalog: 'May 6 na strawberry.',
+      AppLanguage.vietnamese: 'Có 6 quả dâu.',
+    },
+  ),
+  SupportLine(
+    japanese: '1人に2こずつ分けると、何人に分けられますか。',
+    ruby:
+        '{1人|ひとり}に2こずつ{分ける|わける}と、{何人|なんにん}に{分けられます|わけられます}か。',
+    native: {
+      AppLanguage.portuguese:
+          'Se dermos 2 morangos para cada pessoa, para quantas pessoas dá para dividir?',
+      AppLanguage.tagalog:
+          'Kung tig-2 strawberry ang bawat tao, ilang tao ang mabibigyan?',
+      AppLanguage.vietnamese:
+          'Nếu mỗi người nhận 2 quả dâu, chia được cho bao nhiêu người?',
+    },
+  ),
+];
+
+const measureDivisionInstruction = SupportLine(
+  japanese: 'いちごを、1人に2こずつ分けてみよう！',
+  ruby: 'いちごを、{1人|ひとり}に2こずつ{分けて|わけて}みよう！',
+  native: {
+    AppLanguage.portuguese: 'Vamos dar 2 morangos para cada pessoa!',
+    AppLanguage.tagalog: 'Magbigay tayo ng tig-2 strawberry sa bawat tao!',
+    AppLanguage.vietnamese: 'Hãy chia mỗi người 2 quả dâu!',
+  },
+);
+
+const measureDivisionResultLines = [
+  SupportLine(
+    japanese: '3人に分けられたね！',
+    ruby: '3{人|にん}に{分けられた|わけられた}ね！',
+    native: {
+      AppLanguage.portuguese: 'Deu para dividir para 3 pessoas!',
+      AppLanguage.tagalog: 'Nahati para sa 3 tao!',
+      AppLanguage.vietnamese: 'Chia được cho 3 người rồi!',
+    },
+  ),
+  SupportLine(
+    japanese: '1人目、2人目、3人目に、いちごが2こずつあるね。',
+    ruby:
+        '{1人|ひとり}{目|め}、2{人|にん}{目|め}、3{人|にん}{目|め}に、いちごが2こずつあるね。',
+    native: {
+      AppLanguage.portuguese:
+          'A pessoa 1, a pessoa 2 e a pessoa 3 têm 2 morangos cada.',
+      AppLanguage.tagalog:
+          'May tig-2 strawberry ang tao 1, tao 2, at tao 3.',
+      AppLanguage.vietnamese:
+          'Người thứ 1, thứ 2 và thứ 3 đều có 2 quả dâu.',
+    },
+  ),
+  SupportLine(
+    japanese: 'いちご6こを、1人に2こずつ分けると、3人に分けられます。',
+    ruby:
+        'いちご6こを、{1人|ひとり}に2こずつ{分ける|わける}と、3{人|にん}に{分けられます|わけられます}。',
+    native: {
+      AppLanguage.portuguese:
+          'Quando 6 morangos são divididos dando 2 para cada pessoa, dá para 3 pessoas.',
+      AppLanguage.tagalog:
+          'Kapag ang 6 strawberry ay hinati nang tig-2 bawat tao, sapat ito para sa 3 tao.',
+      AppLanguage.vietnamese:
+          'Khi chia 6 quả dâu, mỗi người 2 quả, thì chia được cho 3 người.',
+    },
+  ),
+  SupportLine(
+    japanese: 'このことを式で 6 ÷ 2 = 3 と書いて、「6わる2は3」といいます。',
+    ruby:
+        'このことを{式|しき}で 6 ÷ 2 = 3 と{書いて|かいて}、「6わる2は3」といいます。',
+    native: {
+      AppLanguage.portuguese:
+          'Escrevemos isso como 6 ÷ 2 = 3 e lemos: “seis dividido por dois é três”.',
+      AppLanguage.tagalog:
+          'Isinusulat ito bilang 6 ÷ 2 = 3 at binabasa: “6 waru 2 wa 3”.',
+      AppLanguage.vietnamese: 'Ta viết là 6 ÷ 2 = 3 và đọc: “6 waru 2 wa 3”.',
+    },
+  ),
+];
+
+const measureDivisionEquationReading = SupportLine(
+  japanese: '6わる2は3',
+  native: {
+    AppLanguage.portuguese: 'seis dividido por dois é três',
+    AppLanguage.tagalog: 'anim na hinati sa dalawa ay tatlo',
+    AppLanguage.vietnamese: 'sáu chia hai bằng ba',
+  },
+);
+
+const measureDivisionEquationSupports = [
+  EquationSupport(
+    value: '6',
+    label: '全部の数',
+    meaning: 'この問題に出てくる、いちご全部の数',
+    native: {
+      AppLanguage.portuguese: 'o número total de morangos',
+      AppLanguage.tagalog: 'kabuuang bilang ng mga strawberry',
+      AppLanguage.vietnamese: 'tổng số quả dâu',
+    },
+  ),
+  EquationSupport(
+    value: '2',
+    label: '1人分の数',
+    meaning: '1人がもらういちごの数',
+    native: {
+      AppLanguage.portuguese: 'quantidade para cada pessoa',
+      AppLanguage.tagalog: 'bilang para sa bawat tao',
+      AppLanguage.vietnamese: 'số quả mỗi người nhận',
+    },
+  ),
+  EquationSupport(
+    value: '3',
+    label: '分けられる人数',
+    meaning: 'いちごを分けられる人の数',
+    native: {
+      AppLanguage.portuguese: 'o número de pessoas que podem receber',
+      AppLanguage.tagalog: 'bilang ng taong mabibigyan',
+      AppLanguage.vietnamese: 'số người có thể nhận',
+    },
+  ),
+];
+
+const measureDivisionLessonVocabulary = [
+  LessonVocabulary(
+    word: '何こずつ',
+    reading: 'なんこずつ',
+    explanation: '1人に何こずつ分けるかを表します。',
+    translations: {
+      AppLanguage.portuguese: 'quantos para cada pessoa',
+      AppLanguage.tagalog: 'tig-ilan para sa bawat tao',
+      AppLanguage.vietnamese: 'mỗi người bao nhiêu cái',
+    },
+    visual: LessonVocabularyVisual.onePersonShare,
+  ),
+  LessonVocabulary(
+    word: '何人',
+    reading: 'なんにん',
+    explanation: '人の数を聞く言い方です。',
+    translations: {
+      AppLanguage.portuguese: 'quantas pessoas',
+      AppLanguage.tagalog: 'ilang tao',
+      AppLanguage.vietnamese: 'bao nhiêu người',
+    },
+    visual: LessonVocabularyVisual.countQuestion,
+  ),
+];
+
+const measureDivisionVocabularyEntries = [
+  ...equalShareVocabularyEntries,
+  VocabularyEntry(
+    term: '何人',
+    reading: 'なんにん',
+    simpleJapanese: '人の数を聞く言葉',
+    translations: {
+      AppLanguage.portuguese: 'quantas pessoas',
+      AppLanguage.tagalog: 'ilang tao',
+      AppLanguage.vietnamese: 'bao nhiêu người',
+    },
+    exampleSentence: '何人に分けられますか。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '何こずつ',
+    reading: 'なんこずつ',
+    simpleJapanese: '1人に何こずつかを聞く言葉',
+    translations: {
+      AppLanguage.portuguese: 'quantos para cada pessoa',
+      AppLanguage.tagalog: 'tig-ilan para sa bawat tao',
+      AppLanguage.vietnamese: 'mỗi người bao nhiêu cái',
+    },
+    exampleSentence: '1人に何こずつ分けますか。',
+    category: 'math_language',
+  ),
+];
+
 String equalSharePersonLabel(int index, AppLanguage language) {
   switch (language) {
     case AppLanguage.japanese:

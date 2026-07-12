@@ -397,7 +397,9 @@ class _LessonScreenState extends State<LessonScreen> {
         ? '母語'
         : widget.selectedLanguage.label;
     final richLearnCard = _buildRichLearnCard(step, widget.selectedLanguage);
-    final actionLabel = step.id == 'division-equal-share-words'
+    final actionLabel =
+        step.id == 'division-equal-share-words' ||
+            step.id == 'division-measure-words'
         ? 'もんだいをとく'
         : currentStepIndex == visibleSteps.length - 1
         ? '完了'
@@ -838,6 +840,25 @@ String _independentPracticeHint(Question question, AppLanguage language) {
       '${question.promptSchoolJa} ${question.promptEasyJa} '
       '${question.vocabulary.join(' ')}';
 
+  final perPersonMatch = RegExp(
+    r'1人に([0-9０-９]+(?:こ|本|まい|枚)?)ずつ',
+  ).firstMatch(text);
+  if (perPersonMatch != null) {
+    final amount = perPersonMatch.group(1)!;
+    if (language != AppLanguage.japanese) {
+      final native = switch (language) {
+        AppLanguage.portuguese => '$amount para cada pessoa',
+        AppLanguage.tagalog => '$amount para sa bawat tao',
+        AppLanguage.vietnamese => '$amount cho mỗi người',
+        AppLanguage.japanese => '',
+      };
+      if (native.isNotEmpty) {
+        return '「1人に$amountずつ」は、${language.label}で $native です。';
+      }
+    }
+    return '「1人に$amountずつ」は、1人がもらう数が$amountという意味です。';
+  }
+
   for (final entry in question.vocabularyEntries) {
     if (entry.term.isEmpty || !text.contains(entry.term)) continue;
     final native = entry.translations[language];
@@ -893,6 +914,7 @@ const _independentHintSupports = [
   ),
   _IndependentHintSupport(
     term: '分ける',
+    aliases: ['分けます', '分けた', '分けられます', '分けられる'],
     simpleJapanese: 'ものをいくつかのグループにすることです。',
     translations: {
       AppLanguage.portuguese: 'dividir / separar em grupos',
@@ -930,6 +952,15 @@ const _independentHintSupports = [
     },
   ),
   _IndependentHintSupport(
+    term: '何人',
+    simpleJapanese: '人の数を聞く言い方です。',
+    translations: {
+      AppLanguage.portuguese: 'quantas pessoas',
+      AppLanguage.tagalog: 'ilang tao',
+      AppLanguage.vietnamese: 'bao nhiêu người',
+    },
+  ),
+  _IndependentHintSupport(
     term: '式',
     simpleJapanese: '計算を、数字や記号で書いたものです。',
     translations: {
@@ -961,6 +992,31 @@ Widget? _buildRichLearnCard(LessonStep step, AppLanguage selectedLanguage) {
       );
     case 'division-equal-share-words':
       return _EqualShareWordsCard(selectedLanguage: selectedLanguage);
+    case 'division-measure-learn':
+      return _EqualShareInteractiveLearn(
+        selectedLanguage: selectedLanguage,
+        nativeText: step.explanationFor(
+          selectedLanguage,
+          QuestionPromptMode.native,
+        ),
+        title: '何人に分けられるかな',
+        problemLines: measureDivisionProblemLines,
+        instructionLine: measureDivisionInstruction,
+        resultLines: measureDivisionResultLines,
+        equationReading: measureDivisionEquationReading,
+        equationSupports: measureDivisionEquationSupports,
+        vocabularyEntries: measureDivisionVocabularyEntries,
+        storyOrder: const [0, 0, 1, 1, 2, 2],
+        successMessage: '3人に分けられたね！',
+        retryMessage: '2こずつ分けられているかな？ お皿ごとの数を見てみよう。',
+        storyMessage: '1人に2こずつ置いていきます。',
+        storyCompleteMessage: '3人に分けられました。',
+      );
+    case 'division-measure-words':
+      return _EqualShareWordsCard(
+        selectedLanguage: selectedLanguage,
+        vocabularyItems: measureDivisionLessonVocabulary,
+      );
   }
   return null;
 }
@@ -968,10 +1024,34 @@ Widget? _buildRichLearnCard(LessonStep step, AppLanguage selectedLanguage) {
 class _EqualShareInteractiveLearn extends StatefulWidget {
   final AppLanguage selectedLanguage;
   final String nativeText;
+  final String title;
+  final List<SupportLine> problemLines;
+  final SupportLine instructionLine;
+  final List<SupportLine> resultLines;
+  final SupportLine equationReading;
+  final List<EquationSupport> equationSupports;
+  final List<VocabularyEntry> vocabularyEntries;
+  final List<int> storyOrder;
+  final String successMessage;
+  final String retryMessage;
+  final String storyMessage;
+  final String storyCompleteMessage;
 
   const _EqualShareInteractiveLearn({
     required this.selectedLanguage,
     required this.nativeText,
+    this.title = '同じ数ずつ分けてみよう',
+    this.problemLines = equalShareProblemLines,
+    this.instructionLine = equalShareInstruction,
+    this.resultLines = equalShareResultLines,
+    this.equationReading = equalShareEquationReading,
+    this.equationSupports = equalShareEquationSupports,
+    this.vocabularyEntries = equalShareVocabularyEntries,
+    this.storyOrder = const [0, 1, 2, 0, 1, 2],
+    this.successMessage = '同じ数ずつ分けられたね！',
+    this.retryMessage = '同じ数になっているかな？ お皿ごとの数を見てみよう。',
+    this.storyMessage = '1こずつ順番に置いていきます。',
+    this.storyCompleteMessage = 'どのお皿も2こずつになりました。',
   });
 
   @override
@@ -986,17 +1066,23 @@ class _EqualShareInteractiveLearnState
   final List<int?> _berryPlates = List<int?>.filled(_berryCount, null);
   bool _showStory = false;
   int _storyStep = 0;
-  String _message = equalShareInstruction.japanese;
+  late String _message;
   bool _isCorrect = false;
   bool _showProblemNative = false;
   bool _showInstructionNative = false;
   bool _showResultNative = false;
 
+  @override
+  void initState() {
+    super.initState();
+    _message = widget.instructionLine.japanese;
+  }
+
   void _moveBerry(int berryIndex, int? plateIndex) {
     setState(() {
       _berryPlates[berryIndex] = plateIndex;
       _isCorrect = false;
-      _message = equalShareInstruction.japanese;
+      _message = widget.instructionLine.japanese;
     });
 
     if (_berryPlates.every((plate) => plate != null)) {
@@ -1012,11 +1098,11 @@ class _EqualShareInteractiveLearnState
     setState(() {
       _isCorrect = correct;
       if (correct) {
-        _message = '同じ数ずつ分けられたね！';
+        _message = widget.successMessage;
       } else if (!complete && !auto) {
         _message = 'まだ入っていないいちごがあります。';
       } else {
-        _message = '同じ数になっているかな？ お皿ごとの数を見てみよう。';
+        _message = widget.retryMessage;
       }
     });
   }
@@ -1027,7 +1113,7 @@ class _EqualShareInteractiveLearnState
         _berryPlates[i] = null;
       }
       _isCorrect = false;
-      _message = equalShareInstruction.japanese;
+      _message = widget.instructionLine.japanese;
     });
   }
 
@@ -1057,9 +1143,8 @@ class _EqualShareInteractiveLearnState
 
   List<int> _storyPlateForStep(int step) {
     final placements = <int>[];
-    const order = [0, 1, 2, 0, 1, 2];
     for (var i = 0; i < _berryCount; i++) {
-      placements.add(i < step ? order[i] : -1);
+      placements.add(i < step ? widget.storyOrder[i] : -1);
     }
     return placements;
   }
@@ -1095,10 +1180,10 @@ class _EqualShareInteractiveLearnState
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        const Flexible(
+                        Flexible(
                           child: Text(
-                            '同じ数ずつ分けてみよう',
-                            style: TextStyle(
+                            widget.title,
+                            style: const TextStyle(
                               color: Color(0xFF111827),
                               fontSize: 22,
                               fontWeight: FontWeight.w900,
@@ -1121,7 +1206,7 @@ class _EqualShareInteractiveLearnState
                           onAudio: () => _showAudioPlaceholder(
                             context,
                             '問題文',
-                            equalShareProblemLines
+                            widget.problemLines
                                 .map((line) => line.japanese)
                                 .join(' '),
                           ),
@@ -1130,10 +1215,10 @@ class _EqualShareInteractiveLearnState
                     ),
                     const SizedBox(height: 6),
                     _SupportedTextLines(
-                      lines: equalShareProblemLines,
+                      lines: widget.problemLines,
                       language: widget.selectedLanguage,
                       showNative: _showProblemNative,
-                      vocabularyEntries: equalShareVocabularyEntries,
+                      vocabularyEntries: widget.vocabularyEntries,
                     ),
                   ],
                 ),
@@ -1158,6 +1243,12 @@ class _EqualShareInteractiveLearnState
             _EqualShareStoryMode(
               step: _storyStep,
               placements: _storyPlateForStep(_storyStep),
+              storyMessage: widget.storyMessage,
+              storyCompleteMessage: widget.storyCompleteMessage,
+              resultLines: widget.resultLines,
+              equationReading: widget.equationReading,
+              equationSupports: widget.equationSupports,
+              vocabularyEntries: widget.vocabularyEntries,
               onNext: () {
                 setState(() {
                   _storyStep = (_storyStep + 1).clamp(0, 6);
@@ -1180,6 +1271,8 @@ class _EqualShareInteractiveLearnState
               onReset: _reset,
               selectedLanguage: widget.selectedLanguage,
               showInstructionNative: _showInstructionNative,
+              instructionLine: widget.instructionLine,
+              successLine: widget.resultLines.first,
               onToggleInstructionNative: () {
                 setState(() {
                   _showInstructionNative = !_showInstructionNative;
@@ -1194,6 +1287,10 @@ class _EqualShareInteractiveLearnState
                     key: const ValueKey('correct-result'),
                     selectedLanguage: widget.selectedLanguage,
                     showNative: _showResultNative,
+                    resultLines: widget.resultLines,
+                    equationReading: widget.equationReading,
+                    equationSupports: widget.equationSupports,
+                    vocabularyEntries: widget.vocabularyEntries,
                     onToggleNative: () {
                       setState(() {
                         _showResultNative = !_showResultNative;
@@ -1202,7 +1299,7 @@ class _EqualShareInteractiveLearnState
                     onAudio: () => _showAudioPlaceholder(
                       context,
                       '正解後の説明',
-                      equalShareResultLines
+                      widget.resultLines
                           .map((line) => line.japanese)
                           .join(' '),
                     ),
@@ -1229,6 +1326,8 @@ class _EqualShareDragBoard extends StatelessWidget {
   final VoidCallback onReset;
   final AppLanguage selectedLanguage;
   final bool showInstructionNative;
+  final SupportLine instructionLine;
+  final SupportLine? successLine;
   final VoidCallback onToggleInstructionNative;
 
   const _EqualShareDragBoard({
@@ -1241,6 +1340,8 @@ class _EqualShareDragBoard extends StatelessWidget {
     required this.onReset,
     required this.selectedLanguage,
     required this.showInstructionNative,
+    this.instructionLine = equalShareInstruction,
+    this.successLine,
     required this.onToggleInstructionNative,
   });
 
@@ -1270,6 +1371,8 @@ class _EqualShareDragBoard extends StatelessWidget {
               isSuccess: isCorrect,
               language: selectedLanguage,
               showNative: showInstructionNative,
+              instructionLine: instructionLine,
+              successLine: successLine,
               onToggleNative: onToggleInstructionNative,
             ),
             const SizedBox(height: 14),
@@ -1758,6 +1861,8 @@ class _InstructionStrip extends StatelessWidget {
   final bool isSuccess;
   final AppLanguage language;
   final bool showNative;
+  final SupportLine instructionLine;
+  final SupportLine? successLine;
   final VoidCallback onToggleNative;
 
   const _InstructionStrip({
@@ -1765,15 +1870,17 @@ class _InstructionStrip extends StatelessWidget {
     required this.isSuccess,
     required this.language,
     required this.showNative,
+    this.instructionLine = equalShareInstruction,
+    this.successLine,
     required this.onToggleNative,
   });
 
   @override
   Widget build(BuildContext context) {
     final line = isSuccess
-        ? equalShareResultLines.first
-        : message == equalShareInstruction.japanese
-        ? equalShareInstruction
+        ? successLine ?? equalShareResultLines.first
+        : message == instructionLine.japanese
+        ? instructionLine
         : SupportLine(japanese: message);
 
     return Container(
@@ -1797,7 +1904,7 @@ class _InstructionStrip extends StatelessWidget {
                   style: TextStyle(
                     color: isSuccess
                         ? const Color(0xFF166534)
-                        : message == equalShareInstruction.japanese
+                        : message == instructionLine.japanese
                         ? const Color(0xFF374151)
                         : const Color(0xFF1E3A8A),
                     fontSize: 17,
@@ -1817,7 +1924,7 @@ class _InstructionStrip extends StatelessWidget {
                   LearningAudio.speakJapanese(
                     context,
                     label: '操作案内',
-                    text: equalShareInstruction.japanese,
+                    text: line.japanese,
                   );
                 },
               ),
@@ -1846,6 +1953,10 @@ class _InstructionStrip extends StatelessWidget {
 class _DivisionResultCard extends StatelessWidget {
   final AppLanguage selectedLanguage;
   final bool showNative;
+  final List<SupportLine> resultLines;
+  final SupportLine equationReading;
+  final List<EquationSupport> equationSupports;
+  final List<VocabularyEntry> vocabularyEntries;
   final VoidCallback onToggleNative;
   final VoidCallback onAudio;
 
@@ -1853,6 +1964,10 @@ class _DivisionResultCard extends StatelessWidget {
     super.key,
     required this.selectedLanguage,
     required this.showNative,
+    this.resultLines = equalShareResultLines,
+    this.equationReading = equalShareEquationReading,
+    this.equationSupports = equalShareEquationSupports,
+    this.vocabularyEntries = equalShareVocabularyEntries,
     required this.onToggleNative,
     required this.onAudio,
   });
@@ -1872,10 +1987,10 @@ class _DivisionResultCard extends StatelessWidget {
                 size: 28,
               ),
               const SizedBox(width: 8),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  '同じ数ずつ分けられたね！',
-                  style: TextStyle(
+                  resultLines.first.japanese,
+                  style: const TextStyle(
                     color: Color(0xFF065F46),
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
@@ -1896,13 +2011,16 @@ class _DivisionResultCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           _SupportedTextLines(
-            lines: equalShareResultLines.skip(1).toList(),
+            lines: resultLines.skip(1).toList(),
             language: selectedLanguage,
             showNative: showNative,
-            vocabularyEntries: equalShareVocabularyEntries,
+            vocabularyEntries: vocabularyEntries,
           ),
           const SizedBox(height: 12),
-          _EquationLine(language: selectedLanguage),
+          _EquationLine(
+            language: selectedLanguage,
+            supports: equationSupports,
+          ),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -1912,13 +2030,13 @@ class _DivisionResultCard extends StatelessWidget {
                   LearningAudio.speakJapanese(
                     context,
                     label: '式の読み方',
-                    text: equalShareEquationReading.japanese,
+                    text: equationReading.japanese,
                   );
                 },
               ),
               Expanded(
                 child: _SupportedTextLines(
-                  lines: const [equalShareEquationReading],
+                  lines: [equationReading],
                   language: selectedLanguage,
                   showNative: showNative,
                 ),
@@ -1933,8 +2051,12 @@ class _DivisionResultCard extends StatelessWidget {
 
 class _EquationLine extends StatelessWidget {
   final AppLanguage language;
+  final List<EquationSupport> supports;
 
-  const _EquationLine({required this.language});
+  const _EquationLine({
+    required this.language,
+    required this.supports,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1944,19 +2066,19 @@ class _EquationLine extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _EquationNumber(
-            support: equalShareEquationSupports[0],
+            support: supports[0],
             color: const Color(0xFF2563EB),
             language: language,
           ),
           const _ResultEquationSymbol('÷'),
           _EquationNumber(
-            support: equalShareEquationSupports[1],
+            support: supports[1],
             color: const Color(0xFFF97316),
             language: language,
           ),
           const _ResultEquationSymbol('='),
           _EquationNumber(
-            support: equalShareEquationSupports[2],
+            support: supports[2],
             color: const Color(0xFF059669),
             language: language,
           ),
@@ -2214,12 +2336,24 @@ class _SectionLabel extends StatelessWidget {
 class _EqualShareStoryMode extends StatelessWidget {
   final int step;
   final List<int> placements;
+  final String storyMessage;
+  final String storyCompleteMessage;
+  final List<SupportLine> resultLines;
+  final SupportLine equationReading;
+  final List<EquationSupport> equationSupports;
+  final List<VocabularyEntry> vocabularyEntries;
   final VoidCallback onNext;
   final VoidCallback onBack;
 
   const _EqualShareStoryMode({
     required this.step,
     required this.placements,
+    this.storyMessage = '1こずつ順番に置いていきます。',
+    this.storyCompleteMessage = 'どのお皿も2こずつになりました。',
+    this.resultLines = equalShareResultLines,
+    this.equationReading = equalShareEquationReading,
+    this.equationSupports = equalShareEquationSupports,
+    this.vocabularyEntries = equalShareVocabularyEntries,
     required this.onNext,
     required this.onBack,
   });
@@ -2243,7 +2377,7 @@ class _EqualShareStoryMode extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _InstructionStrip(
-          message: complete ? 'どのお皿も2こずつになりました。' : '1こずつ順番に置いていきます。',
+          message: complete ? storyCompleteMessage : storyMessage,
           isSuccess: complete,
           language: AppLanguage.japanese,
           showNative: false,
@@ -2304,6 +2438,10 @@ class _EqualShareStoryMode extends StatelessWidget {
           _DivisionResultCard(
             selectedLanguage: AppLanguage.japanese,
             showNative: false,
+            resultLines: resultLines,
+            equationReading: equationReading,
+            equationSupports: equationSupports,
+            vocabularyEntries: vocabularyEntries,
             onToggleNative: () {},
             onAudio: () {},
           ),
@@ -2446,8 +2584,12 @@ class _StaticPlateCard extends StatelessWidget {
 
 class _EqualShareWordsCard extends StatelessWidget {
   final AppLanguage selectedLanguage;
+  final List<LessonVocabulary> vocabularyItems;
 
-  const _EqualShareWordsCard({required this.selectedLanguage});
+  const _EqualShareWordsCard({
+    required this.selectedLanguage,
+    this.vocabularyItems = equalShareLessonVocabulary,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -2499,7 +2641,7 @@ class _EqualShareWordsCard extends StatelessWidget {
                 spacing: gap,
                 runSpacing: gap,
                 children: [
-                  for (final item in equalShareLessonVocabulary)
+                  for (final item in vocabularyItems)
                     SizedBox(
                       width: cardWidth,
                       child: _LessonVocabularyCard(
@@ -3487,6 +3629,7 @@ class _DiagramAnswerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final groups = int.tryParse(diagram['groups'] ?? '') ?? 0;
     final each = int.tryParse(diagram['each'] ?? '') ?? 0;
+    final labelSuffix = diagram['labelSuffix'] ?? '人目';
 
     return Material(
       color: Colors.transparent,
@@ -3514,7 +3657,11 @@ class _DiagramAnswerCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(
-                    child: _ChoiceEqualShareDiagram(groups: groups, each: each),
+                    child: _ChoiceEqualShareDiagram(
+                      groups: groups,
+                      each: each,
+                      labelSuffix: labelSuffix,
+                    ),
                   ),
                 ],
               ),
@@ -3535,8 +3682,13 @@ class _DiagramAnswerCard extends StatelessWidget {
 class _ChoiceEqualShareDiagram extends StatelessWidget {
   final int groups;
   final int each;
+  final String labelSuffix;
 
-  const _ChoiceEqualShareDiagram({required this.groups, required this.each});
+  const _ChoiceEqualShareDiagram({
+    required this.groups,
+    required this.each,
+    required this.labelSuffix,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -3558,7 +3710,11 @@ class _ChoiceEqualShareDiagram extends StatelessWidget {
               for (var index = 0; index < groups; index++)
                 SizedBox(
                   width: cardWidth.clamp(72, 120).toDouble(),
-                  child: _MiniPersonShareBox(index: index, count: each),
+                  child: _MiniPersonShareBox(
+                    index: index,
+                    count: each,
+                    labelSuffix: labelSuffix,
+                  ),
                 ),
             ],
           ),
@@ -3571,8 +3727,13 @@ class _ChoiceEqualShareDiagram extends StatelessWidget {
 class _MiniPersonShareBox extends StatelessWidget {
   final int index;
   final int count;
+  final String labelSuffix;
 
-  const _MiniPersonShareBox({required this.index, required this.count});
+  const _MiniPersonShareBox({
+    required this.index,
+    required this.count,
+    required this.labelSuffix,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -3588,7 +3749,7 @@ class _MiniPersonShareBox extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '${index + 1}人目',
+            '${index + 1}$labelSuffix',
             style: const TextStyle(
               color: Color(0xFF374151),
               fontSize: 12,
@@ -3705,6 +3866,10 @@ class _ExplanationOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final showCorrectAnswerCard =
+        !(question.type == 'select_picture' &&
+            question.choiceDiagramData.isNotEmpty);
+
     return Positioned.fill(
       child: Material(
         color: Colors.black.withValues(alpha: 0.36),
@@ -3765,12 +3930,15 @@ class _ExplanationOverlay extends StatelessWidget {
                                 ],
                               ),
                               const SizedBox(height: 18),
-                              _CorrectAnswerCard(
-                                text: correctAnswerText,
-                                vocabularyEntries: question.vocabularyEntries,
-                                language: questionLanguage,
-                              ),
-                              const SizedBox(height: 12),
+                              if (showCorrectAnswerCard) ...[
+                                _CorrectAnswerCard(
+                                  text: correctAnswerText,
+                                  vocabularyEntries:
+                                      question.vocabularyEntries,
+                                  language: questionLanguage,
+                                ),
+                                const SizedBox(height: 12),
+                              ],
                               _SolutionExplanationCard(
                                 question: question,
                                 language: questionLanguage,
@@ -3926,7 +4094,6 @@ class _SolutionExplanationCardState extends State<_SolutionExplanationCard> {
 
   @override
   Widget build(BuildContext context) {
-    final formulaText = widget.formulaText.trim();
     final visualHint = widget.visualHint.trim();
 
     return Container(
@@ -3989,10 +4156,6 @@ class _SolutionExplanationCardState extends State<_SolutionExplanationCard> {
             ),
             const SizedBox(height: 14),
           ],
-          if (formulaText.isNotEmpty) ...[
-            _FormulaLine(text: formulaText),
-            const SizedBox(height: 14),
-          ],
           RubyText(
             text: _answerSummaryText(widget.question, visibleLanguage),
             vocabularyEntries: widget.question.vocabularyEntries,
@@ -4032,6 +4195,18 @@ String _portugueseAnswerText(Question question, String answer) {
   if ((question.itemEmoji == '🍪' || questionText.contains('クッキー')) &&
       answer.endsWith('こ')) {
     return answer.replaceFirst('こ', ' biscoitos');
+  }
+  if (answer.endsWith('人')) {
+    final value = answer.substring(0, answer.length - 1);
+    return '$value pessoas';
+  }
+  if (answer.endsWith('本')) {
+    final value = answer.substring(0, answer.length - 1);
+    return '$value lápis';
+  }
+  if (answer.endsWith('まい')) {
+    final value = answer.substring(0, answer.length - 2);
+    return '$value cartões';
   }
   return answer;
 }
@@ -4133,34 +4308,6 @@ class _VisualHintLine extends StatelessWidget {
           fontSize: 16,
           height: 1.45,
           fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-}
-
-class _FormulaLine extends StatelessWidget {
-  final String text;
-
-  const _FormulaLine({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Color(0xFF111827),
-          fontSize: 22,
-          height: 1.35,
-          fontWeight: FontWeight.w900,
         ),
       ),
     );

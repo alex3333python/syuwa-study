@@ -697,7 +697,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   bool _isDivisionLessonWaitingForRedesign(Lesson lesson) {
-    return lesson.id >= 8 && lesson.id <= 11;
+    return lesson.id >= 9 && lesson.id <= 11;
   }
 
   void startReview() {

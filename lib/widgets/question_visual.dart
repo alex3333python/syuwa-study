@@ -89,6 +89,8 @@ class _DiagramDivisionVisual extends StatelessWidget {
     final cardWidth = compact ? 132.0 : 160.0;
     const cardGap = 10.0;
     final totalWidth = groups * cardWidth + (groups - 1) * cardGap;
+    final hideAnswerGroups =
+        mode == _DiagramDivisionMode.groupsOf && !showSolution;
 
     return Container(
       padding: EdgeInsets.all(compact ? 14 : 20),
@@ -114,24 +116,26 @@ class _DiagramDivisionVisual extends StatelessWidget {
                     itemUnit: question.itemUnit,
                     compact: compact,
                   ),
-                  SizedBox(height: compact ? 12 : 16),
-                  Wrap(
-                    spacing: cardGap,
-                    runSpacing: 10,
-                    children: [
-                      for (var index = 0; index < groups; index++)
-                        SizedBox(
-                          width: canUseFixedWidth ? cardWidth : null,
-                          child: _GroupCard(
-                            label: '${index + 1}$groupLabel',
-                            count: each,
-                            itemEmoji: itemEmoji,
-                            compact: compact,
-                            showSolution: showSolution,
+                  if (!hideAnswerGroups) ...[
+                    SizedBox(height: compact ? 12 : 16),
+                    Wrap(
+                      spacing: cardGap,
+                      runSpacing: 10,
+                      children: [
+                        for (var index = 0; index < groups; index++)
+                          SizedBox(
+                            width: canUseFixedWidth ? cardWidth : null,
+                            child: _GroupCard(
+                              label: '${index + 1}$groupLabel',
+                              count: each,
+                              itemEmoji: itemEmoji,
+                              compact: compact,
+                              showSolution: showSolution,
+                            ),
                           ),
-                        ),
-                    ],
-                  ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),

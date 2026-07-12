@@ -256,16 +256,15 @@ final List<Lesson> grade3DivisionLessons = [
       _learn(
         id: 'division-measure-learn',
         title: '学習しよう',
-        school:
-            '6このいちごがあります。1人に2こずつ分けます。2こずつのまとまりを作ると、3人分できます。6 ÷ 2 = 3 と書きます。6は全部の数、2は1人分の数、3は分けられる人数です。',
-        easy: 'いちごが6こあります。1人に2こずつ分けます。2こずつの組が3つできるので、3人に分けられます。6 ÷ 2 = 3 です。',
+        school: 'いちごが6こあります。1人に2こずつ分けると、何人に分けられますか。',
+        easy: 'いちごが6こあります。1人に2こずつ分けると、何人分できますか。',
         native: {
           AppLanguage.portuguese:
-              'Há 6 morangos. Damos 2 para cada pessoa. Fazendo grupos de 2, temos 3 grupos. Então 6 ÷ 2 = 3: dá para dividir para 3 pessoas.',
+              'Há 6 morangos. Se dermos 2 morangos para cada pessoa, para quantas pessoas dá para dividir?',
           AppLanguage.tagalog:
-              'May 6 na strawberry. Bibigyan ang bawat tao ng 2. Kapag gumawa ng mga pangkat na tig-2, may 3 pangkat. Kaya 6 ÷ 2 = 3: puwede para sa 3 tao.',
+              'May 6 na strawberry. Kung tig-2 strawberry ang bawat tao, ilang tao ang mabibigyan?',
           AppLanguage.vietnamese:
-              'Có 6 quả dâu. Mỗi người nhận 2 quả. Tạo các nhóm 2 quả thì có 3 nhóm. Vì vậy 6 ÷ 2 = 3: chia được cho 3 người.',
+              'Có 6 quả dâu. Nếu mỗi người nhận 2 quả, chia được cho bao nhiêu người?',
         },
       ),
       _learn(
@@ -289,7 +288,6 @@ final List<Lesson> grade3DivisionLessons = [
             explanation: '8 ÷ 2 = 4。2こずつのまとまりが4つできるので、4人です。',
             vocabulary: ['何こずつ', '分ける', '何人'],
             tags: ['measurement-division', 'select_picture'],
-            equationHint: '8 ÷ 2',
             visualHint: '8このクッキーを2こずつの組にする。',
             pictureDescription: '2こずつの組が4つある図',
             diagramType: 'groups_of',
@@ -306,6 +304,10 @@ final List<Lesson> grade3DivisionLessons = [
             vocabulary: ['分ける', '何こずつ'],
             tags: ['measurement-division', 'select_equation'],
             equationHint: '全部の数 ÷ 1人分の数',
+            visualHint: '12このあめを3こずつの組にする。',
+            pictureDescription: '3こずつの組が4つある図',
+            diagramType: 'groups_of',
+            diagramData: {'total': '12', 'each': '3', 'groups': '4'},
           ),
           _q(
             id: 7203,
@@ -319,6 +321,11 @@ final List<Lesson> grade3DivisionLessons = [
             tags: ['measurement-division', 'number_input', 'unit'],
             equationHint: '15 ÷ 5',
             thinkingHint: '5 × □ = 15 と考えます。',
+            visualHint: '15まいのカードを5まいずつの組にする。',
+            pictureDescription: '5まいずつの組が3つある図',
+            diagramType: 'groups_of',
+            diagramData: {'total': '15', 'each': '5', 'groups': '3'},
+            itemUnit: 'まい',
           ),
         ],
       ),
@@ -338,6 +345,10 @@ final List<Lesson> grade3DivisionLessons = [
             vocabulary: ['ずつ', '分ける'],
             tags: ['measurement-division', 'fill_blank'],
             equationHint: '18 ÷ 6',
+            visualHint: '18このビー玉を6こずつの組にする。',
+            pictureDescription: '6こずつの組が3つある図',
+            diagramType: 'groups_of',
+            diagramData: {'total': '18', 'each': '6', 'groups': '3'},
           ),
           _q(
             id: 7205,
@@ -352,22 +363,30 @@ final List<Lesson> grade3DivisionLessons = [
             equationHint: '24 ÷ 4',
             formulaExplanation: '24は全部の数、4は1人分の数です。全部の数 ÷ 1人分の数で考えます。',
             languagePoint: '「1人に4こずつ」は、1人分の数が4こだという意味です。',
+            visualHint: '24このシールを4こずつの組にする。',
+            pictureDescription: '4こずつの組が6つある図',
+            diagramType: 'groups_of',
+            diagramData: {'total': '24', 'each': '4', 'groups': '6'},
           ),
           _q(
             id: 7206,
-            type: 'select_word_meaning',
-            school: '6 ÷ 2 = 3 の「2」は何を表していますか。',
-            easy: '6 ÷ 2 = 3 の2は、どんな数ですか。',
-            choices: ['全部の数', '1人分の数', '分けられる人数'],
-            correct: 1,
-            explanation: '6 ÷ 2 = 3 の2は、1人に分ける数です。2こずつのまとまりを作ります。',
-            vocabulary: ['1人分', 'ずつ'],
+            type: 'word_problem',
+            school: '6このいちごを1人に2こずつ分けます。何人に分けられますか。',
+            easy: 'いちご6こを、1人に2こずつ分けます。何人分できますか。',
+            choices: ['3人', '2人', '6人'],
+            correct: 0,
+            explanation: '6こを2こずつのまとまりにすると、3つのまとまりができます。だから、3人に分けられます。',
+            vocabulary: ['いちご', '何人'],
             tags: [
               'measurement-division',
-              'equation_meaning',
-              'select_word_meaning',
+              'word_problem',
+              'count_groups',
             ],
-            equationHint: '全部の数 ÷ 1人分の数 = 人数',
+            equationHint: '6 ÷ 2 = 3',
+            visualHint: '6こを2こずつの組にする。',
+            pictureDescription: '2こずつの組が3つある図',
+            diagramType: 'groups_of',
+            diagramData: {'total': '6', 'each': '2', 'groups': '3'},
           ),
         ],
       ),
@@ -390,6 +409,26 @@ final List<Lesson> grade3DivisionLessons = [
             pictureDescription: '2こずつの組が5つある図',
             diagramType: 'groups_of',
             diagramData: {'total': '10', 'each': '2', 'groups': '5'},
+            choiceDiagramData: [
+              {
+                'total': '10',
+                'each': '2',
+                'groups': '5',
+                'labelSuffix': '組目',
+              },
+              {
+                'total': '10',
+                'each': '5',
+                'groups': '2',
+                'labelSuffix': '組目',
+              },
+              {
+                'total': '10',
+                'each': '10',
+                'groups': '1',
+                'labelSuffix': '組目',
+              },
+            ],
           ),
           _q(
             id: 7208,
@@ -403,6 +442,11 @@ final List<Lesson> grade3DivisionLessons = [
             tags: ['measurement-division', 'word_problem', 'unit'],
             equationHint: '21 ÷ 3',
             thinkingHint: '3 × □ = 21 と考えます。',
+            visualHint: '21本のえんぴつを3本ずつの組にする。',
+            pictureDescription: '3本ずつの組が7つある図',
+            diagramType: 'groups_of',
+            diagramData: {'total': '21', 'each': '3', 'groups': '7'},
+            itemUnit: '本',
           ),
         ],
       ),
@@ -1393,6 +1437,38 @@ String? _portugueseText(String source) {
     'えんぴつ18本を6人に同じ数で分けます。1人は何本ですか。' =>
       'Há 18 lápis. Vamos dividir igualmente entre 6 pessoas. Quantos lápis cada pessoa recebe?',
     '18 ÷ 6 = 3。1人分は3本です。' => '18 ÷ 6 = 3. Cada pessoa recebe 3 lápis.',
+    'クッキー8こを、1人に2こずつ分けます。何人分できますか。' =>
+      'Há 8 biscoitos. Dando 2 biscoitos para cada pessoa, para quantas pessoas dá?',
+    '8 ÷ 2 = 4。2こずつのまとまりが4つできるので、4人です。' =>
+      '8 ÷ 2 = 4. Como formamos 4 grupos de 2 biscoitos, dá para 4 pessoas.',
+    'あめ12こを、1人に3こずつ分けます。どの式ですか。' =>
+      'Há 12 balas. Dando 3 balas para cada pessoa, qual é a conta correta?',
+    '全部の12こを、3こずつのまとまりにするので、12 ÷ 3です。' =>
+      'Como agrupamos as 12 balas em grupos de 3, a conta é 12 ÷ 3.',
+    'カード15まいを、1人に5まいずつ分けます。何人分できますか。' =>
+      'Há 15 cartões. Dando 5 cartões para cada pessoa, para quantas pessoas dá?',
+    '15 ÷ 5 = 3。3人に分けられます。' =>
+      '15 ÷ 5 = 3. Dá para dividir para 3 pessoas.',
+    'ビー玉18こを、1人に6こずつ分けます。18 ÷ □ の□は何ですか。' =>
+      'Há 18 bolinhas. Dando 6 bolinhas para cada pessoa, que número entra no □ em 18 ÷ □?',
+    '1人に6こずつ分けるので、式は18 ÷ 6です。' =>
+      'Como damos 6 para cada pessoa, a conta é 18 ÷ 6.',
+    'シール24こを、1人に4こずつ分けます。どの式ですか。' =>
+      'Há 24 adesivos. Dando 4 adesivos para cada pessoa, qual é a conta correta?',
+    '全部の24こを、1人分の4こで分けるので、式は24 ÷ 4です。' =>
+      'Como dividimos os 24 adesivos em partes de 4, a conta é 24 ÷ 4.',
+    'いちご6こを、1人に2こずつ分けます。何人分できますか。' =>
+      'Há 6 morangos. Dando 2 morangos para cada pessoa, para quantas pessoas dá?',
+    '6こを2こずつのまとまりにすると、3つのまとまりができます。だから、3人に分けられます。' =>
+      'Ao fazer grupos de 2 com 6 morangos, conseguimos 3 grupos. Por isso, dá para dividir para 3 pessoas.',
+    'あめ10こを、1人に2こずつ分けます。合う図はどれですか。' =>
+      'Há 10 balas. Dando 2 balas para cada pessoa, qual desenho combina?',
+    '10 ÷ 2 = 5。2こずつの組が5つある図です。' =>
+      '10 ÷ 2 = 5. É o desenho com 5 grupos de 2.',
+    'えんぴつ21本を、1人に3本ずつ分けます。何人分できますか。' =>
+      'Há 21 lápis. Dando 3 lápis para cada pessoa, para quantas pessoas dá?',
+    '21 ÷ 3 = 7。答えの単位は人です。' =>
+      '21 ÷ 3 = 7. A unidade da resposta é pessoas.',
     _ => null,
   };
 }

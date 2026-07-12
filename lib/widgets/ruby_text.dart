@@ -163,6 +163,7 @@ class RubyText extends StatelessWidget {
       case '分けて':
       case '分けた':
       case '分けられた':
+      case '分けられます':
       case '分け':
         return '分ける';
       default:
@@ -306,10 +307,14 @@ class _RubyPiece extends StatelessWidget {
         return const [_RubySegment('分', 'わ'), _RubySegment('けた')];
       case '分けられた':
         return const [_RubySegment('分', 'わ'), _RubySegment('けられた')];
+      case '分けられます':
+        return const [_RubySegment('分', 'わ'), _RubySegment('けられます')];
       case '分け':
         return const [_RubySegment('分', 'わ'), _RubySegment('け')];
       case '何こ':
         return const [_RubySegment('何', 'なん'), _RubySegment('こ')];
+      case '何人':
+        return const [_RubySegment('何', 'なん'), _RubySegment('人', 'にん')];
       case '人分':
         return const [_RubySegment('人', 'ひとり'), _RubySegment('分', 'ぶん')];
       case '正しい':
