@@ -306,7 +306,7 @@ class LessonMapScreen extends StatelessWidget {
   }
 
   bool _isGrade3DivisionLesson(Lesson lesson) {
-    return lesson.id >= 7 && lesson.id <= 11;
+    return lesson.id >= 7 && lesson.id <= 9;
   }
 
   bool _isGrade3RemainderLesson(Lesson lesson) {

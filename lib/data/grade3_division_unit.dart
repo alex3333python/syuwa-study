@@ -493,7 +493,7 @@ final List<Lesson> grade3DivisionLessons = [
     levelId: 2,
     type: LessonType.practice,
     title: '0や1を使ったわり算',
-    description: '0を分ける、1でわる、同じ数でわる計算を短く練習します。',
+    description: '1でわる、0をわる、0ではわれない場面を見て考えます。',
     completed: false,
     locked: true,
     stars: 0,
@@ -501,17 +501,17 @@ final List<Lesson> grade3DivisionLessons = [
     questions: const [],
     steps: [
       _learn(
-        id: 'division-multiplication-learn',
+        id: 'division-zero-one-learn',
         title: '学習しよう',
         school:
-            '0こを3人で同じ数ずつ分けると、1人分は0こです。だから 0 ÷ 3 = 0 です。6こを1人で分けると、1人分は6こなので 6 ÷ 1 = 6 です。6こを6人で分けると、1人分は1こなので 6 ÷ 6 = 1 です。',
-        easy: '0を分けると答えは0です。1人で分けると、全部その人の分です。同じ数の人で分けると、1人分は1です。',
+            '1でわると答えはもとの数になります。0を人数でわると答えは0になります。0ではわることはできません。',
+        easy: '1人で分ける、0こを分ける、0人で分ける場面を見て考えます。',
       ),
       _learn(
         id: 'division-multiplication-words',
         title: 'ことばを知ろう',
-        school: '大事な言葉は「0を分ける」「1でわる」「同じ数でわる」です。0でわる計算は、ここでは扱いません。',
-        easy: '「6 ÷ 1」は、6こを1人で分けることです。「6 ÷ 6」は、6こを6人で分けることです。',
+        school: '大事な言葉は「1でわる」「0をわる」「0ではわれない」です。',
+        easy: '「6 ÷ 1」は6こを1人で分けることです。「0 ÷ 3」は0こを3人で分けることです。「6 ÷ 0」は分ける人がいないのでできません。',
       ),
       LessonStep(
         id: 'division-multiplication-guided',
@@ -632,8 +632,8 @@ final List<Lesson> grade3DivisionLessons = [
       ),
       _summary(
         id: 'division-multiplication-summary',
-        school: '0を分けると答えは0、1でわると答えは元の数、同じ数でわると答えは1です。0でわる計算はここでは使いません。',
-        easy: '0、1、同じ数が出てくるわり算は、場面を思い浮かべると答えを選びやすくなります。',
+        school: '1でわると答えはもとの数、0を人数でわると答えは0、0ではわることはできません。',
+        easy: 'わり算は、分けるものと分ける人を見て考えます。',
       ),
     ],
   ),

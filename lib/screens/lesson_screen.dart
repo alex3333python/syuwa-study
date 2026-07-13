@@ -771,6 +771,9 @@ class _IndependentPracticeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shouldShowResult =
+        _showResult || _scenario.kind != _ZeroOneScenarioKind.divideByOne;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1017,8 +1020,1030 @@ Widget? _buildRichLearnCard(LessonStep step, AppLanguage selectedLanguage) {
         selectedLanguage: selectedLanguage,
         vocabularyItems: measureDivisionLessonVocabulary,
       );
+    case 'division-zero-one-learn':
+      return const _ZeroOneDivisionLearn();
   }
   return null;
+}
+
+class _ZeroOneDivisionLearn extends StatefulWidget {
+  const _ZeroOneDivisionLearn();
+
+  @override
+  State<_ZeroOneDivisionLearn> createState() => _ZeroOneDivisionLearnState();
+}
+
+class _ZeroOneDivisionLearnState extends State<_ZeroOneDivisionLearn> {
+  int _scenarioIndex = 0;
+  bool _showStory = false;
+  int _storyStep = 0;
+  bool _showResult = false;
+  final List<int?> _berryOwners = List<int?>.filled(6, null);
+
+  _ZeroOneScenario get _scenario => _zeroOneScenarios[_scenarioIndex];
+
+  void _selectScenario(int index) {
+    setState(() {
+      _scenarioIndex = index;
+      _showStory = false;
+      _storyStep = 0;
+      _showResult = false;
+      for (var i = 0; i < _berryOwners.length; i++) {
+        _berryOwners[i] = null;
+      }
+    });
+  }
+
+  void _moveBerry(int berryIndex, int? targetIndex) {
+    setState(() {
+      _berryOwners[berryIndex] = targetIndex;
+      if (_scenario.kind == _ZeroOneScenarioKind.divideByOne &&
+          _berryOwners.every((owner) => owner == 0)) {
+        _showResult = true;
+      }
+    });
+  }
+
+  void _resetScenario() {
+    setState(() {
+      _showResult = false;
+      _storyStep = 0;
+      for (var i = 0; i < _berryOwners.length; i++) {
+        _berryOwners[i] = null;
+      }
+    });
+  }
+
+  void _showAnswer() {
+    setState(() {
+      _showResult = true;
+      if (_scenario.kind == _ZeroOneScenarioKind.divideByOne) {
+        for (var i = 0; i < _berryOwners.length; i++) {
+          _berryOwners[i] = 0;
+        }
+      }
+    });
+  }
+
+  List<int> get _sourceBerryIds {
+    return [
+      for (var i = 0; i < _scenario.totalCount; i++)
+        if (_berryOwners[i] == null) i,
+    ];
+  }
+
+  List<List<int>> get _targetBerryIds {
+    return [
+      for (var target = 0; target < _scenario.personCount; target++)
+        [
+          for (var i = 0; i < _scenario.totalCount; i++)
+            if (_berryOwners[i] == target) i,
+        ],
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E7EB), width: 1.5),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _LearnHeaderIcon(icon: Icons.calculate_rounded),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '0や1を使ったわり算',
+                      style: TextStyle(
+                        color: Color(0xFF111827),
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      _scenario.problem,
+                      style: const TextStyle(
+                        color: Color(0xFF111827),
+                        fontSize: 18,
+                        height: 1.55,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              _LearnIconButton(
+                semanticLabel: _showStory ? '操作する' : '見てみる',
+                icon: _showStory
+                    ? Icons.pan_tool_alt_rounded
+                    : Icons.play_circle_outline_rounded,
+                onPressed: () {
+                  setState(() {
+                    _showStory = !_showStory;
+                    _storyStep = 0;
+                    _showResult = false;
+                  });
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _ZeroOneScenarioTabs(
+            selectedIndex: _scenarioIndex,
+            onChanged: _selectScenario,
+          ),
+          const SizedBox(height: 16),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            child: _showStory
+                ? _ZeroOneStoryBoard(
+                    key: ValueKey('story-$_scenarioIndex-$_storyStep'),
+                    scenario: _scenario,
+                    step: _storyStep,
+                    onNext: () {
+                      setState(() {
+                        _storyStep = (_storyStep + 1).clamp(
+                          0,
+                          _scenario.maxStoryStep,
+                        );
+                        _showResult = _storyStep == _scenario.maxStoryStep;
+                      });
+                    },
+                    onBack: () {
+                      setState(() {
+                        _storyStep = (_storyStep - 1).clamp(
+                          0,
+                          _scenario.maxStoryStep,
+                        );
+                        _showResult = _storyStep == _scenario.maxStoryStep;
+                      });
+                    },
+                  )
+                : _ZeroOneDragBoard(
+                    key: ValueKey('drag-$_scenarioIndex'),
+                    scenario: _scenario,
+                    sourceBerryIds: _sourceBerryIds,
+                    targetBerryIds: _targetBerryIds,
+                    showResult: _showResult,
+                    onMoveBerry: _moveBerry,
+                    onShowAnswer: _showAnswer,
+                    onReset: _resetScenario,
+                  ),
+          ),
+          const SizedBox(height: 14),
+          if (shouldShowResult) ...[
+            _ZeroOneResultPanel(scenario: _scenario),
+            const SizedBox(height: 14),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+enum _ZeroOneScenarioKind { divideByOne, zeroDivided, divideByZero }
+
+class _ZeroOneScenario {
+  final _ZeroOneScenarioKind kind;
+  final String tabLabel;
+  final String problem;
+  final int totalCount;
+  final int personCount;
+  final String instruction;
+  final String storyHint;
+  final String equation;
+  final String explanation;
+  final String rule;
+  final int maxStoryStep;
+
+  const _ZeroOneScenario({
+    required this.kind,
+    required this.tabLabel,
+    required this.problem,
+    required this.totalCount,
+    required this.personCount,
+    required this.instruction,
+    required this.storyHint,
+    required this.equation,
+    required this.explanation,
+    required this.rule,
+    required this.maxStoryStep,
+  });
+}
+
+const _zeroOneScenarios = [
+  _ZeroOneScenario(
+    kind: _ZeroOneScenarioKind.divideByOne,
+    tabLabel: '1でわる',
+    problem: 'いちごが6こあります。1人で同じ数ずつ分けると、1人分は何こになりますか。',
+    totalCount: 6,
+    personCount: 1,
+    instruction: 'いちごを、1人のお皿へ動かしてみよう。',
+    storyHint: '1人だけなので、いちごは全部その人のところへ行きます。',
+    equation: '6 ÷ 1 = 6',
+    explanation: '1人で分けるので、6このいちごは全部その人がもらいます。だから、1人分は6こです。',
+    rule: '1でわると、答えはもとの数になります。',
+    maxStoryStep: 3,
+  ),
+  _ZeroOneScenario(
+    kind: _ZeroOneScenarioKind.zeroDivided,
+    tabLabel: '0をわる',
+    problem: 'いちごが0こあります。3人で同じ数ずつ分けると、1人分は何こになりますか。',
+    totalCount: 0,
+    personCount: 3,
+    instruction: 'いちごは0こです。お皿の数を見てみよう。',
+    storyHint: '配るいちごがないので、どのお皿にも入りません。',
+    equation: '0 ÷ 3 = 0',
+    explanation: 'いちごは0こなので、配るものがありません。3人のお皿は、どれも0こです。',
+    rule: '0を人数でわると、答えは0になります。',
+    maxStoryStep: 2,
+  ),
+  _ZeroOneScenario(
+    kind: _ZeroOneScenarioKind.divideByZero,
+    tabLabel: '0ではわれない',
+    problem: 'いちごが6こあります。0人で同じ数ずつ分けることはできますか。',
+    totalCount: 6,
+    personCount: 0,
+    instruction: '分ける人がいるか、見てみよう。',
+    storyHint: 'だれに分ければいいの？',
+    equation: '6 ÷ 0',
+    explanation: 'いちごは6こありますが、分ける人が0人です。だれのお皿にも入れられないので、分けることはできません。',
+    rule: '0ではわることはできません。',
+    maxStoryStep: 2,
+  ),
+];
+
+class _ZeroOneScenarioTabs extends StatelessWidget {
+  final int selectedIndex;
+  final ValueChanged<int> onChanged;
+
+  const _ZeroOneScenarioTabs({
+    required this.selectedIndex,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 620;
+        final children = [
+          for (var i = 0; i < _zeroOneScenarios.length; i++)
+            _ZeroOneTabButton(
+              label: _zeroOneScenarios[i].tabLabel,
+              selected: selectedIndex == i,
+              onTap: () => onChanged(i),
+            ),
+        ];
+
+        if (isWide) {
+          return Row(
+            children: [
+              for (var i = 0; i < children.length; i++) ...[
+                Expanded(child: children[i]),
+                if (i != children.length - 1) const SizedBox(width: 10),
+              ],
+            ],
+          );
+        }
+
+        return Column(
+          children: [
+            for (var i = 0; i < children.length; i++) ...[
+              children[i],
+              if (i != children.length - 1) const SizedBox(height: 8),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _ZeroOneTabButton extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ZeroOneTabButton({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      onPressed: onTap,
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size.fromHeight(50),
+        backgroundColor: selected ? const Color(0xFFEFF6FF) : Colors.white,
+        foregroundColor: selected
+            ? const Color(0xFF1D4ED8)
+            : const Color(0xFF374151),
+        side: BorderSide(
+          color: selected ? const Color(0xFF60A5FA) : const Color(0xFFE5E7EB),
+          width: selected ? 1.6 : 1.2,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+      ),
+    );
+  }
+}
+
+class _ZeroOneDragBoard extends StatelessWidget {
+  final _ZeroOneScenario scenario;
+  final List<int> sourceBerryIds;
+  final List<List<int>> targetBerryIds;
+  final bool showResult;
+  final void Function(int berryIndex, int? targetIndex) onMoveBerry;
+  final VoidCallback onShowAnswer;
+  final VoidCallback onReset;
+
+  const _ZeroOneDragBoard({
+    super.key,
+    required this.scenario,
+    required this.sourceBerryIds,
+    required this.targetBerryIds,
+    required this.showResult,
+    required this.onMoveBerry,
+    required this.onShowAnswer,
+    required this.onReset,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _ZeroOneInstruction(
+          message: showResult ? scenario.explanation : scenario.instruction,
+        ),
+        const SizedBox(height: 12),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth >= 720;
+            final source = _ZeroOneSourceTray(
+              count: scenario.totalCount,
+              berryIds: sourceBerryIds,
+              onAccept: (id) => onMoveBerry(id, null),
+            );
+            final targets = _ZeroOneTargetArea(
+              scenario: scenario,
+              targetBerryIds: targetBerryIds,
+              onMoveBerry: onMoveBerry,
+            );
+
+            if (isWide) {
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(width: 250, child: source),
+                  const SizedBox(width: 14),
+                  Expanded(child: targets),
+                ],
+              );
+            }
+
+            return Column(
+              children: [
+                source,
+                const SizedBox(height: 12),
+                targets,
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            _LearnIconButton(
+              semanticLabel: 'やり直す',
+              icon: Icons.refresh_rounded,
+              onPressed: onReset,
+            ),
+            const SizedBox(width: 10),
+            FilledButton(
+              onPressed: onShowAnswer,
+              style: FilledButton.styleFrom(
+                minimumSize: const Size(128, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'たしかめる',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _ZeroOneInstruction extends StatelessWidget {
+  final String message;
+
+  const _ZeroOneInstruction({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFBFDBFE)),
+      ),
+      child: Text(
+        message,
+        style: const TextStyle(
+          color: Color(0xFF1E3A8A),
+          fontSize: 17,
+          height: 1.45,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+class _ZeroOneSourceTray extends StatelessWidget {
+  final int count;
+  final List<int> berryIds;
+  final ValueChanged<int> onAccept;
+
+  const _ZeroOneSourceTray({
+    required this.count,
+    required this.berryIds,
+    required this.onAccept,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DragTarget<int>(
+      onAcceptWithDetails: (details) => onAccept(details.data),
+      builder: (context, candidateData, rejectedData) {
+        return Container(
+          height: 190,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF9FAFB),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _SectionLabel(text: 'いちご $countこ'),
+              Expanded(
+                child: Center(
+                  child: berryIds.isEmpty
+                      ? Text(
+                          count == 0 ? 'いちごはありません' : ' ',
+                          style: const TextStyle(
+                            color: Color(0xFF6B7280),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        )
+                      : Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 10,
+                          runSpacing: 10,
+                          children: [
+                            for (final id in berryIds) _DraggableBerry(id: id),
+                          ],
+                        ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ZeroOneTargetArea extends StatelessWidget {
+  final _ZeroOneScenario scenario;
+  final List<List<int>> targetBerryIds;
+  final void Function(int berryIndex, int? targetIndex) onMoveBerry;
+
+  const _ZeroOneTargetArea({
+    required this.scenario,
+    required this.targetBerryIds,
+    required this.onMoveBerry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (scenario.personCount == 0) {
+      return Container(
+        height: 190,
+        alignment: Alignment.center,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFBEB),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFFDE68A)),
+        ),
+        child: const Text(
+          'だれに分ければいいの？',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Color(0xFF92400E),
+            fontSize: 22,
+            height: 1.35,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 520;
+        final children = [
+          for (var i = 0; i < scenario.personCount; i++)
+            _ZeroOnePlateTarget(
+              index: i,
+              berryIds: targetBerryIds[i],
+              onMoveBerry: onMoveBerry,
+            ),
+        ];
+
+        if (isWide) {
+          return Row(
+            children: [
+              for (var i = 0; i < children.length; i++) ...[
+                Expanded(child: children[i]),
+                if (i != children.length - 1) const SizedBox(width: 10),
+              ],
+            ],
+          );
+        }
+
+        return Column(
+          children: [
+            for (var i = 0; i < children.length; i++) ...[
+              children[i],
+              if (i != children.length - 1) const SizedBox(height: 10),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _ZeroOnePlateTarget extends StatelessWidget {
+  final int index;
+  final List<int> berryIds;
+  final void Function(int berryIndex, int? targetIndex) onMoveBerry;
+
+  const _ZeroOnePlateTarget({
+    required this.index,
+    required this.berryIds,
+    required this.onMoveBerry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DragTarget<int>(
+      onAcceptWithDetails: (details) => onMoveBerry(details.data, index),
+      builder: (context, candidateData, rejectedData) {
+        final active = candidateData.isNotEmpty;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          height: 190,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: active ? const Color(0xFFEFF6FF) : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFD1D5DB), width: 1.5),
+          ),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                top: 30,
+                child: CustomPaint(painter: _PlatePainter(active: active)),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _PersonPlateLabel(
+                    index: index,
+                    language: AppLanguage.japanese,
+                    showNative: false,
+                  ),
+                  const SizedBox(height: 6),
+                  SizedBox(
+                    height: 68,
+                    child: Center(
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final id in berryIds) _DraggableBerry(id: id),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Center(child: _CountBadge(count: berryIds.length)),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ZeroOneStoryBoard extends StatelessWidget {
+  final _ZeroOneScenario scenario;
+  final int step;
+  final VoidCallback onNext;
+  final VoidCallback onBack;
+
+  const _ZeroOneStoryBoard({
+    super.key,
+    required this.scenario,
+    required this.step,
+    required this.onNext,
+    required this.onBack,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final showResult = step >= scenario.maxStoryStep;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _ZeroOneInstruction(
+          message: showResult ? scenario.explanation : scenario.storyHint,
+        ),
+        const SizedBox(height: 12),
+        _ZeroOneStoryScene(scenario: scenario, step: step),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: step == 0 ? null : onBack,
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text('もどる'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              flex: 3,
+              child: FilledButton(
+                onPressed: step == scenario.maxStoryStep ? null : onNext,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'つぎ',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _ZeroOneStoryScene extends StatelessWidget {
+  final _ZeroOneScenario scenario;
+  final int step;
+
+  const _ZeroOneStoryScene({required this.scenario, required this.step});
+
+  @override
+  Widget build(BuildContext context) {
+    final int shownInTarget = switch (scenario.kind) {
+      _ZeroOneScenarioKind.divideByOne => step == 0
+          ? 0
+          : (step * 2).clamp(0, 6).toInt(),
+      _ZeroOneScenarioKind.zeroDivided => 0,
+      _ZeroOneScenarioKind.divideByZero => 0,
+    };
+    final sourceCount = scenario.totalCount - shownInTarget;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 720;
+        final source = _StaticStrawberryBox(
+          title: 'いちご ${scenario.totalCount}こ',
+          count: sourceCount,
+          emptyText: scenario.totalCount == 0 ? 'いちごはありません' : null,
+        );
+        final target = scenario.personCount == 0
+            ? const _NoPeopleBox()
+            : _StaticPeopleBoxes(
+                personCount: scenario.personCount,
+                shownInTarget: shownInTarget,
+              );
+
+        if (isWide) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(width: 250, child: source),
+              const SizedBox(width: 14),
+              Expanded(child: target),
+            ],
+          );
+        }
+        return Column(
+          children: [
+            source,
+            const SizedBox(height: 12),
+            target,
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _StaticStrawberryBox extends StatelessWidget {
+  final String title;
+  final int count;
+  final String? emptyText;
+
+  const _StaticStrawberryBox({
+    required this.title,
+    required this.count,
+    this.emptyText,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 190,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SectionLabel(text: title),
+          Expanded(
+            child: Center(
+              child: count == 0
+                  ? Text(
+                      emptyText ?? ' ',
+                      style: const TextStyle(
+                        color: Color(0xFF6B7280),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    )
+                  : Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        for (var i = 0; i < count; i++)
+                          const _CounterDot(size: 42),
+                      ],
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StaticPeopleBoxes extends StatelessWidget {
+  final int personCount;
+  final int shownInTarget;
+
+  const _StaticPeopleBoxes({
+    required this.personCount,
+    required this.shownInTarget,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final perPerson = personCount == 0 ? 0 : shownInTarget ~/ personCount;
+    return Row(
+      children: [
+        for (var i = 0; i < personCount; i++) ...[
+          Expanded(
+            child: _StaticPersonPlate(index: i, count: perPerson),
+          ),
+          if (i != personCount - 1) const SizedBox(width: 10),
+        ],
+      ],
+    );
+  }
+}
+
+class _StaticPersonPlate extends StatelessWidget {
+  final int index;
+  final int count;
+
+  const _StaticPersonPlate({required this.index, required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 190,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFD1D5DB), width: 1.5),
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            top: 30,
+            child: CustomPaint(painter: _PlatePainter(active: false)),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _PersonPlateLabel(
+                index: index,
+                language: AppLanguage.japanese,
+                showNative: false,
+              ),
+              const SizedBox(height: 6),
+              SizedBox(
+                height: 68,
+                child: Center(
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (var i = 0; i < count; i++)
+                        const _CounterDot(size: 42),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Center(child: _CountBadge(count: count)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NoPeopleBox extends StatelessWidget {
+  const _NoPeopleBox();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 190,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFFDE68A)),
+      ),
+      child: const Text(
+        '人がいません',
+        style: TextStyle(
+          color: Color(0xFF92400E),
+          fontSize: 22,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
+}
+
+class _ZeroOneResultPanel extends StatelessWidget {
+  final _ZeroOneScenario scenario;
+
+  const _ZeroOneResultPanel({required this.scenario});
+
+  @override
+  Widget build(BuildContext context) {
+    final cannotDivide = scenario.kind == _ZeroOneScenarioKind.divideByZero;
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0FDF4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFBBF7D0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            scenario.explanation,
+            style: const TextStyle(
+              color: Color(0xFF166534),
+              fontSize: 18,
+              height: 1.45,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (cannotDivide)
+            Row(
+              children: [
+                Text(
+                  scenario.equation,
+                  style: const TextStyle(
+                    color: Color(0xFF111827),
+                    fontSize: 30,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: Icon(Icons.arrow_downward_rounded),
+                ),
+                const Text(
+                  'できません',
+                  style: TextStyle(
+                    color: Color(0xFFB45309),
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            )
+          else
+            Text(
+              scenario.equation,
+              style: const TextStyle(
+                color: Color(0xFF111827),
+                fontSize: 32,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          const SizedBox(height: 10),
+          Text(
+            scenario.rule,
+            style: const TextStyle(
+              color: Color(0xFF374151),
+              fontSize: 17,
+              height: 1.45,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _EqualShareInteractiveLearn extends StatefulWidget {
