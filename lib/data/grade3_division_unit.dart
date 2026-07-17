@@ -489,6 +489,150 @@ final List<Lesson> grade3DivisionLessons = [
     ],
   ),
   Lesson(
+    id: 17,
+    levelId: 2,
+    type: LessonType.practice,
+    title: 'かけ算からわり算を考える',
+    description: 'わり算の答えを、かけ算を使って見つけます。',
+    completed: false,
+    locked: true,
+    stars: 0,
+    maxStars: 3,
+    questions: const [],
+    steps: [
+      _learn(
+        id: 'division-multiplication-link-learn',
+        title: '学習しよう',
+        school: 'かけ算を使って、わり算の答えを見つけよう。',
+        easy: 'わり算とかけ算のつながりを、図と式で見ます。',
+        native: {
+          AppLanguage.portuguese:
+              'Vamos usar a multiplicação para encontrar a resposta da divisão.',
+          AppLanguage.tagalog:
+              'Gagamit tayo ng multiplication para hanapin ang sagot sa division.',
+          AppLanguage.vietnamese:
+              'Dùng phép nhân để tìm đáp án của phép chia.',
+        },
+      ),
+      LessonStep(
+        id: 'division-multiplication-link-guided',
+        type: LessonStepType.guidedPractice,
+        title: 'いっしょに解こう',
+        questions: [
+          _q(
+            id: 1701,
+            type: 'multiplication_check',
+            school: '24 ÷ 6 = □。答えを見つけるために使うかけ算はどれですか。',
+            easy: '24 ÷ 6 の答えを、かけ算で見つけます。どのかけ算を使いますか。',
+            questionTextRuby:
+                '24 ÷ 6 = □。{答え|こたえ}を{見つける|みつける}ために{使う|つかう}かけ{算|ざん}はどれですか。',
+            choices: ['6 × 3 = 18', '6 × 4 = 24', '6 × 5 = 30'],
+            correct: 1,
+            explanation: '6 × 4 = 24だから、24 ÷ 6 = 4です。',
+            explanationRuby:
+                '6 × 4 = 24だから、24 ÷ 6 = 4です。',
+            formulaExplanation: '24になるかけ算を探します。6に4をかけると24になります。',
+            formulaExplanationRuby:
+                '24になるかけ{算|ざん}を{探します|さがします}。6に4をかけると24になります。',
+            vocabularyEntries: _divisionSharingVocabulary,
+            vocabulary: ['答え', 'かけ算', '使う'],
+            tags: ['multiplication_connection', 'select_equation'],
+            equationHint: '6 × □ = 24',
+            thinkingHint: '24になるかけ算を探してみよう。',
+          ),
+          _q(
+            id: 1702,
+            type: 'fill_blank',
+            school: '18 ÷ 3 = □。3 × □ = 18。□に入る数はどれですか。',
+            easy: '18 ÷ 3 と 3 × □ = 18 を見ます。□に入る数はどれですか。',
+            questionTextRuby:
+                '18 ÷ 3 = □。3 × □ = 18。□に{入る|はいる}{数|かず}はどれですか。',
+            choices: ['4', '5', '6', '7'],
+            correct: 2,
+            explanation: '□には同じ6が入ります。18 ÷ 3 = 6、3 × 6 = 18です。',
+            explanationRuby:
+                '□には{同じ|おな}じ6が{入ります|はいります}。18 ÷ 3 = 6、3 × 6 = 18です。',
+            formulaExplanation: 'わり算の答えの6は、かけ算の□にも入ります。',
+            formulaExplanationRuby:
+                'わり{算|ざん}の{答え|こたえ}の6は、かけ{算|ざん}の□にも{入ります|はいります}。',
+            vocabularyEntries: _divisionSharingVocabulary,
+            vocabulary: ['数', '答え', 'かけ算'],
+            tags: ['multiplication_connection', 'fill_blank'],
+            equationHint: '3 × □ = 18',
+          ),
+        ],
+      ),
+      LessonStep(
+        id: 'division-multiplication-link-practice',
+        type: LessonStepType.independentPractice,
+        title: '自分で解こう',
+        questions: [
+          _q(
+            id: 1703,
+            type: 'story_to_equation',
+            school: 'りんごが21こあります。7人に同じ数ずつ分けます。1人分は何こですか。',
+            easy: 'りんご21こを7人で同じ数ずつ分けます。1人分は何こですか。',
+            questionTextRuby:
+                'りんごが21こあります。7{人|にん}に{同|おな}じ{数|かず}ずつ{分けます|わけます}。{1人|ひとり}{分|ぶん}は{何こ|なんこ}ですか。',
+            choices: ['2こ', '3こ', '7こ', '14こ'],
+            correct: 1,
+            explanation: '7 × 3 = 21だから、21 ÷ 7 = 3です。1人分は3こです。',
+            explanationRuby:
+                '7 × 3 = 21だから、21 ÷ 7 = 3です。{1人|ひとり}{分|ぶん}は3こです。',
+            formulaExplanation: '21になる7のかけ算を探します。7 × 3 = 21です。',
+            formulaExplanationRuby:
+                '21になる7のかけ{算|ざん}を{探します|さがします}。7 × 3 = 21です。',
+            vocabularyEntries: _divisionSharingVocabulary,
+            vocabulary: ['りんご', '同じ数ずつ', '1人分'],
+            tags: ['multiplication_connection', 'word_problem'],
+            equationHint: '21 ÷ 7 = □',
+            thinkingHint: '7 × □ = 21',
+            diagramType: 'equal_share_boxes',
+            diagramData: {'total': '21', 'groups': '7', 'each': '3'},
+            itemEmoji: '🍎',
+            itemUnit: 'こ',
+          ),
+        ],
+      ),
+      LessonStep(
+        id: 'division-multiplication-link-japanese',
+        type: LessonStepType.independentPractice,
+        title: '日本語だけで挑戦',
+        questions: [
+          _q(
+            id: 1704,
+            type: 'multiplication_check',
+            school: '36 ÷ 6 = □。答えを見つけるために使うかけ算はどれですか。',
+            easy: '36 ÷ 6 の答えを、かけ算で見つけます。',
+            choices: ['6 × 5 = 30', '6 × 6 = 36', '6 × 7 = 42'],
+            correct: 1,
+            explanation: '6 × 6 = 36だから、36 ÷ 6 = 6です。',
+            vocabulary: ['かけ算', '答え'],
+            tags: ['multiplication_connection', 'japanese_only'],
+            equationHint: '6 × □ = 36',
+          ),
+          _q(
+            id: 1705,
+            type: 'fill_blank',
+            school: '28 ÷ 4 = □。4 × □ = 28。□に入る数はどれですか。',
+            easy: '28 ÷ 4 と 4 × □ = 28 を見ます。',
+            choices: ['5', '6', '7', '8'],
+            correct: 2,
+            explanation: '4 × 7 = 28だから、28 ÷ 4 = 7です。',
+            vocabulary: ['□', 'かけ算'],
+            tags: ['multiplication_connection', 'japanese_only'],
+            equationHint: '4 × □ = 28',
+          ),
+        ],
+      ),
+      _summary(
+        id: 'division-multiplication-link-summary',
+        school: 'わられる数になるかけ算を探すと、わり算の答えが分かります。',
+        easy: 'かけ算を使うと、わり算の答えを見つけられます。',
+      ),
+    ],
+  ),
+  Lesson(
     id: 9,
     levelId: 2,
     type: LessonType.practice,
@@ -619,14 +763,14 @@ final List<Lesson> grade3DivisionLessons = [
           _q(
             id: 7308,
             type: 'select_word_meaning',
-            school: '6 ÷ 1 = 6 の「1」は何を表していますか。',
-            easy: '6 ÷ 1 = 6 の1は、どんな数ですか。',
-            choices: ['全部の数', '分ける人数', '答え'],
-            correct: 1,
-            explanation: '6 ÷ 1 = 6 の1は、分ける人数です。1人で分けるので、1人分は6こです。',
-            vocabulary: ['分ける人数', '1人分'],
-            tags: ['divide_by_one', 'equation_meaning'],
-            equationHint: '全部の数 ÷ 分ける人数 = 1人分',
+            school: '6 ÷ 0 について、正しいものはどれですか。',
+            easy: '6を0でわることについて、正しいものを選びます。',
+            choices: ['6', '0', '答えはありません'],
+            correct: 2,
+            explanation: '0人には分けられないので、6 ÷ 0 の答えはありません。',
+            vocabulary: ['0ではわれない'],
+            tags: ['divide_by_zero', 'rule_check'],
+            equationHint: '6 ÷ 0',
           ),
         ],
       ),
@@ -815,30 +959,18 @@ final List<Lesson> grade3DivisionLessons = [
     id: 11,
     levelId: 2,
     type: LessonType.practice,
-    title: 'まとめチャレンジ',
-    description: '計算、文章題、単位、かけ算でのたしかめをまとめて練習します。',
+    title: 'たしかめ問題',
+    description: 'これまでのわり算を、日本語だけでたしかめます。',
     completed: false,
     locked: true,
     stars: 0,
     maxStars: 3,
     questions: const [],
     steps: [
-      _learn(
-        id: 'division-challenge-learn',
-        title: '学習しよう',
-        school: 'このレッスンでは、わり算の計算、文章題、答えの単位、かけ算でのたしかめをまとめて使います。',
-        easy: 'これまで学んだことを使って、いろいろなわり算の問題に挑戦します。',
-      ),
-      _learn(
-        id: 'division-challenge-words',
-        title: 'ことばを知ろう',
-        school: '問題文の最後にある「何こ」「何人」「何本」「何まい」を見ると、答えの単位が分かります。',
-        easy: '最後の聞き方を見ます。「何人」なら答えは人、「何こ」なら答えはこです。',
-      ),
       LessonStep(
-        id: 'division-challenge-guided',
-        type: LessonStepType.guidedPractice,
-        title: 'いっしょに解こう',
+        id: 'division-check-japanese-calculation',
+        type: LessonStepType.independentPractice,
+        title: 'たしかめ問題',
         questions: [
           _q(
             id: 7501,
@@ -851,6 +983,18 @@ final List<Lesson> grade3DivisionLessons = [
             vocabulary: ['計算'],
             tags: ['calculation'],
             equationHint: '4 × □ = 16',
+          ),
+          _q(
+            id: 7504,
+            type: 'story_to_equation',
+            school: '24このクッキーを6人で同じ数ずつ分けます。1人分は何こですか。',
+            easy: 'クッキー24こを6人に同じ数で分けます。1人は何こですか。',
+            choices: ['4こ', '4人', '18こ', '30こ'],
+            correct: 0,
+            explanation: '24 ÷ 6 = 4。1人分は4こです。',
+            vocabulary: ['1人分', 'こ'],
+            tags: ['equal-sharing', 'word_problem', 'unit'],
+            equationHint: '24 ÷ 6',
           ),
           _q(
             id: 7502,
@@ -876,24 +1020,12 @@ final List<Lesson> grade3DivisionLessons = [
             tags: ['calculation'],
             equationHint: '6 × □ = 36',
           ),
-          _q(
-            id: 7504,
-            type: 'story_to_equation',
-            school: '24このクッキーを6人で同じ数ずつ分けます。1人分は何こですか。',
-            easy: 'クッキー24こを6人に同じ数で分けます。1人は何こですか。',
-            choices: ['4こ', '4人', '18こ', '30こ'],
-            correct: 0,
-            explanation: '24 ÷ 6 = 4。1人分は4こです。',
-            vocabulary: ['1人分', 'こ'],
-            tags: ['equal-sharing', 'word_problem', 'unit'],
-            equationHint: '24 ÷ 6',
-          ),
         ],
       ),
       LessonStep(
-        id: 'division-challenge-practice',
+        id: 'division-check-japanese-word-problems',
         type: LessonStepType.independentPractice,
-        title: '自分で解こう',
+        title: 'たしかめ問題',
         questions: [
           _q(
             id: 7505,
@@ -908,6 +1040,17 @@ final List<Lesson> grade3DivisionLessons = [
             equationHint: '24 ÷ 6',
           ),
           _q(
+            id: 7507,
+            type: 'unit_choice',
+            school: '30このあめを1人に5こずつ分けます。答えの単位はどれですか。',
+            easy: '何人に分けられるかを聞いています。答えの単位はどれですか。',
+            choices: ['こ', '人', '本'],
+            correct: 1,
+            explanation: '「何人に分けられますか」と聞いているので、単位は人です。',
+            vocabulary: ['単位', '何人'],
+            tags: ['measurement-division', 'unit_choice', 'unit'],
+          ),
+          _q(
             id: 7506,
             type: 'select_equation',
             school: '35本のえんぴつを5人で同じ数ずつ分けます。式はどれですか。',
@@ -918,17 +1061,6 @@ final List<Lesson> grade3DivisionLessons = [
             vocabulary: ['式'],
             tags: ['equal-sharing', 'select_equation'],
             equationHint: '35 ÷ 5',
-          ),
-          _q(
-            id: 7507,
-            type: 'unit_choice',
-            school: '30このあめを1人に5こずつ分けます。答えの単位はどれですか。',
-            easy: '何人に分けられるかを聞いています。答えの単位はどれですか。',
-            choices: ['こ', '人', '本'],
-            correct: 1,
-            explanation: '「何人に分けられますか」と聞いているので、単位は人です。',
-            vocabulary: ['単位', '何人'],
-            tags: ['measurement-division', 'unit_choice', 'unit'],
           ),
           _q(
             id: 7508,
@@ -944,9 +1076,9 @@ final List<Lesson> grade3DivisionLessons = [
         ],
       ),
       LessonStep(
-        id: 'division-challenge-japanese',
+        id: 'division-check-japanese-final',
         type: LessonStepType.independentPractice,
-        title: '日本語だけで挑戦',
+        title: 'たしかめ問題',
         questions: [
           _q(
             id: 7509,
@@ -958,18 +1090,6 @@ final List<Lesson> grade3DivisionLessons = [
             explanation: '42 ÷ 7 = 6。1人分は6まいです。',
             vocabulary: ['まい', '1人分'],
             tags: ['equal-sharing', 'word_problem', 'unit'],
-            equationHint: '42 ÷ 7',
-          ),
-          _q(
-            id: 7510,
-            type: 'story_to_equation',
-            school: '42まいのカードを1人に7まいずつ分けます。何人に分けられますか。',
-            easy: 'カード42まいを、1人に7まいずつ分けます。何人ですか。',
-            choices: ['6人', '6まい', '35人', '49人'],
-            correct: 0,
-            explanation: '42 ÷ 7 = 6。答えは6人です。',
-            vocabulary: ['何人に分けられる'],
-            tags: ['measurement-division', 'word_problem', 'unit'],
             equationHint: '42 ÷ 7',
           ),
           _q(
@@ -985,17 +1105,16 @@ final List<Lesson> grade3DivisionLessons = [
             equationHint: '8 × □ = 48',
           ),
           _q(
-            id: 7512,
+            id: 7510,
             type: 'story_to_equation',
-            school: '先生が32このシールを持っています。1人に4こずつ分けると、何人に分けられますか。式と答えを選びましょう。',
-            easy: 'シール32こを、1人に4こずつ分けます。何人に分けられますか。',
-            choices: ['32÷4＝8、8人', '32÷8＝4、4人', '32×4＝128、128人'],
+            school: '42まいのカードを1人に7まいずつ分けます。何人に分けられますか。',
+            easy: 'カード42まいを、1人に7まいずつ分けます。何人ですか。',
+            choices: ['6人', '6まい', '35人', '49人'],
             correct: 0,
-            explanation: '32 ÷ 4 = 8。1人に4こずつ分けるので、8人に分けられます。',
-            vocabulary: ['式と答え', '何人に分けられる'],
-            tags: ['measurement-division', 'story_to_equation', 'unit'],
-            equationHint: '32 ÷ 4',
-            thinkingHint: '4 × □ = 32 と考えます。',
+            explanation: '42 ÷ 7 = 6。答えは6人です。',
+            vocabulary: ['何人に分けられる'],
+            tags: ['measurement-division', 'word_problem', 'unit'],
+            equationHint: '42 ÷ 7',
           ),
           _q(
             id: 7513,
@@ -1504,6 +1623,68 @@ String? _portugueseText(String source) {
       'Há 21 lápis. Dando 3 lápis para cada pessoa, para quantas pessoas dá?',
     '21 ÷ 3 = 7。答えの単位は人です。' =>
       '21 ÷ 3 = 7. A unidade da resposta é pessoas.',
+    '0こを3人で分けます。1人分は何こですか。' =>
+      'Há 0 morangos. Dividindo entre 3 pessoas, quantos cada pessoa recebe?',
+    '0こを分けるので、1人分も0こです。0 ÷ 3 = 0 です。' =>
+      'Como estamos dividindo 0, cada pessoa recebe 0. 0 ÷ 3 = 0.',
+    '6こを1人で分けます。1人分は何こですか。' =>
+      'Há 6 morangos. Dividindo com 1 pessoa, quantos essa pessoa recebe?',
+    '6こを1人で分けるので、全部その人の分です。6 ÷ 1 = 6 です。' =>
+      'Como dividimos 6 com 1 pessoa, tudo fica para essa pessoa. 6 ÷ 1 = 6.',
+    '6こを6人で分けます。1人分は何こですか。' =>
+      'Há 6 morangos. Dividindo entre 6 pessoas, quantos cada pessoa recebe?',
+    '6こを6人で同じ数ずつ分けると、1人分は1こです。6 ÷ 6 = 1 です。' =>
+      'Dividindo 6 igualmente entre 6 pessoas, cada pessoa recebe 1. 6 ÷ 6 = 1.',
+    'あめが0こです。4人で分けます。どの式ですか。' =>
+      'Há 0 balas. Vamos dividir entre 4 pessoas. Qual é a conta correta?',
+    '全部の数が0こなので、式は0 ÷ 4です。0でわる式は選びません。' =>
+      'Como o total é 0, a conta é 0 ÷ 4. Não escolhemos uma conta dividindo por 0.',
+    '9こを1人で分けます。1人分は何こですか。' =>
+      'Há 9 itens. Dividindo com 1 pessoa, quantos essa pessoa recebe?',
+    '1人で分けるので、9こ全部がその人の分です。9 ÷ 1 = 9 です。' =>
+      'Como dividimos com 1 pessoa, todos os 9 itens ficam para essa pessoa. 9 ÷ 1 = 9.',
+    '8こを8人で分けます。1人分は何こですか。' =>
+      'Há 8 itens. Dividindo entre 8 pessoas, quantos cada pessoa recebe?',
+    '8こを8人で分けると、1人分は1こです。8 ÷ 8 = 1 です。' =>
+      'Dividindo 8 entre 8 pessoas, cada pessoa recebe 1. 8 ÷ 8 = 1.',
+    '7を7でわります。答えは何ですか。' =>
+      'Dividimos 7 por 7. Qual é a resposta?',
+    '同じ数でわると、答えは1です。7 ÷ 7 = 1 です。' =>
+      'Quando dividimos um número por ele mesmo, a resposta é 1. 7 ÷ 7 = 1.',
+    '6 ÷ 1 = 6 の1は、どんな数ですか。' =>
+      'Em 6 ÷ 1 = 6, que número o 1 representa?',
+    '6 ÷ 1 = 6 の1は、分ける人数です。1人で分けるので、1人分は6こです。' =>
+      'Em 6 ÷ 1 = 6, o 1 representa o número de pessoas. Como dividimos com 1 pessoa, essa pessoa recebe 6.',
+    '6を0でわることについて、正しいものを選びます。' =>
+      'Escolha a afirmação correta sobre dividir 6 por 0.',
+    '0人には分けられないので、6 ÷ 0 の答えはありません。' =>
+      'Como não dá para dividir entre 0 pessoas, 6 ÷ 0 não tem resposta.',
+    '24 ÷ 6 の答えを、かけ算で見つけます。どのかけ算を使いますか。' =>
+      'Vamos encontrar a resposta de 24 ÷ 6 usando a multiplicação. Qual multiplicação usamos?',
+    '6 × 4 = 24だから、24 ÷ 6 = 4です。' =>
+      'Como 6 × 4 = 24, então 24 ÷ 6 = 4.',
+    '18 ÷ 3 と 3 × □ = 18 を見ます。□に入る数はどれですか。' =>
+      'Observe 18 ÷ 3 e 3 × □ = 18. Qual número entra no □?',
+    '□には同じ6が入ります。18 ÷ 3 = 6、3 × 6 = 18です。' =>
+      'O mesmo número 6 entra nos dois lugares. 18 ÷ 3 = 6 e 3 × 6 = 18.',
+    'りんご21こを7人で同じ数ずつ分けます。1人分は何こですか。' =>
+      'Há 21 maçãs. Dividindo igualmente entre 7 pessoas, quantas maçãs cada pessoa recebe?',
+    '7 × 3 = 21だから、21 ÷ 7 = 3です。1人分は3こです。' =>
+      'Como 7 × 3 = 21, então 21 ÷ 7 = 3. Cada pessoa recebe 3 maçãs.',
+    'わり算とかけ算のつながりを、図と式で見ます。' =>
+      'Vamos ver a ligação entre divisão e multiplicação com desenhos e contas.',
+    'かけ算を使って、□に入る数を見つけます。' =>
+      'Usamos a multiplicação para encontrar o número que entra no □.',
+    'かけ算を使うと、わり算の答えを見つけられます。' =>
+      'Usando a multiplicação, podemos encontrar a resposta da divisão.',
+    '36 ÷ 6 の答えを、かけ算で見つけます。' =>
+      'Vamos encontrar a resposta de 36 ÷ 6 usando a multiplicação.',
+    '6 × 6 = 36だから、36 ÷ 6 = 6です。' =>
+      'Como 6 × 6 = 36, então 36 ÷ 6 = 6.',
+    '28 ÷ 4 と 4 × □ = 28 を見ます。' =>
+      'Observe 28 ÷ 4 e 4 × □ = 28.',
+    '4 × 7 = 28だから、28 ÷ 4 = 7です。' =>
+      'Como 4 × 7 = 28, então 28 ÷ 4 = 7.',
     _ => null,
   };
 }

@@ -42,6 +42,14 @@ enum LessonVocabularyVisual {
   splitToPlates,
   onePersonShare,
   countQuestion,
+  divideByOne,
+  zeroItems,
+  divideByZero,
+  remainder,
+  divisor,
+  dividend,
+  roundUpRemainder,
+  none,
 }
 
 class LessonVocabulary {
@@ -76,8 +84,7 @@ const equalShareProblemLines = [
   ),
   SupportLine(
     japanese: '3人で同じ数ずつ分けると、1人分は何こになりますか。',
-    ruby:
-        '3{人|にん}で{同じ数ずつ|おなじかずずつ}{分ける|わける}と、{1人|ひとり}{分|ぶん}は{何こ|なんこ}になりますか。',
+    ruby: '3{人|にん}で{同じ数ずつ|おなじかずずつ}{分ける|わける}と、{1人|ひとり}{分|ぶん}は{何こ|なんこ}になりますか。',
     native: {
       AppLanguage.portuguese:
           'Se forem divididos igualmente entre 3 pessoas, quantos morangos cada pessoa recebe?',
@@ -120,8 +127,7 @@ const equalShareResultLines = [
   ),
   SupportLine(
     japanese: 'いちご6こを、3人で同じ数ずつ分けると、1人分は2こになります。',
-    ruby:
-        'いちご6こを、3{人|にん}で{同じ数ずつ|おなじかずずつ}{分ける|わける}と、{1人|ひとり}{分|ぶん}は2こになります。',
+    ruby: 'いちご6こを、3{人|にん}で{同じ数ずつ|おなじかずずつ}{分ける|わける}と、{1人|ひとり}{分|ぶん}は2こになります。',
     native: {
       AppLanguage.portuguese:
           'Quando 6 morangos são divididos igualmente entre 3 pessoas, cada pessoa recebe 2.',
@@ -133,8 +139,7 @@ const equalShareResultLines = [
   ),
   SupportLine(
     japanese: 'このことを式で 6 ÷ 3 = 2 と書いて、「6わる3は2」といいます。',
-    ruby:
-        'このことを{式|しき}で 6 ÷ 3 = 2 と{書いて|かいて}、「6わる3は2」といいます。',
+    ruby: 'このことを{式|しき}で 6 ÷ 3 = 2 と{書いて|かいて}、「6わる3は2」といいます。',
     native: {
       AppLanguage.portuguese:
           'Escrevemos isso como 6 ÷ 3 = 2 e lemos: “seis dividido por três é dois”.',
@@ -370,8 +375,7 @@ const measureDivisionProblemLines = [
   ),
   SupportLine(
     japanese: '1人に2こずつ分けると、何人に分けられますか。',
-    ruby:
-        '{1人|ひとり}に2こずつ{分ける|わける}と、{何人|なんにん}に{分けられます|わけられます}か。',
+    ruby: '{1人|ひとり}に2こずつ{分ける|わける}と、{何人|なんにん}に{分けられます|わけられます}か。',
     native: {
       AppLanguage.portuguese:
           'Se dermos 2 morangos para cada pessoa, para quantas pessoas dá para dividir?',
@@ -405,21 +409,17 @@ const measureDivisionResultLines = [
   ),
   SupportLine(
     japanese: '1人目、2人目、3人目に、いちごが2こずつあるね。',
-    ruby:
-        '{1人|ひとり}{目|め}、2{人|にん}{目|め}、3{人|にん}{目|め}に、いちごが2こずつあるね。',
+    ruby: '{1人|ひとり}{目|め}、2{人|にん}{目|め}、3{人|にん}{目|め}に、いちごが2こずつあるね。',
     native: {
       AppLanguage.portuguese:
           'A pessoa 1, a pessoa 2 e a pessoa 3 têm 2 morangos cada.',
-      AppLanguage.tagalog:
-          'May tig-2 strawberry ang tao 1, tao 2, at tao 3.',
-      AppLanguage.vietnamese:
-          'Người thứ 1, thứ 2 và thứ 3 đều có 2 quả dâu.',
+      AppLanguage.tagalog: 'May tig-2 strawberry ang tao 1, tao 2, at tao 3.',
+      AppLanguage.vietnamese: 'Người thứ 1, thứ 2 và thứ 3 đều có 2 quả dâu.',
     },
   ),
   SupportLine(
     japanese: 'いちご6こを、1人に2こずつ分けると、3人に分けられます。',
-    ruby:
-        'いちご6こを、{1人|ひとり}に2こずつ{分ける|わける}と、3{人|にん}に{分けられます|わけられます}。',
+    ruby: 'いちご6こを、{1人|ひとり}に2こずつ{分ける|わける}と、3{人|にん}に{分けられます|わけられます}。',
     native: {
       AppLanguage.portuguese:
           'Quando 6 morangos são divididos dando 2 para cada pessoa, dá para 3 pessoas.',
@@ -431,8 +431,7 @@ const measureDivisionResultLines = [
   ),
   SupportLine(
     japanese: 'このことを式で 6 ÷ 2 = 3 と書いて、「6わる2は3」といいます。',
-    ruby:
-        'このことを{式|しき}で 6 ÷ 2 = 3 と{書いて|かいて}、「6わる2は3」といいます。',
+    ruby: 'このことを{式|しき}で 6 ÷ 2 = 3 と{書いて|かいて}、「6わる2は3」といいます。',
     native: {
       AppLanguage.portuguese:
           'Escrevemos isso como 6 ÷ 2 = 3 e lemos: “seis dividido por dois é três”.',
@@ -443,8 +442,7 @@ const measureDivisionResultLines = [
   ),
   SupportLine(
     japanese: 'また、この式では、6を「わられる数」、2を「わる数」といいます。',
-    ruby:
-        'また、この{式|しき}では、6を「わられる{数|かず}」、2を「わる{数|かず}」といいます。',
+    ruby: 'また、この{式|しき}では、6を「わられる{数|かず}」、2を「わる{数|かず}」といいます。',
     native: {
       AppLanguage.portuguese:
           'Nesta conta, 6 é o número que será dividido, e 2 é o número pelo qual dividimos.',
@@ -520,6 +518,212 @@ const measureDivisionLessonVocabulary = [
       AppLanguage.vietnamese: 'bao nhiêu người',
     },
     visual: LessonVocabularyVisual.countQuestion,
+  ),
+];
+
+const zeroOneDivisionLessonVocabulary = [
+  LessonVocabulary(
+    word: '1でわる',
+    reading: 'いちで わる',
+    explanation: '1人で分けることです。全部その人がもらいます。',
+    translations: {
+      AppLanguage.portuguese: 'dividir por 1',
+      AppLanguage.tagalog: 'hatiin sa 1',
+      AppLanguage.vietnamese: 'chia cho 1',
+    },
+    visual: LessonVocabularyVisual.divideByOne,
+  ),
+  LessonVocabulary(
+    word: '0をわる',
+    reading: 'ぜろを わる',
+    explanation: '0こを何人かで分けることです。もらう数は0こです。',
+    translations: {
+      AppLanguage.portuguese: 'dividir 0 por um número',
+      AppLanguage.tagalog: 'hatiin ang 0 sa bilang ng tao',
+      AppLanguage.vietnamese: 'chia 0 cho một số người',
+    },
+    visual: LessonVocabularyVisual.zeroItems,
+  ),
+  LessonVocabulary(
+    word: '0ではわれない',
+    reading: 'ぜろでは われない',
+    explanation: '分ける人が0人なので、分けることはできません。',
+    translations: {
+      AppLanguage.portuguese: 'não dá para dividir por 0',
+      AppLanguage.tagalog: 'hindi maaaring hatiin sa 0',
+      AppLanguage.vietnamese: 'không thể chia cho 0',
+    },
+    visual: LessonVocabularyVisual.divideByZero,
+  ),
+];
+
+const remainderBasicLessonVocabulary = [
+  LessonVocabulary(
+    word: 'あまり',
+    reading: 'あまり',
+    explanation: '分けたあとに残る数です。',
+    translations: {
+      AppLanguage.portuguese: 'resto / sobra',
+      AppLanguage.tagalog: 'sobra / natira',
+      AppLanguage.vietnamese: 'số dư',
+    },
+    visual: LessonVocabularyVisual.remainder,
+  ),
+  LessonVocabulary(
+    word: 'わる数',
+    reading: 'わる かず',
+    explanation: '何こずつ、または何人で分けるかを表す数です。',
+    translations: {
+      AppLanguage.portuguese: 'divisor',
+      AppLanguage.tagalog: 'divisor',
+      AppLanguage.vietnamese: 'số chia',
+    },
+    visual: LessonVocabularyVisual.divisor,
+  ),
+  LessonVocabulary(
+    word: 'わられる数',
+    reading: 'わられる かず',
+    explanation: 'はじめにある全部の数です。',
+    translations: {
+      AppLanguage.portuguese: 'número que será dividido',
+      AppLanguage.tagalog: 'bilang na hinahati',
+      AppLanguage.vietnamese: 'số bị chia',
+    },
+    visual: LessonVocabularyVisual.dividend,
+  ),
+  LessonVocabulary(
+    word: 'わりきれる',
+    reading: 'わりきれる',
+    explanation: 'あまりが出ないで、ぴったり分けられることです。',
+    translations: {
+      AppLanguage.portuguese: 'dividir sem resto',
+      AppLanguage.tagalog: 'mahati nang walang sobra',
+      AppLanguage.vietnamese: 'chia hết',
+    },
+    visual: LessonVocabularyVisual.equalGroups,
+  ),
+];
+
+const remainderContextLessonVocabulary = [
+  LessonVocabulary(
+    word: '必要',
+    reading: 'ひつよう',
+    explanation: 'なくてはならないことです。',
+    translations: {
+      AppLanguage.portuguese: 'necessário',
+      AppLanguage.tagalog: 'kailangan',
+      AppLanguage.vietnamese: 'cần thiết',
+    },
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: '1つ増やす',
+    reading: 'ひとつ ふやす',
+    explanation: '数や量を1つ多くすることです。',
+    translations: {
+      AppLanguage.portuguese: 'aumentar mais 1',
+      AppLanguage.tagalog: 'dagdagan ng isa',
+      AppLanguage.vietnamese: 'thêm 1',
+    },
+    visual: LessonVocabularyVisual.roundUpRemainder,
+  ),
+  LessonVocabulary(
+    word: '使わない',
+    reading: 'つかわない',
+    explanation: 'そのものを使わないことです。',
+    translations: {
+      AppLanguage.portuguese: 'não usar / não contar',
+      AppLanguage.tagalog: 'hindi gamitin / hindi bilangin',
+      AppLanguage.vietnamese: 'không dùng / không tính',
+    },
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: '場面',
+    reading: 'ばめん',
+    explanation: 'そこで起きていることや、そのときの様子です。',
+    translations: {
+      AppLanguage.portuguese: 'situação',
+      AppLanguage.tagalog: 'sitwasyon',
+      AppLanguage.vietnamese: 'tình huống',
+    },
+    visual: LessonVocabularyVisual.none,
+  ),
+];
+
+const zeroOneDivisionVocabularyEntries = [
+  ...equalShareVocabularyEntries,
+  VocabularyEntry(
+    term: '1でわる',
+    reading: 'いちでわる',
+    simpleJapanese: '1人で分けることです。',
+    translations: {
+      AppLanguage.portuguese: 'dividir por 1',
+      AppLanguage.tagalog: 'hatiin sa 1',
+      AppLanguage.vietnamese: 'chia cho 1',
+    },
+    exampleSentence: '6 ÷ 1 は、1でわる式です。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '0をわる',
+    reading: 'ぜろをわる',
+    simpleJapanese: '0こを何人かで分けることです。',
+    translations: {
+      AppLanguage.portuguese: 'dividir 0 por um número',
+      AppLanguage.tagalog: 'hatiin ang 0 sa bilang ng tao',
+      AppLanguage.vietnamese: 'chia 0 cho một số người',
+    },
+    exampleSentence: '0 ÷ 3 は、0をわる式です。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '0ではわれない',
+    reading: 'ぜろではわれない',
+    simpleJapanese: '0人には分けられない、ということです。',
+    translations: {
+      AppLanguage.portuguese: 'não dá para dividir por 0',
+      AppLanguage.tagalog: 'hindi maaaring hatiin sa 0',
+      AppLanguage.vietnamese: 'không thể chia cho 0',
+    },
+    exampleSentence: '6 ÷ 0 はできません。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: 'もとの数',
+    reading: 'もとのかず',
+    simpleJapanese: 'はじめにあった数です。',
+    translations: {
+      AppLanguage.portuguese: 'número original',
+      AppLanguage.tagalog: 'orihinal na bilang',
+      AppLanguage.vietnamese: 'số ban đầu',
+    },
+    exampleSentence: '1でわると、答えはもとの数になります。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '配るもの',
+    reading: 'くばるもの',
+    simpleJapanese: '分けるものです。',
+    translations: {
+      AppLanguage.portuguese: 'coisas para distribuir',
+      AppLanguage.tagalog: 'bagay na ipapamahagi',
+      AppLanguage.vietnamese: 'đồ để chia',
+    },
+    exampleSentence: '配るものがないので、みんな0こです。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: 'できません',
+    reading: 'できません',
+    simpleJapanese: 'することができない、という意味です。',
+    translations: {
+      AppLanguage.portuguese: 'não é possível',
+      AppLanguage.tagalog: 'hindi puwede',
+      AppLanguage.vietnamese: 'không thể',
+    },
+    exampleSentence: '0ではわることはできません。',
+    category: 'school_japanese',
   ),
 ];
 

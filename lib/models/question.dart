@@ -110,6 +110,9 @@ class Question {
       visualType != QuestionVisualType.none || diagramType.isNotEmpty;
 
   String promptRubyFor(AppLanguage language, QuestionPromptMode mode) {
+    if (mode == QuestionPromptMode.native) {
+      return promptFor(language, mode);
+    }
     if (questionTextRuby.isNotEmpty) return questionTextRuby;
     return promptFor(language, mode);
   }
@@ -163,6 +166,9 @@ class Question {
   }
 
   String explanationRubyFor(AppLanguage language) {
+    if (language != AppLanguage.japanese) {
+      return explanationFor(language);
+    }
     if (explanationRuby.isNotEmpty) return explanationRuby;
     return explanationFor(language);
   }

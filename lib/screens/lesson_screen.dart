@@ -57,7 +57,8 @@ class _LessonScreenState extends State<LessonScreen> {
 
   bool get hasSteps => visibleSteps.isNotEmpty;
 
-  LessonStep? get currentStep => hasSteps ? visibleSteps[currentStepIndex] : null;
+  LessonStep? get currentStep =>
+      hasSteps ? visibleSteps[currentStepIndex] : null;
 
   List<Question> get currentQuestions =>
       hasSteps ? currentStep!.questions : widget.lesson.questions;
@@ -196,6 +197,9 @@ class _LessonScreenState extends State<LessonScreen> {
     final isJapaneseOnlyChallenge =
         currentStep?.title == '日本語だけで挑戦' ||
         (currentStep?.id.contains('japanese') ?? false);
+    final questionLanguage = isJapaneseOnlyChallenge
+        ? AppLanguage.japanese
+        : widget.selectedLanguage;
     final promptModeForQuestion = isIndependent
         ? QuestionPromptMode.schoolJa
         : promptMode == QuestionPromptMode.easyJa
@@ -319,8 +323,7 @@ class _LessonScreenState extends State<LessonScreen> {
                           _QuestionImage(imageUrl: question.imageUrl!),
                           const SizedBox(height: 28),
                         ],
-                        if (question.choiceDiagramData.length ==
-                            options.length)
+                        if (question.choiceDiagramData.length == options.length)
                           _buildDiagramOptions(
                             options: options,
                             optionRubies: optionRubies,
@@ -357,11 +360,9 @@ class _LessonScreenState extends State<LessonScreen> {
           _ExplanationOverlay(
             isCorrect: isCorrect,
             question: question,
-            questionLanguage: widget.selectedLanguage,
+            questionLanguage: questionLanguage,
             correctAnswerText: question.resolvedCorrectAnswerTextRuby,
-            explanationText: question.explanationRubyFor(
-              widget.selectedLanguage,
-            ),
+            explanationText: question.explanationRubyFor(questionLanguage),
             formulaExplanation: widget.lesson.id == 7
                 ? ''
                 : question.resolvedFormulaExplanationRuby,
@@ -771,9 +772,6 @@ class _IndependentPracticeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shouldShowResult =
-        _showResult || _scenario.kind != _ZeroOneScenarioKind.divideByOne;
-
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1020,14 +1018,1902 @@ Widget? _buildRichLearnCard(LessonStep step, AppLanguage selectedLanguage) {
         selectedLanguage: selectedLanguage,
         vocabularyItems: measureDivisionLessonVocabulary,
       );
+    case 'division-multiplication-link-learn':
+      return _MultiplicationDivisionLearn(selectedLanguage: selectedLanguage);
+    case 'division-multiplication-words':
+      return _EqualShareWordsCard(
+        selectedLanguage: selectedLanguage,
+        vocabularyItems: zeroOneDivisionLessonVocabulary,
+      );
     case 'division-zero-one-learn':
-      return const _ZeroOneDivisionLearn();
+      return _ZeroOneDivisionLearn(selectedLanguage: selectedLanguage);
+    case 'division-remainder-basic-learn':
+      return _RemainderDivisionLearn(selectedLanguage: selectedLanguage);
+    case 'division-remainder-basic-words':
+      return _EqualShareWordsCard(
+        selectedLanguage: selectedLanguage,
+        vocabularyItems: remainderBasicLessonVocabulary,
+      );
+    case 'division-remainder-context-learn':
+      return _RemainderContextLearn(selectedLanguage: selectedLanguage);
+    case 'division-remainder-context-words':
+      return _EqualShareWordsCard(
+        selectedLanguage: selectedLanguage,
+        vocabularyItems: remainderContextLessonVocabulary,
+      );
   }
   return null;
 }
 
+class _MultiplicationDivisionLearn extends StatefulWidget {
+  final AppLanguage selectedLanguage;
+
+  const _MultiplicationDivisionLearn({required this.selectedLanguage});
+
+  @override
+  State<_MultiplicationDivisionLearn> createState() =>
+      _MultiplicationDivisionLearnState();
+}
+
+class _MultiplicationDivisionLearnState
+    extends State<_MultiplicationDivisionLearn> {
+  int _page = 0;
+  int? _selectedProduct;
+  bool _showNative = false;
+
+  static const int _lastPage = 5;
+
+  void _speak(String label, String text) {
+    LearningAudio.speakJapanese(context, label: label, text: text);
+  }
+
+  void _previous() {
+    if (_page == 0) return;
+    setState(() {
+      _page--;
+      _selectedProduct = null;
+    });
+  }
+
+  void _next() {
+    if (_page == _lastPage) return;
+    setState(() {
+      _page++;
+      _selectedProduct = null;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.calculate_rounded,
+                  color: Color(0xFF2563EB),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    _pageTitle,
+                    textAlign: TextAlign.left,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontFamily: AppFonts.display,
+                      fontSize: 24,
+                      height: 1.25,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              _IconSupportActions(
+                language: widget.selectedLanguage,
+                showNative: _showNative,
+                translateLabel: '翻訳',
+                audioLabel: '音声',
+                onToggleNative: () {
+                  setState(() {
+                    _showNative = !_showNative;
+                  });
+                },
+                onAudio: () => _speak(_pageTitle, _plainJapanese),
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            child: KeyedSubtree(key: ValueKey(_page), child: _buildPage()),
+          ),
+          const SizedBox(height: 22),
+          Row(
+            children: [
+              OutlinedButton(
+                onPressed: _page == 0 ? null : _previous,
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(120, 48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text('もどる'),
+              ),
+              const Spacer(),
+              FilledButton(
+                onPressed: _page == _lastPage ? null : _next,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(140, 48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text('つぎ'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String get _pageTitle {
+    return switch (_page) {
+      0 => 'かけ算を使って、わり算の答えを見つけよう',
+      1 => 'これまでの分け方',
+      2 => '同じ図をかけ算で見る',
+      3 => '同じ数がつながっているね',
+      4 => '□に入る数を探そう',
+      _ => 'まとめ',
+    };
+  }
+
+  String get _plainJapanese {
+    return switch (_page) {
+      0 => 'かけ算を使って、わり算の答えを見つけよう。わり算とかけ算には、どんなつながりがあるかな。',
+      1 => 'クッキーが12こあります。3人に同じ数ずつ分けると、1人分は4こです。12わる3は4です。',
+      2 => 'こんどは、分けたあとの図を見てみよう。1人に4こずつあります。4こずつが3人分あるので、3かける4は12です。',
+      3 => '同じ3つの数を使って、わり算とかけ算の式を作ることができます。',
+      4 => '3に何をかけると15になるかな。',
+      _ => 'かけ算を使うと、わり算の答えが見つかるね。',
+    };
+  }
+
+  Widget _buildPage() {
+    return switch (_page) {
+      0 => _buildAimPage(),
+      1 => _buildDivisionReviewPage(),
+      2 => _buildMultiplicationViewPage(),
+      3 => _buildEquationConnectionPage(),
+      4 => _buildBoxPracticePage(),
+      _ => _buildSummaryPage(),
+    };
+  }
+
+  Widget _buildAimPage() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _LearnTextBlock(
+          lines: const [
+            SupportLine(
+              japanese: 'わり算の答えは、かけ算を使って見つけられます。',
+              ruby: 'わり{算|ざん}の{答え|こたえ}は、かけ{算|ざん}を{使って|つかって}{見つけられます|みつけられます}。',
+              native: {
+                AppLanguage.portuguese:
+                    'A resposta da divisão pode ser encontrada usando a multiplicação.',
+              },
+            ),
+            SupportLine(
+              japanese: '同じ図を、わり算とかけ算の2つの式で見てみよう。',
+              ruby: '{同|おな}じ{図|ず}を、わり{算|ざん}とかけ{算|ざん}の2つの{式|しき}で{見て|みて}みよう。',
+              native: {
+                AppLanguage.portuguese:
+                    'Vamos olhar o mesmo desenho com duas contas: divisão e multiplicação.',
+              },
+            ),
+          ],
+          language: widget.selectedLanguage,
+          showNative: _showNative,
+        ),
+        const SizedBox(height: 18),
+        const _CookieShareDiagram(total: 12, groups: 3, each: 4),
+      ],
+    );
+  }
+
+  Widget _buildDivisionReviewPage() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _LearnTextBlock(
+          lines: const [
+            SupportLine(
+              japanese: 'クッキーが12こあります。',
+              ruby: 'クッキーが12こあります。',
+              native: {AppLanguage.portuguese: 'Há 12 biscoitos.'},
+            ),
+            SupportLine(
+              japanese: '3人に同じ数ずつ分けると、1人分は何こになるかな？',
+              ruby:
+                  '3{人|にん}に{同|おな}じ{数|かず}ずつ{分ける|わける}と、{1人|ひとり}{分|ぶん}は{何こ|なんこ}になるかな？',
+              native: {
+                AppLanguage.portuguese:
+                    'Se dividirmos igualmente entre 3 pessoas, quantos biscoitos cada pessoa recebe?',
+              },
+            ),
+          ],
+          language: widget.selectedLanguage,
+          showNative: _showNative,
+        ),
+        const SizedBox(height: 18),
+        const _CookieShareDiagram(total: 12, groups: 3, each: 4),
+        const SizedBox(height: 18),
+        const _LargeEquation(
+          parts: [
+            _EquationPart('12', Color(0xFF2563EB), 'ぜんぶの数'),
+            _EquationPart('÷', Color(0xFF111827), ''),
+            _EquationPart('3', Color(0xFFF97316), '人数'),
+            _EquationPart('=', Color(0xFF111827), ''),
+            _EquationPart('4', Color(0xFF059669), '1人分'),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMultiplicationViewPage() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _LearnTextBlock(
+          lines: const [
+            SupportLine(
+              japanese: 'こんどは、分けたあとの図を見てみよう。',
+              ruby: 'こんどは、{分けた|わけた}あとの{図|ず}を{見て|みて}みよう。',
+              native: {
+                AppLanguage.portuguese:
+                    'Agora vamos olhar o desenho depois de dividir.',
+              },
+            ),
+            SupportLine(
+              japanese: '4こずつが3人分あるので、ぜんぶで12こです。',
+              ruby: '4こずつが3{人|にん}{分|ぶん}あるので、{全部|ぜんぶ}で12こです。',
+              native: {
+                AppLanguage.portuguese:
+                    'Há 3 grupos de 4, então são 12 biscoitos no total.',
+              },
+            ),
+          ],
+          language: widget.selectedLanguage,
+          showNative: _showNative,
+        ),
+        const SizedBox(height: 18),
+        const _CookieShareDiagram(total: 12, groups: 3, each: 4),
+        const SizedBox(height: 18),
+        const _LargeEquation(
+          parts: [
+            _EquationPart('3', Color(0xFFF97316), '人数'),
+            _EquationPart('×', Color(0xFF111827), ''),
+            _EquationPart('4', Color(0xFF059669), '1人分'),
+            _EquationPart('=', Color(0xFF111827), ''),
+            _EquationPart('12', Color(0xFF2563EB), 'ぜんぶの数'),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEquationConnectionPage() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _LearnTextBlock(
+          lines: const [
+            SupportLine(
+              japanese: '同じ3つの数を使って、わり算とかけ算の式を作ることができます。',
+              ruby:
+                  '{同|おな}じ3つの{数|かず}を{使って|つかって}、わり{算|ざん}とかけ{算|ざん}の{式|しき}を{作る|つくる}ことができます。',
+              native: {
+                AppLanguage.portuguese:
+                    'Com os mesmos três números, podemos fazer uma conta de divisão e uma de multiplicação.',
+              },
+            ),
+            SupportLine(
+              japanese: 'わり算の答えは、かけ算を使って見つけられます。',
+              ruby: 'わり{算|ざん}の{答え|こたえ}は、かけ{算|ざん}を{使って|つかって}{見つけられます|みつけられます}。',
+              native: {
+                AppLanguage.portuguese:
+                    'A resposta da divisão pode ser encontrada usando a multiplicação.',
+              },
+            ),
+          ],
+          language: widget.selectedLanguage,
+          showNative: _showNative,
+        ),
+        const SizedBox(height: 18),
+        const _EquationPairPanel(),
+      ],
+    );
+  }
+
+  Widget _buildBoxPracticePage() {
+    final choices = const [
+      ('3 × 3 = 9', false),
+      ('3 × 4 = 12', false),
+      ('3 × 5 = 15', true),
+      ('3 × 6 = 18', false),
+    ];
+    final isCorrect = _selectedProduct == 2;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _LearnTextBlock(
+          lines: const [
+            SupportLine(
+              japanese: '3に何をかけると、15になるかな？',
+              ruby: '3に{何|なに}をかけると、15になるかな？',
+              native: {
+                AppLanguage.portuguese: 'Que número multiplicado por 3 dá 15?',
+              },
+            ),
+          ],
+          language: widget.selectedLanguage,
+          showNative: _showNative,
+        ),
+        const SizedBox(height: 18),
+        _BoxEquationPair(answer: isCorrect ? '5' : '□'),
+        const SizedBox(height: 18),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            for (var i = 0; i < choices.length; i++)
+              _MultiplicationChoiceCard(
+                label: choices[i].$1,
+                selected: _selectedProduct == i,
+                correct: _selectedProduct == i && choices[i].$2,
+                onTap: () {
+                  setState(() {
+                    _selectedProduct = i;
+                  });
+                },
+              ),
+          ],
+        ),
+        if (_selectedProduct != null) ...[
+          const SizedBox(height: 16),
+          _ResultMessage(
+            success: isCorrect,
+            text: isCorrect
+                ? '3 × 5 = 15だから、15 ÷ 3 = 5です。'
+                : '15になるかけ算を探してみよう。',
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildSummaryPage() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _EquationPairPanel(),
+        const SizedBox(height: 18),
+        _LearnTextBlock(
+          lines: const [
+            SupportLine(
+              japanese: 'わられる数になるかけ算を探すと、わり算の答えが分かります。',
+              ruby:
+                  'わられる{数|かず}になるかけ{算|ざん}を{探す|さがす}と、わり{算|ざん}の{答え|こたえ}が{分かります|わかります}。',
+              native: {
+                AppLanguage.portuguese:
+                    'Procure a multiplicação que dá o número dividido; assim você encontra a resposta da divisão.',
+              },
+            ),
+          ],
+          language: widget.selectedLanguage,
+          showNative: _showNative,
+        ),
+      ],
+    );
+  }
+}
+
+class _RemainderDivisionLearn extends StatefulWidget {
+  final AppLanguage selectedLanguage;
+
+  const _RemainderDivisionLearn({required this.selectedLanguage});
+
+  @override
+  State<_RemainderDivisionLearn> createState() =>
+      _RemainderDivisionLearnState();
+}
+
+class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
+  int _page = 0;
+  bool _showNative = false;
+
+  static const _lastPage = 4;
+
+  void _previous() {
+    if (_page == 0) return;
+    setState(() => _page--);
+  }
+
+  void _next() {
+    if (_page == _lastPage) return;
+    setState(() => _page++);
+  }
+
+  void _speak() {
+    LearningAudio.speakJapanese(
+      context,
+      label: _pageTitle,
+      text: _pageLines.map((line) => line.japanese).join(' '),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _RemainderLearnShell(
+      icon: Icons.more_horiz_rounded,
+      title: _pageTitle,
+      selectedLanguage: widget.selectedLanguage,
+      showNative: _showNative,
+      onToggleNative: () => setState(() => _showNative = !_showNative),
+      onAudio: _speak,
+      page: _page,
+      lastPage: _lastPage,
+      onPrevious: _previous,
+      onNext: _next,
+      child: _buildPage(),
+    );
+  }
+
+  String get _pageTitle {
+    return switch (_page) {
+      0 => 'あまりのあるわり算',
+      1 => '式で書いてみよう',
+      2 => '九九でもたしかめられるね',
+      3 => 'あまりは、わる数より小さい',
+      _ => 'まとめ',
+    };
+  }
+
+  List<SupportLine> get _pageLines {
+    return switch (_page) {
+      0 => const [
+        SupportLine(
+          japanese: 'いちごが7こあります。',
+          ruby: 'いちごが7こあります。',
+          native: {AppLanguage.portuguese: 'Há 7 morangos.'},
+        ),
+        SupportLine(
+          japanese: '3人で同じ数ずつ分けると、1人分は2こで、1こ残ります。',
+          ruby:
+              '3{人|にん}で{同|おな}じ{数|かず}ずつ{分ける|わける}と、{1人|ひとり}{分|ぶん}は2こで、1こ{残ります|のこります}。',
+          native: {
+            AppLanguage.portuguese:
+                'Dividindo igualmente entre 3 pessoas, cada pessoa recebe 2 e sobra 1.',
+          },
+        ),
+      ],
+      1 => const [
+        SupportLine(
+          japanese: 'このことを、7 ÷ 3 = 2 あまり 1 と書きます。',
+          ruby: 'このことを、7 ÷ 3 = 2 あまり 1 と{書きます|かきます}。',
+          native: {
+            AppLanguage.portuguese: 'Escrevemos assim: 7 ÷ 3 = 2, resto 1.',
+          },
+        ),
+        SupportLine(
+          japanese: '「2」は1人分、「1」はあまりです。',
+          ruby: '「2」は{1人|ひとり}{分|ぶん}、「1」はあまりです。',
+          native: {
+            AppLanguage.portuguese:
+                'O 2 é a quantidade para cada pessoa. O 1 é o resto.',
+          },
+        ),
+      ],
+      2 => const [
+        SupportLine(
+          japanese: '3人に2こずつあるので、3 × 2 = 6 です。',
+          ruby: '3{人|にん}に2こずつあるので、3 × 2 = 6 です。',
+          native: {
+            AppLanguage.portuguese:
+                'Como há 2 para cada uma das 3 pessoas, 3 × 2 = 6.',
+          },
+        ),
+        SupportLine(
+          japanese: '6こ使って、1こ残るので、3 × 2 + 1 = 7 です。',
+          ruby: '6こ{使って|つかって}、1こ{残る|のこる}ので、3 × 2 + 1 = 7 です。',
+          native: {
+            AppLanguage.portuguese: 'Usamos 6 e sobra 1, então 3 × 2 + 1 = 7.',
+          },
+        ),
+      ],
+      3 => const [
+        SupportLine(
+          japanese: '3人で分けると、あまりは0、1、2のどれかです。',
+          ruby: '3{人|にん}で{分ける|わける}と、あまりは0、1、2のどれかです。',
+          native: {
+            AppLanguage.portuguese:
+                'Ao dividir entre 3 pessoas, o resto pode ser 0, 1 ou 2.',
+          },
+        ),
+        SupportLine(
+          japanese: 'あまりが3こになったら、もう1人分を作れます。',
+          ruby: 'あまりが3こになったら、もう{1人|ひとり}{分|ぶん}を{作れます|つくれます}。',
+          native: {
+            AppLanguage.portuguese:
+                'Se sobrassem 3, daria para formar mais uma parte.',
+          },
+        ),
+      ],
+      _ => const [
+        SupportLine(
+          japanese: 'あまりのあるわり算は、九九を使って考えられます。',
+          ruby: 'あまりのあるわり{算|ざん}は、九九を{使って|つかって}{考えられます|かんがえられます}。',
+          native: {
+            AppLanguage.portuguese:
+                'A divisão com resto pode ser pensada usando a tabuada.',
+          },
+        ),
+        SupportLine(
+          japanese: 'あまりは、いつもわる数より小さくなります。',
+          ruby: 'あまりは、いつもわる{数|かず}より{小さく|ちいさく}なります。',
+          native: {
+            AppLanguage.portuguese: 'O resto é sempre menor que o divisor.',
+          },
+        ),
+      ],
+    };
+  }
+
+  Widget _buildPage() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SupportedTextLines(
+          lines: _pageLines,
+          language: widget.selectedLanguage,
+          showNative: _showNative,
+          vocabularyEntries: _remainderLearnVocabulary,
+        ),
+        const SizedBox(height: 18),
+        switch (_page) {
+          0 => const _RemainderShareDiagram(
+            total: 7,
+            groups: 3,
+            each: 2,
+            remainder: 1,
+            itemEmoji: '🍓',
+          ),
+          1 => const _RemainderEquationPanel(),
+          2 => const _RemainderMultiplicationPanel(),
+          3 => const _RemainderGrowthPanel(),
+          _ => const _RemainderSummaryPanel(),
+        },
+      ],
+    );
+  }
+}
+
+class _RemainderContextLearn extends StatefulWidget {
+  final AppLanguage selectedLanguage;
+
+  const _RemainderContextLearn({required this.selectedLanguage});
+
+  @override
+  State<_RemainderContextLearn> createState() => _RemainderContextLearnState();
+}
+
+class _RemainderContextLearnState extends State<_RemainderContextLearn> {
+  int _page = 0;
+  bool _showNative = false;
+
+  static const _lastPage = 3;
+
+  void _previous() {
+    if (_page == 0) return;
+    setState(() => _page--);
+  }
+
+  void _next() {
+    if (_page == _lastPage) return;
+    setState(() => _page++);
+  }
+
+  void _speak() {
+    LearningAudio.speakJapanese(
+      context,
+      label: _pageTitle,
+      text: _pageLines.map((line) => line.japanese).join(' '),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _RemainderLearnShell(
+      icon: Icons.event_seat_rounded,
+      title: _pageTitle,
+      selectedLanguage: widget.selectedLanguage,
+      showNative: _showNative,
+      onToggleNative: () => setState(() => _showNative = !_showNative),
+      onAudio: _speak,
+      page: _page,
+      lastPage: _lastPage,
+      onPrevious: _previous,
+      onNext: _next,
+      child: _buildPage(),
+    );
+  }
+
+  String get _pageTitle {
+    return switch (_page) {
+      0 => 'あまりが出たら、場面を見よう',
+      1 => '9人なら、長いすは何台？',
+      2 => 'もう1台いるね',
+      _ => 'まとめ',
+    };
+  }
+
+  List<SupportLine> get _pageLines {
+    return switch (_page) {
+      0 => const [
+        SupportLine(
+          japanese: '4人がけの長いすがあります。',
+          ruby: '4{人|にん}がけの{長|なが}いすがあります。',
+          native: {AppLanguage.portuguese: 'Há bancos para 4 pessoas.'},
+        ),
+        SupportLine(
+          japanese: '9人がすわるには、長いすは何台いるかな？',
+          ruby: '9{人|にん}がすわるには、{長|なが}いすは{何台|なんだい}いるかな？',
+          native: {
+            AppLanguage.portuguese:
+                'Para 9 pessoas se sentarem, quantos bancos são necessários?',
+          },
+        ),
+      ],
+      1 => const [
+        SupportLine(
+          japanese: '9 ÷ 4 = 2 あまり 1 です。',
+          ruby: '9 ÷ 4 = 2 あまり 1 です。',
+          native: {AppLanguage.portuguese: '9 ÷ 4 = 2, resto 1.'},
+        ),
+        SupportLine(
+          japanese: '2台では8人までなので、1人がすわれません。',
+          ruby: '2{台|だい}では8{人|にん}までなので、1{人|ひとり}がすわれません。',
+          native: {
+            AppLanguage.portuguese:
+                'Com 2 bancos cabem 8 pessoas, então 1 pessoa fica sem sentar.',
+          },
+        ),
+      ],
+      2 => const [
+        SupportLine(
+          japanese: 'あまった1人もすわるので、もう1台いります。',
+          ruby: 'あまった1{人|ひとり}もすわるので、もう1{台|だい}いります。',
+          native: {
+            AppLanguage.portuguese:
+                'A pessoa que sobrou também precisa se sentar, então precisamos de mais 1 banco.',
+          },
+        ),
+        SupportLine(
+          japanese: '答えは3台です。',
+          ruby: '{答え|こたえ}は3{台|だい}です。',
+          native: {AppLanguage.portuguese: 'A resposta é 3 bancos.'},
+        ),
+      ],
+      _ => const [
+        SupportLine(
+          japanese: 'あまりが出たら、問題の場面に戻って考えます。',
+          ruby: 'あまりが{出たら|でたら}、{問題|もんだい}の{場面|ばめん}に{戻って|もどって}{考えます|かんがえます}。',
+          native: {
+            AppLanguage.portuguese:
+                'Quando aparece resto, voltamos à situação do problema e pensamos.',
+          },
+        ),
+        SupportLine(
+          japanese: '人がすわる問題では、あまった人のために1つ増やすことがあります。',
+          ruby: '{人|ひと}がすわる{問題|もんだい}では、あまった{人|ひと}のために1つ{増やす|ふやす}ことがあります。',
+          native: {
+            AppLanguage.portuguese:
+                'Em problemas com pessoas sentando, às vezes aumentamos 1 para quem sobrou.',
+          },
+        ),
+      ],
+    };
+  }
+
+  Widget _buildPage() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SupportedTextLines(
+          lines: _pageLines,
+          language: widget.selectedLanguage,
+          showNative: _showNative,
+          vocabularyEntries: _remainderContextVocabulary,
+        ),
+        const SizedBox(height: 18),
+        switch (_page) {
+          0 => const _BenchRemainderDiagram(benchCount: 2, showWaiting: true),
+          1 => const _BenchRemainderDiagram(benchCount: 2, showWaiting: true),
+          2 => const _BenchRemainderDiagram(benchCount: 3, showWaiting: false),
+          _ => const _RemainderContextSummaryPanel(),
+        },
+      ],
+    );
+  }
+}
+
+class _RemainderLearnShell extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final AppLanguage selectedLanguage;
+  final bool showNative;
+  final VoidCallback onToggleNative;
+  final VoidCallback onAudio;
+  final int page;
+  final int lastPage;
+  final VoidCallback onPrevious;
+  final VoidCallback onNext;
+  final Widget child;
+
+  const _RemainderLearnShell({
+    required this.icon,
+    required this.title,
+    required this.selectedLanguage,
+    required this.showNative,
+    required this.onToggleNative,
+    required this.onAudio,
+    required this.page,
+    required this.lastPage,
+    required this.onPrevious,
+    required this.onNext,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _LearnHeaderIcon(icon: icon),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontFamily: AppFonts.display,
+                    fontSize: 24,
+                    height: 1.25,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              _IconSupportActions(
+                language: selectedLanguage,
+                showNative: showNative,
+                translateLabel: '翻訳',
+                audioLabel: '音声',
+                onToggleNative: onToggleNative,
+                onAudio: onAudio,
+              ),
+            ],
+          ),
+          const SizedBox(height: 22),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            child: KeyedSubtree(key: ValueKey(page), child: child),
+          ),
+          const SizedBox(height: 22),
+          Row(
+            children: [
+              OutlinedButton(
+                onPressed: page == 0 ? null : onPrevious,
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(120, 48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text('もどる'),
+              ),
+              const Spacer(),
+              FilledButton(
+                onPressed: page == lastPage ? null : onNext,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(140, 48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text('つぎ'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+const _remainderLearnVocabulary = [
+  ...equalShareVocabularyEntries,
+  VocabularyEntry(
+    term: 'あまり',
+    reading: 'あまり',
+    simpleJapanese: '分けたあとに残る数です。',
+    translations: {AppLanguage.portuguese: 'resto / sobra'},
+    exampleSentence: '7 ÷ 3 = 2 あまり 1 です。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: 'わる数',
+    reading: 'わるかず',
+    simpleJapanese: '何こずつ、または何人で分けるかを表す数です。',
+    translations: {AppLanguage.portuguese: 'divisor'},
+    exampleSentence: '7 ÷ 3 の3は、わる数です。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: 'わられる数',
+    reading: 'わられるかず',
+    simpleJapanese: 'はじめにある全部の数です。',
+    translations: {AppLanguage.portuguese: 'número que será dividido'},
+    exampleSentence: '7 ÷ 3 の7は、わられる数です。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '残ります',
+    reading: 'のこる',
+    simpleJapanese: 'まだある、という意味です。',
+    translations: {AppLanguage.portuguese: 'sobra / fica'},
+    exampleSentence: '1こ残ります。',
+    category: 'math_language',
+  ),
+];
+
+const _remainderContextVocabulary = [
+  VocabularyEntry(
+    term: '長いす',
+    reading: 'ながいす',
+    simpleJapanese: '何人かがいっしょに座れるいすです。',
+    translations: {AppLanguage.portuguese: 'banco'},
+    exampleSentence: '4人がけの長いすがあります。',
+    category: 'noun',
+  ),
+  VocabularyEntry(
+    term: '何台',
+    reading: 'なんだい',
+    simpleJapanese: '車や長いすなどの数を聞く言い方です。',
+    translations: {AppLanguage.portuguese: 'quantos'},
+    exampleSentence: '長いすは何台いりますか。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '必要',
+    reading: 'ひつよう',
+    simpleJapanese: 'なくてはならないことです。',
+    translations: {AppLanguage.portuguese: 'necessário'},
+    exampleSentence: 'もう1台必要です。',
+    category: 'school_japanese',
+  ),
+  VocabularyEntry(
+    term: '場面',
+    reading: 'ばめん',
+    simpleJapanese: '問題で起きていることです。',
+    translations: {AppLanguage.portuguese: 'situação'},
+    exampleSentence: '問題の場面に戻って考えます。',
+    category: 'school_japanese',
+  ),
+];
+
+class _RemainderShareDiagram extends StatelessWidget {
+  final int total;
+  final int groups;
+  final int each;
+  final int remainder;
+  final String itemEmoji;
+
+  const _RemainderShareDiagram({
+    required this.total,
+    required this.groups,
+    required this.each,
+    required this.remainder,
+    required this.itemEmoji,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _RemainderItemRow(
+            label: '全部で$totalこ',
+            count: total,
+            itemEmoji: itemEmoji,
+          ),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            alignment: WrapAlignment.center,
+            children: [
+              for (var i = 0; i < groups; i++)
+                _RemainderGroupBox(
+                  label: '${i + 1}人目',
+                  count: each,
+                  itemEmoji: itemEmoji,
+                ),
+              _RemainderGroupBox(
+                label: 'あまり',
+                count: remainder,
+                itemEmoji: itemEmoji,
+                isRemainder: true,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RemainderItemRow extends StatelessWidget {
+  final String label;
+  final int count;
+  final String itemEmoji;
+
+  const _RemainderItemRow({
+    required this.label,
+    required this.count,
+    required this.itemEmoji,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFF374151),
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 7,
+            runSpacing: 7,
+            children: [
+              for (var i = 0; i < count; i++)
+                _RemainderItemDot(itemEmoji: itemEmoji),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RemainderGroupBox extends StatelessWidget {
+  final String label;
+  final int count;
+  final String itemEmoji;
+  final bool isRemainder;
+
+  const _RemainderGroupBox({
+    required this.label,
+    required this.count,
+    required this.itemEmoji,
+    this.isRemainder = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 150,
+      constraints: const BoxConstraints(minHeight: 108),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isRemainder ? const Color(0xFFFFFBEB) : const Color(0xFFECFDF5),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isRemainder
+              ? const Color(0xFFFDE68A)
+              : const Color(0xFFA7F3D0),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: isRemainder
+                  ? const Color(0xFF92400E)
+                  : const Color(0xFF065F46),
+              fontSize: 14,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 7,
+            runSpacing: 7,
+            children: [
+              for (var i = 0; i < count; i++)
+                _RemainderItemDot(itemEmoji: itemEmoji),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RemainderItemDot extends StatelessWidget {
+  final String itemEmoji;
+
+  const _RemainderItemDot({required this.itemEmoji});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 30,
+      height: 30,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Text(itemEmoji, style: const TextStyle(fontSize: 18)),
+    );
+  }
+}
+
+class _RemainderEquationPanel extends StatelessWidget {
+  const _RemainderEquationPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _LargeEquation(
+          parts: [
+            _EquationPart('7', Color(0xFF2563EB), '全部の数'),
+            _EquationPart('÷', Color(0xFF111827), ''),
+            _EquationPart('3', Color(0xFFF97316), 'わる数'),
+            _EquationPart('=', Color(0xFF111827), ''),
+            _EquationPart('2', Color(0xFF059669), '1人分'),
+            _EquationPart('あまり', Color(0xFF111827), ''),
+            _EquationPart('1', Color(0xFFB45309), 'あまり'),
+          ],
+        ),
+        SizedBox(height: 18),
+        _RemainderShareDiagram(
+          total: 7,
+          groups: 3,
+          each: 2,
+          remainder: 1,
+          itemEmoji: '🍓',
+        ),
+      ],
+    );
+  }
+}
+
+class _RemainderMultiplicationPanel extends StatelessWidget {
+  const _RemainderMultiplicationPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFECFDF5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFA7F3D0)),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _LargeEquation(
+            parts: [
+              _EquationPart('3', Color(0xFFF97316), '1つ分'),
+              _EquationPart('×', Color(0xFF111827), ''),
+              _EquationPart('2', Color(0xFF059669), 'いくつ分'),
+              _EquationPart('+', Color(0xFF111827), ''),
+              _EquationPart('1', Color(0xFFB45309), 'あまり'),
+              _EquationPart('=', Color(0xFF111827), ''),
+              _EquationPart('7', Color(0xFF2563EB), '全部の数'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RemainderGrowthPanel extends StatelessWidget {
+  const _RemainderGrowthPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    const rows = [
+      ('6 ÷ 3', '2 あまり 0'),
+      ('7 ÷ 3', '2 あまり 1'),
+      ('8 ÷ 3', '2 あまり 2'),
+      ('9 ÷ 3', '3 あまり 0'),
+    ];
+    return Column(
+      children: [
+        for (final row in rows)
+          Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: Row(
+              children: [
+                Text(
+                  row.$1,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                const Text('=', style: TextStyle(fontSize: 20)),
+                const SizedBox(width: 16),
+                Text(
+                  row.$2,
+                  style: const TextStyle(
+                    color: Color(0xFF065F46),
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _RemainderSummaryPanel extends StatelessWidget {
+  const _RemainderSummaryPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFECFDF5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFA7F3D0)),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '7 ÷ 3 = 2 あまり 1',
+            style: TextStyle(
+              fontFamily: AppFonts.display,
+              color: Color(0xFF111827),
+              fontSize: 30,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 12),
+          Text(
+            '3 × 2 + 1 = 7',
+            style: TextStyle(
+              fontFamily: AppFonts.display,
+              color: Color(0xFF065F46),
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BenchRemainderDiagram extends StatelessWidget {
+  final int benchCount;
+  final bool showWaiting;
+
+  const _BenchRemainderDiagram({
+    required this.benchCount,
+    required this.showWaiting,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final seated = benchCount == 2 ? 8 : 9;
+    final waiting = showWaiting ? 1 : 0;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        alignment: WrapAlignment.center,
+        children: [
+          for (var i = 0; i < benchCount; i++)
+            _BenchBox(index: i + 1, people: i == 2 ? 1 : 4),
+          if (waiting > 0) const _WaitingPersonBox(),
+          if (seated < 9)
+            const SizedBox.shrink()
+          else
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFECFDF5),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Text(
+                '9人みんなすわれます',
+                style: TextStyle(
+                  color: Color(0xFF065F46),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BenchBox extends StatelessWidget {
+  final int index;
+  final int people;
+
+  const _BenchBox({required this.index, required this.people});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 170,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFECFDF5),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFA7F3D0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$index台目',
+            style: const TextStyle(
+              color: Color(0xFF065F46),
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (var i = 0; i < people; i++)
+                const Icon(
+                  Icons.person_rounded,
+                  size: 24,
+                  color: Color(0xFF4B5563),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            height: 12,
+            decoration: BoxDecoration(
+              color: const Color(0xFFD1FAE5),
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WaitingPersonBox extends StatelessWidget {
+  const _WaitingPersonBox();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 150,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFFDE68A)),
+      ),
+      child: const Column(
+        children: [
+          Text(
+            'まだすわれない人',
+            style: TextStyle(
+              color: Color(0xFF92400E),
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          SizedBox(height: 10),
+          Icon(Icons.person_rounded, size: 30, color: Color(0xFF92400E)),
+        ],
+      ),
+    );
+  }
+}
+
+class _RemainderContextSummaryPanel extends StatelessWidget {
+  const _RemainderContextSummaryPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFECFDF5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFA7F3D0)),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '9 ÷ 4 = 2 あまり 1',
+            style: TextStyle(
+              fontFamily: AppFonts.display,
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 12),
+          Text(
+            '2台では1人すわれないので、答えは3台です。',
+            style: TextStyle(
+              color: Color(0xFF065F46),
+              fontSize: 18,
+              height: 1.5,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LearnTextBlock extends StatelessWidget {
+  final List<SupportLine> lines;
+  final AppLanguage language;
+  final bool showNative;
+
+  const _LearnTextBlock({
+    required this.lines,
+    required this.language,
+    required this.showNative,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _SupportedTextLines(
+      lines: lines,
+      language: language,
+      showNative: showNative,
+      vocabularyEntries: _divisionMultiplicationVocabulary,
+    );
+  }
+}
+
+const _divisionMultiplicationVocabulary = [
+  VocabularyEntry(
+    term: '答え',
+    reading: 'こたえ',
+    simpleJapanese: '計算して出した数です。',
+    translations: {
+      AppLanguage.portuguese: 'resposta',
+      AppLanguage.tagalog: 'sagot',
+      AppLanguage.vietnamese: 'đáp án',
+    },
+    exampleSentence: 'わり算の答えを見つけます。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: 'かけ算',
+    reading: 'かけざん',
+    simpleJapanese: '同じ数を何回分か合わせる計算です。',
+    translations: {
+      AppLanguage.portuguese: 'multiplicação',
+      AppLanguage.tagalog: 'multiplication',
+      AppLanguage.vietnamese: 'phép nhân',
+    },
+    exampleSentence: 'かけ算を使って考えます。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '式',
+    reading: 'しき',
+    simpleJapanese: '計算を、数字や記号で書いたものです。',
+    translations: {
+      AppLanguage.portuguese: 'conta / expressão',
+      AppLanguage.tagalog: 'pahayag sa matematika',
+      AppLanguage.vietnamese: 'phép tính',
+    },
+    exampleSentence: '2つの式を見ます。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '全部',
+    reading: 'ぜんぶ',
+    simpleJapanese: 'あるものをすべて合わせた数です。',
+    translations: {
+      AppLanguage.portuguese: 'total / tudo',
+      AppLanguage.tagalog: 'kabuuan',
+      AppLanguage.vietnamese: 'tất cả',
+    },
+    exampleSentence: '全部で12こです。',
+    category: 'math_language',
+  ),
+];
+
+class _CookieShareDiagram extends StatelessWidget {
+  final int total;
+  final int groups;
+  final int each;
+
+  const _CookieShareDiagram({
+    required this.total,
+    required this.groups,
+    required this.each,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 720;
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _CookieRow(count: total),
+              const SizedBox(height: 14),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                alignment: WrapAlignment.center,
+                children: [
+                  for (var i = 0; i < groups; i++)
+                    SizedBox(
+                      width: compact ? 150 : 180,
+                      child: _CookiePersonBox(index: i + 1, count: each),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _CookieRow extends StatelessWidget {
+  final int count;
+
+  const _CookieRow({required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Wrap(
+        spacing: 7,
+        runSpacing: 7,
+        children: [for (var i = 0; i < count; i++) const _CookieDot()],
+      ),
+    );
+  }
+}
+
+class _CookiePersonBox extends StatelessWidget {
+  final int index;
+  final int count;
+
+  const _CookiePersonBox({required this.index, required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 112),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFECFDF5),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFA7F3D0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            '$index人目',
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF065F46),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 7,
+            runSpacing: 7,
+            children: [for (var i = 0; i < count; i++) const _CookieDot()],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CookieDot extends StatelessWidget {
+  const _CookieDot();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 30,
+      height: 30,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: const Text('🍪', style: TextStyle(fontSize: 18)),
+    );
+  }
+}
+
+class _EquationPart {
+  final String text;
+  final Color color;
+  final String label;
+
+  const _EquationPart(this.text, this.color, this.label);
+}
+
+class _LargeEquation extends StatelessWidget {
+  final List<_EquationPart> parts;
+
+  const _LargeEquation({required this.parts});
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 14,
+      runSpacing: 12,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        for (final part in parts)
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                part.text,
+                style: TextStyle(
+                  fontFamily: AppFonts.display,
+                  fontSize: part.label.isEmpty ? 28 : 34,
+                  height: 1,
+                  fontWeight: FontWeight.w700,
+                  color: part.color,
+                ),
+              ),
+              if (part.label.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Container(
+                  width: 52,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: part.color.withValues(alpha: 0.22),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  part.label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: part.color,
+                  ),
+                ),
+              ],
+            ],
+          ),
+      ],
+    );
+  }
+}
+
+class _EquationPairPanel extends StatelessWidget {
+  const _EquationPairPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _LargeEquation(
+            parts: [
+              _EquationPart('12', Color(0xFF2563EB), 'ぜんぶの数'),
+              _EquationPart('÷', Color(0xFF111827), ''),
+              _EquationPart('3', Color(0xFFF97316), '人数'),
+              _EquationPart('=', Color(0xFF111827), ''),
+              _EquationPart('4', Color(0xFF059669), '1人分'),
+            ],
+          ),
+          SizedBox(height: 20),
+          _LargeEquation(
+            parts: [
+              _EquationPart('3', Color(0xFFF97316), '人数'),
+              _EquationPart('×', Color(0xFF111827), ''),
+              _EquationPart('4', Color(0xFF059669), '1人分'),
+              _EquationPart('=', Color(0xFF111827), ''),
+              _EquationPart('12', Color(0xFF2563EB), 'ぜんぶの数'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BoxEquationPair extends StatelessWidget {
+  final String answer;
+
+  const _BoxEquationPair({required this.answer});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _BoxEquationText(text: '15 ÷ 3 = $answer'),
+          const SizedBox(height: 12),
+          _BoxEquationText(text: '3 × $answer = 15'),
+        ],
+      ),
+    );
+  }
+}
+
+class _BoxEquationText extends StatelessWidget {
+  final String text;
+
+  const _BoxEquationText({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: const TextStyle(
+        fontFamily: AppFonts.display,
+        fontSize: 28,
+        height: 1.25,
+        fontWeight: FontWeight.w700,
+        color: Color(0xFF111827),
+      ),
+    );
+  }
+}
+
+class _MultiplicationChoiceCard extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final bool correct;
+  final VoidCallback onTap;
+
+  const _MultiplicationChoiceCard({
+    required this.label,
+    required this.selected,
+    required this.correct,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = correct
+        ? const Color(0xFFDCFCE7)
+        : selected
+        ? const Color(0xFFFFF7ED)
+        : Colors.white;
+    return SizedBox(
+      width: 190,
+      height: 76,
+      child: Material(
+        color: color,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontFamily: AppFonts.display,
+                fontSize: 22,
+                height: 1.15,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF111827),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ResultMessage extends StatelessWidget {
+  final bool success;
+  final String text;
+
+  const _ResultMessage({required this.success, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+      decoration: BoxDecoration(
+        color: success ? const Color(0xFFECFDF5) : const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            success ? Icons.check_circle_rounded : Icons.lightbulb_rounded,
+            color: success ? const Color(0xFF059669) : const Color(0xFFD97706),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 16,
+                height: 1.45,
+                fontWeight: FontWeight.w800,
+                color: success
+                    ? const Color(0xFF065F46)
+                    : const Color(0xFF92400E),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ZeroOneDivisionLearn extends StatefulWidget {
-  const _ZeroOneDivisionLearn();
+  final AppLanguage selectedLanguage;
+
+  const _ZeroOneDivisionLearn({required this.selectedLanguage});
 
   @override
   State<_ZeroOneDivisionLearn> createState() => _ZeroOneDivisionLearnState();
@@ -1038,6 +2924,9 @@ class _ZeroOneDivisionLearnState extends State<_ZeroOneDivisionLearn> {
   bool _showStory = false;
   int _storyStep = 0;
   bool _showResult = false;
+  bool _showProblemNative = false;
+  bool _showInstructionNative = false;
+  bool _showResultNative = false;
   final List<int?> _berryOwners = List<int?>.filled(6, null);
 
   _ZeroOneScenario get _scenario => _zeroOneScenarios[_scenarioIndex];
@@ -1048,6 +2937,8 @@ class _ZeroOneDivisionLearnState extends State<_ZeroOneDivisionLearn> {
       _showStory = false;
       _storyStep = 0;
       _showResult = false;
+      _showInstructionNative = false;
+      _showResultNative = false;
       for (var i = 0; i < _berryOwners.length; i++) {
         _berryOwners[i] = null;
       }
@@ -1104,6 +2995,9 @@ class _ZeroOneDivisionLearnState extends State<_ZeroOneDivisionLearn> {
 
   @override
   Widget build(BuildContext context) {
+    final shouldShowResult =
+        _showResult || _scenario.kind != _ZeroOneScenarioKind.divideByOne;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -1139,14 +3033,37 @@ class _ZeroOneDivisionLearnState extends State<_ZeroOneDivisionLearn> {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      _scenario.problem,
-                      style: const TextStyle(
-                        color: Color(0xFF111827),
-                        fontSize: 18,
-                        height: 1.55,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _SupportedTextLines(
+                            lines: [_scenario.problemLine],
+                            language: widget.selectedLanguage,
+                            showNative: _showProblemNative,
+                            vocabularyEntries: zeroOneDivisionVocabularyEntries,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _IconSupportActions(
+                          language: widget.selectedLanguage,
+                          showNative: _showProblemNative,
+                          translateLabel: _showProblemNative
+                              ? '日本語で見る'
+                              : '${widget.selectedLanguage.label}で見る',
+                          audioLabel: '問題文の音声',
+                          onToggleNative: () {
+                            setState(() {
+                              _showProblemNative = !_showProblemNative;
+                            });
+                          },
+                          onAudio: () => LearningAudio.speakJapanese(
+                            context,
+                            label: '問題文',
+                            text: _scenario.problem,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -1180,6 +3097,13 @@ class _ZeroOneDivisionLearnState extends State<_ZeroOneDivisionLearn> {
                     key: ValueKey('story-$_scenarioIndex-$_storyStep'),
                     scenario: _scenario,
                     step: _storyStep,
+                    selectedLanguage: widget.selectedLanguage,
+                    showInstructionNative: _showInstructionNative,
+                    onToggleInstructionNative: () {
+                      setState(() {
+                        _showInstructionNative = !_showInstructionNative;
+                      });
+                    },
                     onNext: () {
                       setState(() {
                         _storyStep = (_storyStep + 1).clamp(
@@ -1205,6 +3129,13 @@ class _ZeroOneDivisionLearnState extends State<_ZeroOneDivisionLearn> {
                     sourceBerryIds: _sourceBerryIds,
                     targetBerryIds: _targetBerryIds,
                     showResult: _showResult,
+                    selectedLanguage: widget.selectedLanguage,
+                    showInstructionNative: _showInstructionNative,
+                    onToggleInstructionNative: () {
+                      setState(() {
+                        _showInstructionNative = !_showInstructionNative;
+                      });
+                    },
                     onMoveBerry: _moveBerry,
                     onShowAnswer: _showAnswer,
                     onReset: _resetScenario,
@@ -1212,7 +3143,16 @@ class _ZeroOneDivisionLearnState extends State<_ZeroOneDivisionLearn> {
           ),
           const SizedBox(height: 14),
           if (shouldShowResult) ...[
-            _ZeroOneResultPanel(scenario: _scenario),
+            _ZeroOneResultPanel(
+              scenario: _scenario,
+              selectedLanguage: widget.selectedLanguage,
+              showNative: _showResultNative,
+              onToggleNative: () {
+                setState(() {
+                  _showResultNative = !_showResultNative;
+                });
+              },
+            ),
             const SizedBox(height: 14),
           ],
         ],
@@ -1226,69 +3166,229 @@ enum _ZeroOneScenarioKind { divideByOne, zeroDivided, divideByZero }
 class _ZeroOneScenario {
   final _ZeroOneScenarioKind kind;
   final String tabLabel;
-  final String problem;
+  final SupportLine problemLine;
   final int totalCount;
   final int personCount;
-  final String instruction;
-  final String storyHint;
+  final SupportLine instructionLine;
+  final SupportLine storyHintLine;
   final String equation;
-  final String explanation;
-  final String rule;
+  final SupportLine explanationLine;
+  final SupportLine ruleLine;
   final int maxStoryStep;
 
   const _ZeroOneScenario({
     required this.kind,
     required this.tabLabel,
-    required this.problem,
+    required this.problemLine,
     required this.totalCount,
     required this.personCount,
-    required this.instruction,
-    required this.storyHint,
+    required this.instructionLine,
+    required this.storyHintLine,
     required this.equation,
-    required this.explanation,
-    required this.rule,
+    required this.explanationLine,
+    required this.ruleLine,
     required this.maxStoryStep,
   });
+
+  String get problem => problemLine.japanese;
+  String get instruction => instructionLine.japanese;
+  String get storyHint => storyHintLine.japanese;
+  String get explanation => explanationLine.japanese;
+  String get rule => ruleLine.japanese;
 }
 
 const _zeroOneScenarios = [
   _ZeroOneScenario(
     kind: _ZeroOneScenarioKind.divideByOne,
     tabLabel: '1でわる',
-    problem: 'いちごが6こあります。1人で同じ数ずつ分けると、1人分は何こになりますか。',
+    problemLine: SupportLine(
+      japanese: 'いちごが6こあります。1人で同じ数ずつ分けると、1人分は何こになりますか。',
+      ruby:
+          'いちごが6こあります。{1人|ひとり}で{同|おな}じ{数|かず}ずつ{分|わ}けると、{1人|ひとり}{分|ぶん}は{何|なん}こになりますか。',
+      native: {
+        AppLanguage.portuguese:
+            'Há 6 morangos. Se dividirmos igualmente com 1 pessoa, quantos morangos essa pessoa recebe?',
+        AppLanguage.tagalog:
+            'May 6 na strawberry. Kung hahatiin nang pantay sa 1 tao, ilan ang para sa taong iyon?',
+        AppLanguage.vietnamese:
+            'Có 6 quả dâu. Nếu chia đều cho 1 người, người đó nhận bao nhiêu quả?',
+      },
+    ),
     totalCount: 6,
     personCount: 1,
-    instruction: 'いちごを、1人のお皿へ動かしてみよう。',
-    storyHint: '1人だけなので、いちごは全部その人のところへ行きます。',
+    instructionLine: SupportLine(
+      japanese: 'いちごを、1人のお皿へ動かしてみよう。',
+      ruby: 'いちごを、{1人|ひとり}のお{皿|さら}へ{動|うご}かしてみよう。',
+      native: {
+        AppLanguage.portuguese:
+            'Vamos mover os morangos para o prato de 1 pessoa.',
+        AppLanguage.tagalog:
+            'Ilipat natin ang mga strawberry sa plato ng 1 tao.',
+        AppLanguage.vietnamese: 'Hãy chuyển dâu vào đĩa của 1 người.',
+      },
+    ),
+    storyHintLine: SupportLine(
+      japanese: '1人だけなので、いちごは全部その人のところへ行きます。',
+      ruby: '{1人|ひとり}だけなので、いちごは{全部|ぜんぶ}その{人|ひと}のところへ{行|い}きます。',
+      native: {
+        AppLanguage.portuguese:
+            'Como há apenas 1 pessoa, todos os morangos vão para essa pessoa.',
+        AppLanguage.tagalog:
+            'Dahil 1 tao lang, lahat ng strawberry ay mapupunta sa taong iyon.',
+        AppLanguage.vietnamese:
+            'Vì chỉ có 1 người, tất cả dâu sẽ đến người đó.',
+      },
+    ),
     equation: '6 ÷ 1 = 6',
-    explanation: '1人で分けるので、6このいちごは全部その人がもらいます。だから、1人分は6こです。',
-    rule: '1でわると、答えはもとの数になります。',
+    explanationLine: SupportLine(
+      japanese: '1人で分けるので、6このいちごは全部その人がもらいます。だから、1人分は6こです。',
+      ruby:
+          '{1人|ひとり}で{分|わ}けるので、6このいちごは{全部|ぜんぶ}その{人|ひと}がもらいます。だから、{1人|ひとり}{分|ぶん}は6こです。',
+      native: {
+        AppLanguage.portuguese:
+            'Como dividimos com 1 pessoa, essa pessoa recebe todos os 6 morangos. Então, a parte de 1 pessoa é 6.',
+        AppLanguage.tagalog:
+            'Dahil hinahati sa 1 tao, makukuha niya ang lahat ng 6 na strawberry. Kaya ang para sa 1 tao ay 6.',
+        AppLanguage.vietnamese:
+            'Vì chia cho 1 người, người đó nhận tất cả 6 quả dâu. Vậy phần của 1 người là 6 quả.',
+      },
+    ),
+    ruleLine: SupportLine(
+      japanese: '1でわると、答えはもとの数になります。',
+      ruby: '1でわると、{答|こた}えはもとの{数|かず}になります。',
+      native: {
+        AppLanguage.portuguese:
+            'Quando dividimos por 1, a resposta é o número original.',
+        AppLanguage.tagalog:
+            'Kapag hinati sa 1, ang sagot ay ang dating bilang.',
+        AppLanguage.vietnamese: 'Khi chia cho 1, đáp án là số ban đầu.',
+      },
+    ),
     maxStoryStep: 3,
   ),
   _ZeroOneScenario(
     kind: _ZeroOneScenarioKind.zeroDivided,
     tabLabel: '0をわる',
-    problem: 'いちごが0こあります。3人で同じ数ずつ分けると、1人分は何こになりますか。',
+    problemLine: SupportLine(
+      japanese: 'いちごが0こあります。3人で同じ数ずつ分けると、1人分は何こになりますか。',
+      ruby:
+          'いちごが0こあります。3{人|にん}で{同|おな}じ{数|かず}ずつ{分|わ}けると、{1人|ひとり}{分|ぶん}は{何|なん}こになりますか。',
+      native: {
+        AppLanguage.portuguese:
+            'Há 0 morangos. Se dividirmos igualmente entre 3 pessoas, quantos morangos cada pessoa recebe?',
+        AppLanguage.tagalog:
+            'May 0 strawberry. Kung hahatiin nang pantay sa 3 tao, ilan ang para sa bawat isa?',
+        AppLanguage.vietnamese:
+            'Có 0 quả dâu. Nếu chia đều cho 3 người, mỗi người nhận bao nhiêu quả?',
+      },
+    ),
     totalCount: 0,
     personCount: 3,
-    instruction: 'いちごは0こです。お皿の数を見てみよう。',
-    storyHint: '配るいちごがないので、どのお皿にも入りません。',
+    instructionLine: SupportLine(
+      japanese: 'いちごは0こです。お皿の数を見てみよう。',
+      ruby: 'いちごは0こです。お{皿|さら}の{数|かず}を{見|み}てみよう。',
+      native: {
+        AppLanguage.portuguese: 'Há 0 morangos. Vamos olhar os pratos.',
+        AppLanguage.tagalog: 'May 0 strawberry. Tingnan natin ang mga plato.',
+        AppLanguage.vietnamese: 'Có 0 quả dâu. Hãy nhìn các đĩa.',
+      },
+    ),
+    storyHintLine: SupportLine(
+      japanese: '配るいちごがないので、どのお皿にも入りません。',
+      ruby: '{配|くば}るいちごがないので、どのお{皿|さら}にも{入|はい}りません。',
+      native: {
+        AppLanguage.portuguese:
+            'Não há morangos para distribuir, então nenhum prato recebe morangos.',
+        AppLanguage.tagalog:
+            'Walang strawberry na ipapamahagi, kaya walang laman ang mga plato.',
+        AppLanguage.vietnamese:
+            'Không có dâu để chia, nên không đĩa nào có dâu.',
+      },
+    ),
     equation: '0 ÷ 3 = 0',
-    explanation: 'いちごは0こなので、配るものがありません。3人のお皿は、どれも0こです。',
-    rule: '0を人数でわると、答えは0になります。',
+    explanationLine: SupportLine(
+      japanese: 'いちごは0こなので、配るものがありません。3人のお皿は、どれも0こです。',
+      ruby: 'いちごは0こなので、{配|くば}るものがありません。3{人|にん}のお{皿|さら}は、どれも0こです。',
+      native: {
+        AppLanguage.portuguese:
+            'Como há 0 morangos, não há nada para distribuir. Os pratos das 3 pessoas ficam com 0.',
+        AppLanguage.tagalog:
+            'Dahil 0 ang strawberry, walang ipapamahagi. Ang plato ng bawat isa sa 3 tao ay may 0.',
+        AppLanguage.vietnamese:
+            'Vì có 0 quả dâu, không có gì để chia. Đĩa của cả 3 người đều có 0 quả.',
+      },
+    ),
+    ruleLine: SupportLine(
+      japanese: '0を人数でわると、答えは0になります。',
+      ruby: '0を{人数|にんずう}でわると、{答|こた}えは0になります。',
+      native: {
+        AppLanguage.portuguese:
+            'Quando dividimos 0 pelo número de pessoas, a resposta é 0.',
+        AppLanguage.tagalog:
+            'Kapag hinati ang 0 sa bilang ng tao, ang sagot ay 0.',
+        AppLanguage.vietnamese: 'Khi chia 0 cho số người, đáp án là 0.',
+      },
+    ),
     maxStoryStep: 2,
   ),
   _ZeroOneScenario(
     kind: _ZeroOneScenarioKind.divideByZero,
     tabLabel: '0ではわれない',
-    problem: 'いちごが6こあります。0人で同じ数ずつ分けることはできますか。',
+    problemLine: SupportLine(
+      japanese: 'いちごが6こあります。0人で同じ数ずつ分けることはできますか。',
+      ruby: 'いちごが6こあります。0{人|にん}で{同|おな}じ{数|かず}ずつ{分|わ}けることはできますか。',
+      native: {
+        AppLanguage.portuguese:
+            'Há 6 morangos. É possível dividir igualmente entre 0 pessoas?',
+        AppLanguage.tagalog:
+            'May 6 na strawberry. Puwede ba itong hatiin nang pantay sa 0 tao?',
+        AppLanguage.vietnamese:
+            'Có 6 quả dâu. Có thể chia đều cho 0 người không?',
+      },
+    ),
     totalCount: 6,
     personCount: 0,
-    instruction: '分ける人がいるか、見てみよう。',
-    storyHint: 'だれに分ければいいの？',
+    instructionLine: SupportLine(
+      japanese: '分ける人がいるか、見てみよう。',
+      ruby: '{分|わ}ける{人|ひと}がいるか、{見|み}てみよう。',
+      native: {
+        AppLanguage.portuguese: 'Vamos ver se há alguém para receber.',
+        AppLanguage.tagalog: 'Tingnan natin kung may taong pagbibigyan.',
+        AppLanguage.vietnamese: 'Hãy xem có người nào để chia không.',
+      },
+    ),
+    storyHintLine: SupportLine(
+      japanese: 'だれに分ければいいの？',
+      ruby: 'だれに{分|わ}ければいいの？',
+      native: {
+        AppLanguage.portuguese: 'Para quem devemos dividir?',
+        AppLanguage.tagalog: 'Kanino natin ito hahatiin?',
+        AppLanguage.vietnamese: 'Chia cho ai đây?',
+      },
+    ),
     equation: '6 ÷ 0',
-    explanation: 'いちごは6こありますが、分ける人が0人です。だれのお皿にも入れられないので、分けることはできません。',
-    rule: '0ではわることはできません。',
+    explanationLine: SupportLine(
+      japanese: 'いちごは6こありますが、分ける人が0人です。だれのお皿にも入れられないので、分けることはできません。',
+      ruby:
+          'いちごは6こありますが、{分|わ}ける{人|ひと}が0{人|にん}です。だれのお{皿|さら}にも{入|い}れられないので、{分|わ}けることはできません。',
+      native: {
+        AppLanguage.portuguese:
+            'Há 6 morangos, mas há 0 pessoas para receber. Não há prato de ninguém, então não é possível dividir.',
+        AppLanguage.tagalog:
+            'May 6 na strawberry, pero 0 ang taong pagbibigyan. Walang plato na malalagyan, kaya hindi ito mahahati.',
+        AppLanguage.vietnamese:
+            'Có 6 quả dâu, nhưng có 0 người nhận. Không có đĩa nào để đặt vào, nên không thể chia.',
+      },
+    ),
+    ruleLine: SupportLine(
+      japanese: '0ではわることはできません。',
+      ruby: '0ではわることはできません。',
+      native: {
+        AppLanguage.portuguese: 'Não é possível dividir por 0.',
+        AppLanguage.tagalog: 'Hindi maaaring hatiin sa 0.',
+        AppLanguage.vietnamese: 'Không thể chia cho 0.',
+      },
+    ),
     maxStoryStep: 2,
   ),
 ];
@@ -1380,6 +3480,9 @@ class _ZeroOneDragBoard extends StatelessWidget {
   final List<int> sourceBerryIds;
   final List<List<int>> targetBerryIds;
   final bool showResult;
+  final AppLanguage selectedLanguage;
+  final bool showInstructionNative;
+  final VoidCallback onToggleInstructionNative;
   final void Function(int berryIndex, int? targetIndex) onMoveBerry;
   final VoidCallback onShowAnswer;
   final VoidCallback onReset;
@@ -1390,6 +3493,9 @@ class _ZeroOneDragBoard extends StatelessWidget {
     required this.sourceBerryIds,
     required this.targetBerryIds,
     required this.showResult,
+    required this.selectedLanguage,
+    required this.showInstructionNative,
+    required this.onToggleInstructionNative,
     required this.onMoveBerry,
     required this.onShowAnswer,
     required this.onReset,
@@ -1401,7 +3507,12 @@ class _ZeroOneDragBoard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _ZeroOneInstruction(
-          message: showResult ? scenario.explanation : scenario.instruction,
+          line: showResult
+              ? scenario.explanationLine
+              : scenario.instructionLine,
+          language: selectedLanguage,
+          showNative: showInstructionNative,
+          onToggleNative: onToggleInstructionNative,
         ),
         const SizedBox(height: 12),
         LayoutBuilder(
@@ -1430,11 +3541,7 @@ class _ZeroOneDragBoard extends StatelessWidget {
             }
 
             return Column(
-              children: [
-                source,
-                const SizedBox(height: 12),
-                targets,
-              ],
+              children: [source, const SizedBox(height: 12), targets],
             );
           },
         ),
@@ -1469,9 +3576,17 @@ class _ZeroOneDragBoard extends StatelessWidget {
 }
 
 class _ZeroOneInstruction extends StatelessWidget {
-  final String message;
+  final SupportLine line;
+  final AppLanguage language;
+  final bool showNative;
+  final VoidCallback onToggleNative;
 
-  const _ZeroOneInstruction({required this.message});
+  const _ZeroOneInstruction({
+    required this.line,
+    required this.language,
+    required this.showNative,
+    required this.onToggleNative,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1482,14 +3597,31 @@ class _ZeroOneInstruction extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFBFDBFE)),
       ),
-      child: Text(
-        message,
-        style: const TextStyle(
-          color: Color(0xFF1E3A8A),
-          fontSize: 17,
-          height: 1.45,
-          fontWeight: FontWeight.w800,
-        ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: _SupportedTextLines(
+              lines: [line],
+              language: language,
+              showNative: showNative,
+              vocabularyEntries: zeroOneDivisionVocabularyEntries,
+            ),
+          ),
+          const SizedBox(width: 10),
+          _IconSupportActions(
+            language: language,
+            showNative: showNative,
+            translateLabel: showNative ? '日本語で見る' : '${language.label}で見る',
+            audioLabel: '操作案内の音声',
+            onToggleNative: onToggleNative,
+            onAudio: () => LearningAudio.speakJapanese(
+              context,
+              label: '操作案内',
+              text: line.japanese,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1693,6 +3825,9 @@ class _ZeroOnePlateTarget extends StatelessWidget {
 class _ZeroOneStoryBoard extends StatelessWidget {
   final _ZeroOneScenario scenario;
   final int step;
+  final AppLanguage selectedLanguage;
+  final bool showInstructionNative;
+  final VoidCallback onToggleInstructionNative;
   final VoidCallback onNext;
   final VoidCallback onBack;
 
@@ -1700,6 +3835,9 @@ class _ZeroOneStoryBoard extends StatelessWidget {
     super.key,
     required this.scenario,
     required this.step,
+    required this.selectedLanguage,
+    required this.showInstructionNative,
+    required this.onToggleInstructionNative,
     required this.onNext,
     required this.onBack,
   });
@@ -1712,7 +3850,10 @@ class _ZeroOneStoryBoard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _ZeroOneInstruction(
-          message: showResult ? scenario.explanation : scenario.storyHint,
+          line: showResult ? scenario.explanationLine : scenario.storyHintLine,
+          language: selectedLanguage,
+          showNative: showInstructionNative,
+          onToggleNative: onToggleInstructionNative,
         ),
         const SizedBox(height: 12),
         _ZeroOneStoryScene(scenario: scenario, step: step),
@@ -1764,9 +3905,8 @@ class _ZeroOneStoryScene extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final int shownInTarget = switch (scenario.kind) {
-      _ZeroOneScenarioKind.divideByOne => step == 0
-          ? 0
-          : (step * 2).clamp(0, 6).toInt(),
+      _ZeroOneScenarioKind.divideByOne =>
+        step == 0 ? 0 : (step * 2).clamp(0, 6).toInt(),
       _ZeroOneScenarioKind.zeroDivided => 0,
       _ZeroOneScenarioKind.divideByZero => 0,
     };
@@ -1797,13 +3937,7 @@ class _ZeroOneStoryScene extends StatelessWidget {
             ],
           );
         }
-        return Column(
-          children: [
-            source,
-            const SizedBox(height: 12),
-            target,
-          ],
-        );
+        return Column(children: [source, const SizedBox(height: 12), target]);
       },
     );
   }
@@ -1969,8 +4103,16 @@ class _NoPeopleBox extends StatelessWidget {
 
 class _ZeroOneResultPanel extends StatelessWidget {
   final _ZeroOneScenario scenario;
+  final AppLanguage selectedLanguage;
+  final bool showNative;
+  final VoidCallback onToggleNative;
 
-  const _ZeroOneResultPanel({required this.scenario});
+  const _ZeroOneResultPanel({
+    required this.scenario,
+    required this.selectedLanguage,
+    required this.showNative,
+    required this.onToggleNative,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1986,18 +4128,40 @@ class _ZeroOneResultPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            scenario.explanation,
-            style: const TextStyle(
-              color: Color(0xFF166534),
-              fontSize: 18,
-              height: 1.45,
-              fontWeight: FontWeight.w900,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _SupportedTextLines(
+                  lines: [scenario.explanationLine],
+                  language: selectedLanguage,
+                  showNative: showNative,
+                  vocabularyEntries: zeroOneDivisionVocabularyEntries,
+                ),
+              ),
+              const SizedBox(width: 10),
+              _IconSupportActions(
+                language: selectedLanguage,
+                showNative: showNative,
+                translateLabel: showNative
+                    ? '日本語で見る'
+                    : '${selectedLanguage.label}で見る',
+                audioLabel: '説明の音声',
+                onToggleNative: onToggleNative,
+                onAudio: () => LearningAudio.speakJapanese(
+                  context,
+                  label: '説明',
+                  text: scenario.explanation,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           if (cannotDivide)
-            Row(
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 12,
+              runSpacing: 8,
               children: [
                 Text(
                   scenario.equation,
@@ -2008,14 +4172,14 @@ class _ZeroOneResultPanel extends StatelessWidget {
                   ),
                 ),
                 const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: Icon(Icons.arrow_downward_rounded),
+                  padding: EdgeInsets.symmetric(horizontal: 0),
+                  child: Icon(Icons.arrow_forward_rounded),
                 ),
                 const Text(
-                  'できません',
+                  '答えはありません',
                   style: TextStyle(
                     color: Color(0xFFB45309),
-                    fontSize: 26,
+                    fontSize: 24,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -2031,14 +4195,11 @@ class _ZeroOneResultPanel extends StatelessWidget {
               ),
             ),
           const SizedBox(height: 10),
-          Text(
-            scenario.rule,
-            style: const TextStyle(
-              color: Color(0xFF374151),
-              fontSize: 17,
-              height: 1.45,
-              fontWeight: FontWeight.w800,
-            ),
+          _SupportedTextLines(
+            lines: [scenario.ruleLine],
+            language: selectedLanguage,
+            showNative: showNative,
+            vocabularyEntries: zeroOneDivisionVocabularyEntries,
           ),
         ],
       ),
@@ -2324,9 +4485,7 @@ class _EqualShareInteractiveLearnState
                     onAudio: () => _showAudioPlaceholder(
                       context,
                       '正解後の説明',
-                      widget.resultLines
-                          .map((line) => line.japanese)
-                          .join(' '),
+                      widget.resultLines.map((line) => line.japanese).join(' '),
                     ),
                   )
                 : const SizedBox.shrink(key: ValueKey('empty-result')),
@@ -3042,10 +5201,7 @@ class _DivisionResultCard extends StatelessWidget {
             vocabularyEntries: vocabularyEntries,
           ),
           const SizedBox(height: 12),
-          _EquationLine(
-            language: selectedLanguage,
-            supports: equationSupports,
-          ),
+          _EquationLine(language: selectedLanguage, supports: equationSupports),
           const SizedBox(height: 8),
           Row(
             children: [
@@ -3078,10 +5234,7 @@ class _EquationLine extends StatelessWidget {
   final AppLanguage language;
   final List<EquationSupport> supports;
 
-  const _EquationLine({
-    required this.language,
-    required this.supports,
-  });
+  const _EquationLine({required this.language, required this.supports});
 
   @override
   Widget build(BuildContext context) {
@@ -3837,6 +5990,10 @@ class _VocabularyVisual extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (visual == LessonVocabularyVisual.none) {
+      return const SizedBox.shrink();
+    }
+
     return SizedBox(
       width: 116,
       height: 76,
@@ -3845,7 +6002,242 @@ class _VocabularyVisual extends StatelessWidget {
         LessonVocabularyVisual.splitToPlates => const _SplitToPlatesVisual(),
         LessonVocabularyVisual.onePersonShare => const _OnePersonShareVisual(),
         LessonVocabularyVisual.countQuestion => const _CountQuestionVisual(),
+        LessonVocabularyVisual.divideByOne => const _DivideByOneVisual(),
+        LessonVocabularyVisual.zeroItems => const _ZeroItemsVisual(),
+        LessonVocabularyVisual.divideByZero => const _DivideByZeroVisual(),
+        LessonVocabularyVisual.remainder => const _RemainderWordVisual(),
+        LessonVocabularyVisual.divisor => const _DivisorWordVisual(),
+        LessonVocabularyVisual.dividend => const _DividendWordVisual(),
+        LessonVocabularyVisual.roundUpRemainder =>
+          const _RoundUpRemainderVisual(),
+        LessonVocabularyVisual.none => const SizedBox.shrink(),
       },
+    );
+  }
+}
+
+class _RemainderWordVisual extends StatelessWidget {
+  const _RemainderWordVisual();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: const [
+        _MiniPlate(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _CounterDot(size: 11),
+              SizedBox(width: 2),
+              _CounterDot(size: 11),
+            ],
+          ),
+        ),
+        SizedBox(width: 8),
+        Text(
+          '+1',
+          style: TextStyle(
+            color: Color(0xFFB45309),
+            fontSize: 20,
+            height: 1,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DivisorWordVisual extends StatelessWidget {
+  const _DivisorWordVisual();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: const [
+        Text(
+          '7 ÷ ',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+        ),
+        Text(
+          '3',
+          style: TextStyle(
+            color: Color(0xFFF97316),
+            fontSize: 24,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DividendWordVisual extends StatelessWidget {
+  const _DividendWordVisual();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: const [
+        Text(
+          '7',
+          style: TextStyle(
+            color: Color(0xFF2563EB),
+            fontSize: 24,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        Text(
+          ' ÷ 3',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+        ),
+      ],
+    );
+  }
+}
+
+class _RoundUpRemainderVisual extends StatelessWidget {
+  const _RoundUpRemainderVisual();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: const [
+        _MiniPlate(
+          child: Text('4', style: TextStyle(fontWeight: FontWeight.w900)),
+        ),
+        SizedBox(width: 4),
+        _MiniPlate(
+          child: Text('4', style: TextStyle(fontWeight: FontWeight.w900)),
+        ),
+        SizedBox(width: 7),
+        Icon(Icons.add_rounded, color: Color(0xFFB45309), size: 20),
+        _MiniPlate(
+          child: Text('1', style: TextStyle(fontWeight: FontWeight.w900)),
+        ),
+      ],
+    );
+  }
+}
+
+class _DivideByOneVisual extends StatelessWidget {
+  const _DivideByOneVisual();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: const [
+        Icon(Icons.person_rounded, color: Color(0xFF4B5563), size: 20),
+        SizedBox(width: 6),
+        _MiniPlate(
+          width: 62,
+          height: 40,
+          child: Wrap(
+            spacing: 2,
+            runSpacing: 2,
+            alignment: WrapAlignment.center,
+            children: [
+              _CounterDot(size: 11),
+              _CounterDot(size: 11),
+              _CounterDot(size: 11),
+              _CounterDot(size: 11),
+              _CounterDot(size: 11),
+              _CounterDot(size: 11),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ZeroItemsVisual extends StatelessWidget {
+  const _ZeroItemsVisual();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: const [
+        _MiniPlate(
+          child: Text(
+            '0',
+            style: TextStyle(
+              color: Color(0xFF111827),
+              fontSize: 18,
+              height: 1,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+        _MiniPlate(
+          child: Text(
+            '0',
+            style: TextStyle(
+              color: Color(0xFF111827),
+              fontSize: 18,
+              height: 1,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+        _MiniPlate(
+          child: Text(
+            '0',
+            style: TextStyle(
+              color: Color(0xFF111827),
+              fontSize: 18,
+              height: 1,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DivideByZeroVisual extends StatelessWidget {
+  const _DivideByZeroVisual();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: const [
+        SizedBox(
+          width: 46,
+          child: Wrap(
+            spacing: 2,
+            runSpacing: 2,
+            children: [
+              _CounterDot(size: 12),
+              _CounterDot(size: 12),
+              _CounterDot(size: 12),
+              _CounterDot(size: 12),
+              _CounterDot(size: 12),
+              _CounterDot(size: 12),
+            ],
+          ),
+        ),
+        SizedBox(width: 8),
+        Icon(Icons.person_off_rounded, color: Color(0xFF6B7280), size: 28),
+        SizedBox(width: 3),
+        Text(
+          '?',
+          style: TextStyle(
+            color: Color(0xFFB45309),
+            fontSize: 26,
+            height: 1,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -4471,7 +6863,12 @@ class _AnswerCard extends StatelessWidget {
             children: [
               Center(
                 child: compact
-                    ? _CompactChoiceText(text: rubyText, color: textColor)
+                    ? _CompactChoiceText(
+                        text: rubyText,
+                        color: textColor,
+                        vocabularyEntries: vocabularyEntries,
+                        language: language,
+                      )
                     : RubyText(
                         text: rubyText,
                         textAlign: TextAlign.center,
@@ -4499,7 +6896,10 @@ class _AnswerCard extends StatelessWidget {
   }
 
   bool _isCompactChoice(String value) {
-    final plain = value.replaceAll(RegExp(r'\{([^|{}]+)\|([^{}]+)\}'), r'$1');
+    final plain = value.replaceAllMapped(
+      RegExp(r'\{([^|{}]+)\|([^{}]+)\}'),
+      (match) => match.group(1) ?? '',
+    );
     if (RegExp(r'[+＋\-−×÷=＝]').hasMatch(plain)) {
       return true;
     }
@@ -4511,8 +6911,15 @@ class _AnswerCard extends StatelessWidget {
 class _CompactChoiceText extends StatelessWidget {
   final String text;
   final Color color;
+  final List<VocabularyEntry> vocabularyEntries;
+  final AppLanguage language;
 
-  const _CompactChoiceText({required this.text, required this.color});
+  const _CompactChoiceText({
+    required this.text,
+    required this.color,
+    required this.vocabularyEntries,
+    required this.language,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -4540,6 +6947,34 @@ class _CompactChoiceText extends StatelessWidget {
               fontSize: 44,
               height: 1,
               fontWeight: FontWeight.w900,
+              letterSpacing: 0,
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (text.contains('{')) {
+      return Center(
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: RubyText(
+            text: text,
+            textAlign: TextAlign.center,
+            vocabularyEntries: vocabularyEntries,
+            language: language,
+            style: TextStyle(
+              color: color,
+              fontSize: 34,
+              height: 1.15,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0,
+            ),
+            rubyStyle: TextStyle(
+              color: color.withValues(alpha: 0.72),
+              fontSize: 13,
+              height: 1,
+              fontWeight: FontWeight.w800,
               letterSpacing: 0,
             ),
           ),
@@ -4729,18 +7164,14 @@ class _DiagramAnswerCard extends StatelessWidget {
             ],
           ),
           child: Stack(
+            alignment: Alignment.center,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    child: _ChoiceEqualShareDiagram(
-                      groups: groups,
-                      each: each,
-                      labelSuffix: labelSuffix,
-                    ),
-                  ),
-                ],
+              Positioned.fill(
+                child: _ChoiceEqualShareDiagram(
+                  groups: groups,
+                  each: each,
+                  labelSuffix: labelSuffix,
+                ),
               ),
               if (trailingIcon != null)
                 Positioned(
@@ -4774,13 +7205,12 @@ class _ChoiceEqualShareDiagram extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final columns = groups <= 3 ? groups : 3;
-        final cardWidth =
-            (constraints.maxWidth - (columns - 1) * 8) / columns;
+        final cardWidth = (constraints.maxWidth - (columns - 1) * 8) / columns;
 
-        return Align(
-          alignment: Alignment.topCenter,
+        return Center(
           child: Wrap(
             alignment: WrapAlignment.center,
+            runAlignment: WrapAlignment.center,
             spacing: 8,
             runSpacing: 8,
             children: [
@@ -4838,9 +7268,7 @@ class _MiniPersonShareBox extends StatelessWidget {
           Wrap(
             spacing: 4,
             runSpacing: 4,
-            children: [
-              for (var i = 0; i < count; i++) const _MiniSealDot(),
-            ],
+            children: [for (var i = 0; i < count; i++) const _MiniSealDot()],
           ),
         ],
       ),
@@ -4860,9 +7288,7 @@ class _MiniSealDot extends StatelessWidget {
         color: const Color(0xFF60A5FA),
         shape: BoxShape.circle,
         border: Border.all(color: Colors.white, width: 2),
-        boxShadow: const [
-          BoxShadow(color: Color(0x14000000), blurRadius: 3),
-        ],
+        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 3)],
       ),
     );
   }
@@ -5010,8 +7436,7 @@ class _ExplanationOverlay extends StatelessWidget {
                               if (showCorrectAnswerCard) ...[
                                 _CorrectAnswerCard(
                                   text: correctAnswerText,
-                                  vocabularyEntries:
-                                      question.vocabularyEntries,
+                                  vocabularyEntries: question.vocabularyEntries,
                                   language: questionLanguage,
                                 ),
                                 const SizedBox(height: 12),
