@@ -230,7 +230,7 @@ final List<Lesson> _allMockLessons = [
   ...grade3DivisionRemainderLessons,
 ];
 
-const Set<int> _hiddenLessonIds = {2, 3, 4, 5, 6, 10, 13, 14, 16};
+const Set<int> _hiddenLessonIds = {2, 3, 4, 5, 6, 10, 13, 14};
 
 final List<Lesson> mockLessons = _allMockLessons
     .where((lesson) => !_hiddenLessonIds.contains(lesson.id))

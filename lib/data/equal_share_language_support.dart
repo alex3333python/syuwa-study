@@ -625,7 +625,7 @@ const remainderContextLessonVocabulary = [
       AppLanguage.tagalog: 'dagdagan ng isa',
       AppLanguage.vietnamese: 'thêm 1',
     },
-    visual: LessonVocabularyVisual.roundUpRemainder,
+    visual: LessonVocabularyVisual.none,
   ),
   LessonVocabulary(
     word: '使わない',

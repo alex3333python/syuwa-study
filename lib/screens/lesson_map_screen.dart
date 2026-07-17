@@ -310,7 +310,7 @@ class LessonMapScreen extends StatelessWidget {
   }
 
   bool _isGrade3RemainderLesson(Lesson lesson) {
-    return lesson.id == 12 || lesson.id == 15;
+    return lesson.id == 12 || lesson.id == 15 || lesson.id == 16;
   }
 }
 

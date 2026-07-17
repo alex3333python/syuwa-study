@@ -166,9 +166,13 @@ class _DivisionVisual extends StatelessWidget {
         question.totalCount ?? groupCount * perGroupCount + remainderCount;
     final itemEmoji = question.itemEmoji;
     final itemUnit = question.itemUnit;
+    final shouldShowGroups =
+        showSolution ||
+        question.visualType != QuestionVisualType.divisionRemainder;
     final shouldShowRemainderBox =
         question.visualType == QuestionVisualType.divisionRemainder &&
-        (showSolution ? remainderCount > 0 : true);
+        showSolution &&
+        remainderCount > 0;
 
     if (groupCount <= 0 || perGroupCount <= 0 || totalCount <= 0) {
       return const SizedBox.shrink();
@@ -177,9 +181,11 @@ class _DivisionVisual extends StatelessWidget {
     final groupCardWidth = compact ? 132.0 : 160.0;
     const groupCardGap = 12.0;
     final remainderSlots = shouldShowRemainderBox ? 1 : 0;
-    final visualCardCount = groupCount + remainderSlots;
-    final visualWidth =
-        visualCardCount * groupCardWidth + (visualCardCount - 1) * groupCardGap;
+    final visualCardCount = shouldShowGroups ? groupCount + remainderSlots : 0;
+    final visualWidth = visualCardCount <= 0
+        ? 0.0
+        : visualCardCount * groupCardWidth +
+              (visualCardCount - 1) * groupCardGap;
 
     return Container(
       padding: EdgeInsets.all(compact ? 14 : 20),
@@ -197,7 +203,8 @@ class _DivisionVisual extends StatelessWidget {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final canUseFixedWidth = visualWidth <= constraints.maxWidth;
+          final canUseFixedWidth =
+              visualCardCount > 0 && visualWidth <= constraints.maxWidth;
 
           return Align(
             alignment: Alignment.centerLeft,
@@ -212,34 +219,36 @@ class _DivisionVisual extends StatelessWidget {
                     itemUnit: itemUnit,
                     compact: compact,
                   ),
-                  SizedBox(height: compact ? 14 : 18),
-                  Wrap(
-                    spacing: groupCardGap,
-                    runSpacing: 12,
-                    children: [
-                      for (var index = 0; index < groupCount; index++)
-                        SizedBox(
-                          width: canUseFixedWidth ? groupCardWidth : null,
-                          child: _GroupCard(
-                            label: '${index + 1}人目',
-                            count: perGroupCount,
-                            itemEmoji: itemEmoji,
-                            compact: compact,
-                            showSolution: showSolution,
+                  if (shouldShowGroups) ...[
+                    SizedBox(height: compact ? 14 : 18),
+                    Wrap(
+                      spacing: groupCardGap,
+                      runSpacing: 12,
+                      children: [
+                        for (var index = 0; index < groupCount; index++)
+                          SizedBox(
+                            width: canUseFixedWidth ? groupCardWidth : null,
+                            child: _GroupCard(
+                              label: '${index + 1}人目',
+                              count: perGroupCount,
+                              itemEmoji: itemEmoji,
+                              compact: compact,
+                              showSolution: showSolution,
+                            ),
                           ),
-                        ),
-                      if (shouldShowRemainderBox)
-                        SizedBox(
-                          width: canUseFixedWidth ? groupCardWidth : null,
-                          child: _RemainderCard(
-                            count: remainderCount,
-                            itemEmoji: itemEmoji,
-                            compact: compact,
-                            showSolution: showSolution,
+                        if (shouldShowRemainderBox)
+                          SizedBox(
+                            width: canUseFixedWidth ? groupCardWidth : null,
+                            child: _RemainderCard(
+                              count: remainderCount,
+                              itemEmoji: itemEmoji,
+                              compact: compact,
+                              showSolution: showSolution,
+                            ),
                           ),
-                        ),
-                    ],
-                  ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),

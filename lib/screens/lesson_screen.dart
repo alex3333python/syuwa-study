@@ -196,6 +196,7 @@ class _LessonScreenState extends State<LessonScreen> {
     final isIndependent = stepType == LessonStepType.independentPractice;
     final isJapaneseOnlyChallenge =
         currentStep?.title == '日本語だけで挑戦' ||
+        widget.lesson.title == 'たしかめ問題' ||
         (currentStep?.id.contains('japanese') ?? false);
     final questionLanguage = isJapaneseOnlyChallenge
         ? AppLanguage.japanese
@@ -519,6 +520,7 @@ class _LessonScreenState extends State<LessonScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isWide = constraints.maxWidth >= 700;
+        final useCompactLayout = optionRubies.every(_choiceTextLooksCompact);
 
         return GridView.builder(
           shrinkWrap: true,
@@ -539,6 +541,7 @@ class _LessonScreenState extends State<LessonScreen> {
 
             return _AnswerCard(
               rubyText: optionRubies[index],
+              useCompactLayout: useCompactLayout,
               vocabularyEntries: const [],
               language: widget.selectedLanguage,
               backgroundColor: style.backgroundColor,
@@ -1221,7 +1224,7 @@ class _MultiplicationDivisionLearnState
           lines: const [
             SupportLine(
               japanese: 'わり算の答えは、かけ算を使って見つけられます。',
-              ruby: 'わり{算|ざん}の{答え|こたえ}は、かけ{算|ざん}を{使って|つかって}{見つけられます|みつけられます}。',
+              ruby: 'わり{算|ざん}の{答え|こたえ}は、かけ{算|ざん}を{使|つか}って{見|み}つけられます。',
               native: {
                 AppLanguage.portuguese:
                     'A resposta da divisão pode ser encontrada usando a multiplicação.',
@@ -1259,7 +1262,7 @@ class _MultiplicationDivisionLearnState
             SupportLine(
               japanese: '3人に同じ数ずつ分けると、1人分は何こになるかな？',
               ruby:
-                  '3{人|にん}に{同|おな}じ{数|かず}ずつ{分ける|わける}と、{1人|ひとり}{分|ぶん}は{何こ|なんこ}になるかな？',
+                  '3{人|にん}に{同|おな}じ{数|かず}ずつ{分|わ}けると、{1人|ひとり}{分|ぶん}は{何こ|なんこ}になるかな？',
               native: {
                 AppLanguage.portuguese:
                     'Se dividirmos igualmente entre 3 pessoas, quantos biscoitos cada pessoa recebe?',
@@ -1293,7 +1296,7 @@ class _MultiplicationDivisionLearnState
           lines: const [
             SupportLine(
               japanese: 'こんどは、分けたあとの図を見てみよう。',
-              ruby: 'こんどは、{分けた|わけた}あとの{図|ず}を{見て|みて}みよう。',
+              ruby: 'こんどは、{分|わ}けたあとの{図|ず}を{見|み}てみよう。',
               native: {
                 AppLanguage.portuguese:
                     'Agora vamos olhar o desenho depois de dividir.',
@@ -1336,7 +1339,7 @@ class _MultiplicationDivisionLearnState
             SupportLine(
               japanese: '同じ3つの数を使って、わり算とかけ算の式を作ることができます。',
               ruby:
-                  '{同|おな}じ3つの{数|かず}を{使って|つかって}、わり{算|ざん}とかけ{算|ざん}の{式|しき}を{作る|つくる}ことができます。',
+                  '{同|おな}じ3つの{数|かず}を{使|つか}って、わり{算|ざん}とかけ{算|ざん}の{式|しき}を{作|つく}ることができます。',
               native: {
                 AppLanguage.portuguese:
                     'Com os mesmos três números, podemos fazer uma conta de divisão e uma de multiplicação.',
@@ -1344,7 +1347,7 @@ class _MultiplicationDivisionLearnState
             ),
             SupportLine(
               japanese: 'わり算の答えは、かけ算を使って見つけられます。',
-              ruby: 'わり{算|ざん}の{答え|こたえ}は、かけ{算|ざん}を{使って|つかって}{見つけられます|みつけられます}。',
+              ruby: 'わり{算|ざん}の{答え|こたえ}は、かけ{算|ざん}を{使|つか}って{見|み}つけられます。',
               native: {
                 AppLanguage.portuguese:
                     'A resposta da divisão pode ser encontrada usando a multiplicação.',
@@ -1429,7 +1432,7 @@ class _MultiplicationDivisionLearnState
             SupportLine(
               japanese: 'わられる数になるかけ算を探すと、わり算の答えが分かります。',
               ruby:
-                  'わられる{数|かず}になるかけ{算|ざん}を{探す|さがす}と、わり{算|ざん}の{答え|こたえ}が{分かります|わかります}。',
+                  'わられる{数|かず}になるかけ{算|ざん}を{探|さが}すと、わり{算|ざん}の{答え|こたえ}が{分|わ}かります。',
               native: {
                 AppLanguage.portuguese:
                     'Procure a multiplicação que dá o número dividido; assim você encontra a resposta da divisão.',
@@ -1516,7 +1519,7 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
         SupportLine(
           japanese: '3人で同じ数ずつ分けると、1人分は2こで、1こ残ります。',
           ruby:
-              '3{人|にん}で{同|おな}じ{数|かず}ずつ{分ける|わける}と、{1人|ひとり}{分|ぶん}は2こで、1こ{残ります|のこります}。',
+              '3{人|にん}で{同|おな}じ{数|かず}ずつ{分|わ}けると、{1人|ひとり}{分|ぶん}は2こで、1こ{残|のこ}ります。',
           native: {
             AppLanguage.portuguese:
                 'Dividindo igualmente entre 3 pessoas, cada pessoa recebe 2 e sobra 1.',
@@ -1526,7 +1529,7 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
       1 => const [
         SupportLine(
           japanese: 'このことを、7 ÷ 3 = 2 あまり 1 と書きます。',
-          ruby: 'このことを、7 ÷ 3 = 2 あまり 1 と{書きます|かきます}。',
+          ruby: 'このことを、7 ÷ 3 = 2 あまり 1 と{書|か}きます。',
           native: {
             AppLanguage.portuguese: 'Escrevemos assim: 7 ÷ 3 = 2, resto 1.',
           },
@@ -1551,7 +1554,7 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
         ),
         SupportLine(
           japanese: '6こ使って、1こ残るので、3 × 2 + 1 = 7 です。',
-          ruby: '6こ{使って|つかって}、1こ{残る|のこる}ので、3 × 2 + 1 = 7 です。',
+          ruby: '6こ{使|つか}って、1こ{残|のこ}るので、3 × 2 + 1 = 7 です。',
           native: {
             AppLanguage.portuguese: 'Usamos 6 e sobra 1, então 3 × 2 + 1 = 7.',
           },
@@ -1560,7 +1563,7 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
       3 => const [
         SupportLine(
           japanese: '3人で分けると、あまりは0、1、2のどれかです。',
-          ruby: '3{人|にん}で{分ける|わける}と、あまりは0、1、2のどれかです。',
+          ruby: '3{人|にん}で{分|わ}けると、あまりは0、1、2のどれかです。',
           native: {
             AppLanguage.portuguese:
                 'Ao dividir entre 3 pessoas, o resto pode ser 0, 1 ou 2.',
@@ -1568,7 +1571,7 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
         ),
         SupportLine(
           japanese: 'あまりが3こになったら、もう1人分を作れます。',
-          ruby: 'あまりが3こになったら、もう{1人|ひとり}{分|ぶん}を{作れます|つくれます}。',
+          ruby: 'あまりが3こになったら、もう{1人|ひとり}{分|ぶん}を{作|つく}れます。',
           native: {
             AppLanguage.portuguese:
                 'Se sobrassem 3, daria para formar mais uma parte.',
@@ -1578,7 +1581,7 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
       _ => const [
         SupportLine(
           japanese: 'あまりのあるわり算は、九九を使って考えられます。',
-          ruby: 'あまりのあるわり{算|ざん}は、九九を{使って|つかって}{考えられます|かんがえられます}。',
+          ruby: 'あまりのあるわり{算|ざん}は、九九を{使|つか}って{考|かんが}えられます。',
           native: {
             AppLanguage.portuguese:
                 'A divisão com resto pode ser pensada usando a tabuada.',
@@ -1586,7 +1589,7 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
         ),
         SupportLine(
           japanese: 'あまりは、いつもわる数より小さくなります。',
-          ruby: 'あまりは、いつもわる{数|かず}より{小さく|ちいさく}なります。',
+          ruby: 'あまりは、いつもわる{数|かず}より{小|ちい}さくなります。',
           native: {
             AppLanguage.portuguese: 'O resto é sempre menor que o divisor.',
           },
@@ -1733,7 +1736,7 @@ class _RemainderContextLearnState extends State<_RemainderContextLearn> {
       _ => const [
         SupportLine(
           japanese: 'あまりが出たら、問題の場面に戻って考えます。',
-          ruby: 'あまりが{出たら|でたら}、{問題|もんだい}の{場面|ばめん}に{戻って|もどって}{考えます|かんがえます}。',
+          ruby: 'あまりが{出|で}たら、{問題|もんだい}の{場面|ばめん}に{戻|もど}って{考|かんが}えます。',
           native: {
             AppLanguage.portuguese:
                 'Quando aparece resto, voltamos à situação do problema e pensamos.',
@@ -1741,7 +1744,7 @@ class _RemainderContextLearnState extends State<_RemainderContextLearn> {
         ),
         SupportLine(
           japanese: '人がすわる問題では、あまった人のために1つ増やすことがあります。',
-          ruby: '{人|ひと}がすわる{問題|もんだい}では、あまった{人|ひと}のために1つ{増やす|ふやす}ことがあります。',
+          ruby: '{人|ひと}がすわる{問題|もんだい}では、あまった{人|ひと}のために1つ{増|ふ}やすことがあります。',
           native: {
             AppLanguage.portuguese:
                 'Em problemas com pessoas sentando, às vezes aumentamos 1 para quem sobrou.',
@@ -6810,6 +6813,7 @@ class _QuestionImage extends StatelessWidget {
 
 class _AnswerCard extends StatelessWidget {
   final String rubyText;
+  final bool useCompactLayout;
   final List<VocabularyEntry> vocabularyEntries;
   final AppLanguage language;
   final Color backgroundColor;
@@ -6821,6 +6825,7 @@ class _AnswerCard extends StatelessWidget {
 
   const _AnswerCard({
     required this.rubyText,
+    required this.useCompactLayout,
     required this.vocabularyEntries,
     required this.language,
     required this.backgroundColor,
@@ -6833,7 +6838,7 @@ class _AnswerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final compact = _isCompactChoice(rubyText);
+    final compact = useCompactLayout;
 
     return Material(
       color: Colors.transparent,
@@ -6875,10 +6880,16 @@ class _AnswerCard extends StatelessWidget {
                         vocabularyEntries: vocabularyEntries,
                         language: language,
                         style: TextStyle(
-                          fontSize: 23,
+                          fontSize: 29,
                           height: 1.25,
                           fontWeight: FontWeight.w900,
                           color: textColor,
+                        ),
+                        rubyStyle: TextStyle(
+                          fontSize: 12,
+                          height: 1,
+                          fontWeight: FontWeight.w800,
+                          color: textColor.withValues(alpha: 0.72),
                         ),
                       ),
               ),
@@ -6894,18 +6905,23 @@ class _AnswerCard extends StatelessWidget {
       ),
     );
   }
+}
 
-  bool _isCompactChoice(String value) {
-    final plain = value.replaceAllMapped(
-      RegExp(r'\{([^|{}]+)\|([^{}]+)\}'),
-      (match) => match.group(1) ?? '',
-    );
-    if (RegExp(r'[+＋\-−×÷=＝]').hasMatch(plain)) {
-      return true;
-    }
-    return plain.length <= 8 &&
-        RegExp(r'^[0-9０-９一二三四五六七八九十+＋\-−×÷=＝、.．mcm本人こまい枚]+$').hasMatch(plain);
+bool _choiceTextLooksCompact(String value) {
+  final plain = value.replaceAllMapped(
+    RegExp(r'\{([^|{}]+)\|([^{}]+)\}'),
+    (match) => match.group(1) ?? '',
+  );
+  if (RegExp(r'[+＋\-−×÷=＝]').hasMatch(plain)) {
+    return true;
   }
+  if (plain.length <= 6 && !RegExp(r'\s').hasMatch(plain)) {
+    return true;
+  }
+  return plain.length <= 8 &&
+      RegExp(
+        r'^[0-9０-９一二三四五六七八九十+＋\-−×÷=＝、.．mcm本人こまい枚袋台組箱本つ個こ]+$',
+      ).hasMatch(plain);
 }
 
 class _CompactChoiceText extends StatelessWidget {
@@ -6965,14 +6981,14 @@ class _CompactChoiceText extends StatelessWidget {
             language: language,
             style: TextStyle(
               color: color,
-              fontSize: 34,
-              height: 1.15,
+              fontSize: 42,
+              height: 1.1,
               fontWeight: FontWeight.w900,
               letterSpacing: 0,
             ),
             rubyStyle: TextStyle(
               color: color.withValues(alpha: 0.72),
-              fontSize: 13,
+              fontSize: 14,
               height: 1,
               fontWeight: FontWeight.w800,
               letterSpacing: 0,
@@ -7005,12 +7021,12 @@ class _CompactChoiceText extends StatelessWidget {
             if (number != null)
               TextSpan(
                 text: number,
-                style: const TextStyle(fontSize: 42, letterSpacing: 0),
+                style: const TextStyle(fontSize: 46, letterSpacing: 0),
               ),
             TextSpan(
               text: suffix,
               style: TextStyle(
-                fontSize: number == null ? 38 : 36,
+                fontSize: number == null ? 42 : 42,
                 letterSpacing: 0,
               ),
             ),
