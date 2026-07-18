@@ -173,6 +173,7 @@ class LessonMapScreen extends StatelessWidget {
     final entries = <_LessonMapEntry>[];
     var addedDivisionUnit = false;
     var addedRemainderUnit = false;
+    var addedTimeUnit = false;
 
     for (final lesson in lessons) {
       if (_isGrade3DivisionLesson(lesson)) {
@@ -207,6 +208,23 @@ class LessonMapScreen extends StatelessWidget {
             description: 'あまりの出るわり算と、文章題での答え方を練習します。',
             color1: const Color(0xFFF97316),
             color2: const Color(0xFFDB2777),
+          ),
+        );
+        continue;
+      }
+
+      if (_isGrade3TimeLesson(lesson)) {
+        if (addedTimeUnit) continue;
+        addedTimeUnit = true;
+
+        final timeLessons = lessons.where(_isGrade3TimeLesson).toList();
+        entries.add(
+          _buildUnitEntry(
+            unitLessons: timeLessons,
+            title: '時こくと時間',
+            description: '時計を動かして、時こくと時間を考えます。',
+            color1: const Color(0xFF0EA5E9),
+            color2: const Color(0xFF2563EB),
           ),
         );
         continue;
@@ -311,6 +329,10 @@ class LessonMapScreen extends StatelessWidget {
 
   bool _isGrade3RemainderLesson(Lesson lesson) {
     return lesson.id == 12 || lesson.id == 15 || lesson.id == 16;
+  }
+
+  bool _isGrade3TimeLesson(Lesson lesson) {
+    return lesson.id >= 18 && lesson.id <= 20;
   }
 }
 

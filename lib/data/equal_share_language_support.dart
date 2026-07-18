@@ -651,6 +651,82 @@ const remainderContextLessonVocabulary = [
   ),
 ];
 
+const timeMainLessonVocabulary = [
+  LessonVocabulary(
+    word: '時こく',
+    reading: 'じこく',
+    explanation: '時計がさしている、ある1つの時です。',
+    translations: {AppLanguage.portuguese: 'horário'},
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: '時間',
+    reading: 'じかん',
+    explanation: 'ある時こくから、別の時こくまでの長さです。',
+    translations: {AppLanguage.portuguese: 'tempo / duração'},
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: '前',
+    reading: 'まえ',
+    explanation: '時計を戻して考えるときに使います。',
+    translations: {AppLanguage.portuguese: 'antes'},
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: '後',
+    reading: 'あと / ご',
+    explanation: '時計を進めて考えるときに使います。',
+    translations: {AppLanguage.portuguese: 'depois'},
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: '出発',
+    reading: 'しゅっぱつ',
+    explanation: 'ある場所を出ることです。',
+    translations: {AppLanguage.portuguese: 'partida / sair'},
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: '到着',
+    reading: 'とうちゃく',
+    explanation: '行き先につくことです。',
+    translations: {AppLanguage.portuguese: 'chegada'},
+    visual: LessonVocabularyVisual.none,
+  ),
+];
+
+const shortTimeLessonVocabulary = [
+  LessonVocabulary(
+    word: '秒',
+    reading: 'びょう',
+    explanation: '分より短い時間を表す単位です。',
+    translations: {AppLanguage.portuguese: 'segundo'},
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: '秒針',
+    reading: 'びょうしん',
+    explanation: '時計で、秒を表す細い針です。',
+    translations: {AppLanguage.portuguese: 'ponteiro dos segundos'},
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: '1分',
+    reading: 'いっぷん',
+    explanation: '60秒と同じ長さの時間です。',
+    translations: {AppLanguage.portuguese: '1 minuto'},
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: '短い時間',
+    reading: 'みじかい じかん',
+    explanation: '少しだけの時間です。',
+    translations: {AppLanguage.portuguese: 'tempo curto'},
+    visual: LessonVocabularyVisual.none,
+  ),
+];
+
 const zeroOneDivisionVocabularyEntries = [
   ...equalShareVocabularyEntries,
   VocabularyEntry(

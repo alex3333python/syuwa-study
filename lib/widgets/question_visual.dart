@@ -34,6 +34,7 @@ class QuestionVisual extends StatelessWidget {
           showSolution: showSolution,
           mode: _DiagramDivisionMode.groupsOf,
         ),
+        'time_line' => _TimeLineVisual(question: question, compact: compact),
         _ => const SizedBox.shrink(),
       };
     }
@@ -58,6 +59,140 @@ class QuestionVisual extends StatelessWidget {
         return const SizedBox.shrink();
     }
   }
+}
+
+class _TimeLineVisual extends StatelessWidget {
+  final Question question;
+  final bool compact;
+
+  const _TimeLineVisual({required this.question, required this.compact});
+
+  @override
+  Widget build(BuildContext context) {
+    final points = _splitData(question.diagramData['points']);
+    final spans = _splitData(question.diagramData['spans']);
+    final caption = question.diagramData['caption']?.trim() ?? '';
+    if (points.length < 2) return const SizedBox.shrink();
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(compact ? 14 : 18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final canUseLine = constraints.maxWidth >= 420;
+              if (!canUseLine) {
+                return Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    for (var i = 0; i < points.length; i++)
+                      _TimePointChip(label: points[i]),
+                  ],
+                );
+              }
+
+              return Column(
+                children: [
+                  Row(
+                    children: [
+                      for (var i = 0; i < points.length; i++) ...[
+                        Expanded(child: _TimePointChip(label: points[i])),
+                        if (i != points.length - 1)
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Container(
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFBFDBFE),
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                ),
+                                if (i < spans.length) ...[
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    spans[i],
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: const Color(0xFF2563EB),
+                                      fontSize: compact ? 13 : 15,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                      ],
+                    ],
+                  ),
+                ],
+              );
+            },
+          ),
+          if (caption.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Text(
+              caption,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: const Color(0xFF111827),
+                fontSize: compact ? 16 : 18,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _TimePointChip extends StatelessWidget {
+  final String label;
+
+  const _TimePointChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 16,
+          height: 16,
+          decoration: const BoxDecoration(
+            color: Color(0xFF2563EB),
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Color(0xFF111827),
+            fontSize: 15,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+List<String> _splitData(String? value) {
+  if (value == null || value.trim().isEmpty) return const [];
+  return value.split('|').where((part) => part.trim().isNotEmpty).toList();
 }
 
 enum _DiagramDivisionMode { equalShare, groupsOf }

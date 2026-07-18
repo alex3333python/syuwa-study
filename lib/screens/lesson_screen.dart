@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../data/equal_share_language_support.dart';
@@ -311,7 +313,9 @@ class _LessonScreenState extends State<LessonScreen> {
                             ),
                           ),
                         ],
-                        if (question.hasVisual && !isIndependent) ...[
+                        if (question.hasVisual &&
+                            !isIndependent &&
+                            question.diagramType != 'time_line') ...[
                           const SizedBox(height: 24),
                           QuestionVisual(question: question),
                         ],
@@ -1044,8 +1048,862 @@ Widget? _buildRichLearnCard(LessonStep step, AppLanguage selectedLanguage) {
         selectedLanguage: selectedLanguage,
         vocabularyItems: remainderContextLessonVocabulary,
       );
+    case 'time-main-learn':
+      return _TimeMainLearn(selectedLanguage: selectedLanguage);
+    case 'time-main-words':
+      return _EqualShareWordsCard(
+        selectedLanguage: selectedLanguage,
+        vocabularyItems: timeMainLessonVocabulary,
+      );
+    case 'time-short-learn':
+      return _ShortTimeLearn(selectedLanguage: selectedLanguage);
+    case 'time-short-words':
+      return _EqualShareWordsCard(
+        selectedLanguage: selectedLanguage,
+        vocabularyItems: shortTimeLessonVocabulary,
+      );
   }
   return null;
+}
+
+const _timeVocabularyEntries = [
+  VocabularyEntry(
+    term: '時こく',
+    reading: 'じこく',
+    simpleJapanese: '時計がさしている、ある1つの時です。',
+    translations: {AppLanguage.portuguese: 'horário'},
+    exampleSentence: '8時10分は時こくです。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '時間',
+    reading: 'じかん',
+    simpleJapanese: 'ある時こくから、別の時こくまでの長さです。',
+    translations: {AppLanguage.portuguese: 'tempo / duração'},
+    exampleSentence: '25分は時間です。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '前',
+    reading: 'まえ',
+    simpleJapanese: '時計を戻して考えることばです。',
+    translations: {AppLanguage.portuguese: 'antes'},
+    exampleSentence: '25分前を考えます。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '後',
+    reading: 'あと / ご',
+    simpleJapanese: '時計を進めて考えることばです。',
+    translations: {AppLanguage.portuguese: 'depois'},
+    exampleSentence: '20分後を考えます。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '出発',
+    reading: 'しゅっぱつ',
+    simpleJapanese: 'ある場所を出ることです。',
+    translations: {AppLanguage.portuguese: 'partida'},
+    exampleSentence: '7時45分に出発します。',
+    category: 'school_language',
+  ),
+  VocabularyEntry(
+    term: '到着',
+    reading: 'とうちゃく',
+    simpleJapanese: '行き先につくことです。',
+    translations: {AppLanguage.portuguese: 'chegada'},
+    exampleSentence: '8時10分に到着します。',
+    category: 'school_language',
+  ),
+  VocabularyEntry(
+    term: '秒',
+    reading: 'びょう',
+    simpleJapanese: '分より短い時間の単位です。',
+    translations: {AppLanguage.portuguese: 'segundo'},
+    exampleSentence: '1分は60秒です。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '秒針',
+    reading: 'びょうしん',
+    simpleJapanese: '秒を表す時計の針です。',
+    translations: {AppLanguage.portuguese: 'ponteiro dos segundos'},
+    exampleSentence: '秒針が1周します。',
+    category: 'math_language',
+  ),
+];
+
+class _TimeMainLearn extends StatefulWidget {
+  final AppLanguage selectedLanguage;
+
+  const _TimeMainLearn({required this.selectedLanguage});
+
+  @override
+  State<_TimeMainLearn> createState() => _TimeMainLearnState();
+}
+
+class _TimeMainLearnState extends State<_TimeMainLearn> {
+  int _page = 0;
+  bool _showNative = false;
+  int _minuteOffset = 0;
+
+  static const _lastPage = 6;
+
+  void _previous() {
+    if (_page == 0) return;
+    setState(() {
+      _page--;
+      _minuteOffset = 0;
+    });
+  }
+
+  void _next() {
+    if (_page == _lastPage) return;
+    setState(() {
+      _page++;
+      _minuteOffset = 0;
+    });
+  }
+
+  void _speak() {
+    LearningAudio.speakJapanese(
+      context,
+      label: '時こくと時間',
+      text: _pageLines.first.japanese,
+    );
+  }
+
+  List<SupportLine> get _pageLines {
+    return switch (_page) {
+      0 => const [
+        SupportLine(
+          japanese: 'あさ7時45分。学校へ行く時間です。',
+          ruby: 'あさ7{時|じ}45{分|ふん}。{学校|がっこう}へ{行|い}く{時間|じかん}です。',
+          native: {
+            AppLanguage.portuguese:
+                'São 7:45 da manhã. É hora de ir para a escola.',
+          },
+        ),
+        SupportLine(
+          japanese: '8時10分に学校につきました。どのくらい時間がかかったかな？',
+          ruby: '8{時|じ}10{分|ぷん}に{学校|がっこう}につきました。どのくらい{時間|じかん}がかかったかな？',
+          native: {
+            AppLanguage.portuguese:
+                'Chegou à escola às 8:10. Quanto tempo levou?',
+          },
+        ),
+      ],
+      1 => const [
+        SupportLine(
+          japanese: '時計を進めて、7時45分から8時10分までを見てみよう。',
+          ruby: '{時計|とけい}を{進|すす}めて、7{時|じ}45{分|ふん}から8{時|じ}10{分|ぷん}までを{見|み}てみよう。',
+          native: {AppLanguage.portuguese: 'Mova o relógio de 7:45 até 8:10.'},
+        ),
+      ],
+      2 => const [
+        SupportLine(
+          japanese: '8時10分は時こく。25分は、時こくから時こくまでの時間です。',
+          ruby:
+              '8{時|じ}10{分|ぷん}は{時こく|じこく}。25{分|ふん}は、{時こく|じこく}から{時こく|じこく}までの{時間|じかん}です。',
+          native: {
+            AppLanguage.portuguese:
+                '8:10 é um horário. 25 minutos é a duração entre dois horários.',
+          },
+        ),
+      ],
+      3 => const [
+        SupportLine(
+          japanese: '8時10分から20分後。時計を進めると、8時30分です。',
+          ruby:
+              '8{時|じ}10{分|ぷん}から20{分|ぷん}{後|ご}。{時計|とけい}を{進|すす}めると、8{時|じ}30{分|ぷん}です。',
+          native: {AppLanguage.portuguese: '20 minutos depois de 8:10 é 8:30.'},
+        ),
+      ],
+      4 => const [
+        SupportLine(
+          japanese: '8時10分から25分前。時計を戻すと、7時45分です。',
+          ruby:
+              '8{時|じ}10{分|ぷん}から25{分|ふん}{前|まえ}。{時計|とけい}を{戻|もど}すと、7{時|じ}45{分|ふん}です。',
+          native: {AppLanguage.portuguese: '25 minutos antes de 8:10 é 7:45.'},
+        ),
+      ],
+      5 => const [
+        SupportLine(
+          japanese: '9時45分から30分後は、まず10時まで進めます。',
+          ruby: '9{時|じ}45{分|ふん}から30{分|ぷん}{後|ご}は、まず10{時|じ}まで{進|すす}めます。',
+          native: {
+            AppLanguage.portuguese:
+                'Para 30 minutos depois de 9:45, avance primeiro até 10:00.',
+          },
+        ),
+        SupportLine(
+          japanese: '15分進んで10時。あと15分進むと、10時15分です。',
+          ruby: '15{分|ふん}{進|すす}んで10{時|じ}。あと15{分|ふん}{進|すす}むと、10{時|じ}15{分|ふん}です。',
+          native: {
+            AppLanguage.portuguese:
+                'Avance 15 minutos até 10:00. Mais 15 minutos dá 10:15.',
+          },
+        ),
+      ],
+      _ => const [
+        SupportLine(
+          japanese: '午前11時40分から50分後。正午をこえると、午後0時30分です。',
+          ruby:
+              '{午前|ごぜん}11{時|じ}40{分|ぷん}から50{分|ぷん}{後|ご}。{正午|しょうご}をこえると、{午後|ごご}0{時|じ}30{分|ぷん}です。',
+          native: {
+            AppLanguage.portuguese:
+                '50 minutos depois de 11:40 da manhã passa pelo meio-dia e chega a 12:30 da tarde.',
+          },
+        ),
+      ],
+    };
+  }
+
+  _ClockScenario get _scenario {
+    return switch (_page) {
+      0 => const _ClockScenario(hour: 7, minute: 45, targetOffset: 25),
+      1 => const _ClockScenario(hour: 7, minute: 45, targetOffset: 25),
+      2 => const _ClockScenario(hour: 7, minute: 45, targetOffset: 25),
+      3 => const _ClockScenario(hour: 8, minute: 10, targetOffset: 20),
+      4 => const _ClockScenario(hour: 8, minute: 10, targetOffset: -25),
+      5 => const _ClockScenario(hour: 9, minute: 45, targetOffset: 30),
+      _ => const _ClockScenario(hour: 11, minute: 40, targetOffset: 50),
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scenario = _scenario;
+    final minOffset = math.min(0, scenario.targetOffset);
+    final maxOffset = math.max(0, scenario.targetOffset);
+    final clampedOffset = _minuteOffset.clamp(minOffset, maxOffset).toInt();
+
+    return _RemainderLearnShell(
+      icon: Icons.schedule_rounded,
+      title: '時計を動かして考えよう',
+      selectedLanguage: widget.selectedLanguage,
+      showNative: _showNative,
+      onToggleNative: () {
+        setState(() {
+          _showNative = !_showNative;
+        });
+      },
+      onAudio: _speak,
+      page: _page,
+      lastPage: _lastPage,
+      onPrevious: _previous,
+      onNext: _next,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SupportedTextLines(
+            lines: _pageLines,
+            language: widget.selectedLanguage,
+            showNative: _showNative,
+            vocabularyEntries: _timeVocabularyEntries,
+          ),
+          const SizedBox(height: 20),
+          _ClockActivityPanel(
+            scenario: scenario,
+            offset: clampedOffset,
+            onChangeOffset: (delta) {
+              setState(() {
+                _minuteOffset = (_minuteOffset + delta)
+                    .clamp(minOffset, maxOffset)
+                    .toInt();
+              });
+            },
+          ),
+          if (_page == 2) ...[
+            const SizedBox(height: 16),
+            const _TimePointAndArcPanel(),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ShortTimeLearn extends StatefulWidget {
+  final AppLanguage selectedLanguage;
+
+  const _ShortTimeLearn({required this.selectedLanguage});
+
+  @override
+  State<_ShortTimeLearn> createState() => _ShortTimeLearnState();
+}
+
+class _ShortTimeLearnState extends State<_ShortTimeLearn> {
+  int _page = 0;
+  bool _showNative = false;
+  DateTime? _startedAt;
+  double? _resultSeconds;
+
+  static const _lastPage = 2;
+
+  void _speak() {
+    LearningAudio.speakJapanese(
+      context,
+      label: '短い時間',
+      text: _pageLines.first.japanese,
+    );
+  }
+
+  List<SupportLine> get _pageLines {
+    return switch (_page) {
+      0 => const [
+        SupportLine(
+          japanese: '10秒だと思ったら、ボタンを押してみよう。',
+          ruby: '10{秒|びょう}だと{思|おも}ったら、ボタンを{押|お}してみよう。',
+          native: {
+            AppLanguage.portuguese:
+                'Aperte o botão quando achar que passaram 10 segundos.',
+          },
+        ),
+      ],
+      1 => const [
+        SupportLine(
+          japanese: '秒針が1周すると60秒。60秒は1分です。',
+          ruby: '{秒針|びょうしん}が1{周|しゅう}すると60{秒|びょう}。60{秒|びょう}は1{分|ぷん}です。',
+          native: {
+            AppLanguage.portuguese:
+                'Quando o ponteiro dos segundos dá uma volta, passam 60 segundos. 60 segundos são 1 minuto.',
+          },
+        ),
+      ],
+      _ => const [
+        SupportLine(
+          japanese: '1分20秒は、60秒と20秒を合わせて80秒です。',
+          ruby: '1{分|ぷん}20{秒|びょう}は、60{秒|びょう}と20{秒|びょう}を{合|あ}わせて80{秒|びょう}です。',
+          native: {
+            AppLanguage.portuguese:
+                '1 minuto e 20 segundos são 60 segundos mais 20 segundos, ou seja, 80 segundos.',
+          },
+        ),
+      ],
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _RemainderLearnShell(
+      icon: Icons.timer_rounded,
+      title: '短い時間を感じよう',
+      selectedLanguage: widget.selectedLanguage,
+      showNative: _showNative,
+      onToggleNative: () {
+        setState(() {
+          _showNative = !_showNative;
+        });
+      },
+      onAudio: _speak,
+      page: _page,
+      lastPage: _lastPage,
+      onPrevious: () {
+        if (_page == 0) return;
+        setState(() {
+          _page--;
+          _startedAt = null;
+          _resultSeconds = null;
+        });
+      },
+      onNext: () {
+        if (_page == _lastPage) return;
+        setState(() {
+          _page++;
+          _startedAt = null;
+          _resultSeconds = null;
+        });
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SupportedTextLines(
+            lines: _pageLines,
+            language: widget.selectedLanguage,
+            showNative: _showNative,
+            vocabularyEntries: _timeVocabularyEntries,
+          ),
+          const SizedBox(height: 20),
+          switch (_page) {
+            0 => _TenSecondChallenge(
+              startedAt: _startedAt,
+              resultSeconds: _resultSeconds,
+              onStart: () {
+                setState(() {
+                  _startedAt = DateTime.now();
+                  _resultSeconds = null;
+                });
+              },
+              onStop: () {
+                final start = _startedAt;
+                if (start == null) return;
+                setState(() {
+                  _resultSeconds =
+                      DateTime.now().difference(start).inMilliseconds / 1000;
+                  _startedAt = null;
+                });
+              },
+            ),
+            1 => const _SecondHandPanel(),
+            _ => const _MinuteSecondPanel(),
+          },
+        ],
+      ),
+    );
+  }
+}
+
+class _ClockScenario {
+  final int hour;
+  final int minute;
+  final int targetOffset;
+
+  const _ClockScenario({
+    required this.hour,
+    required this.minute,
+    required this.targetOffset,
+  });
+}
+
+class _ClockActivityPanel extends StatelessWidget {
+  final _ClockScenario scenario;
+  final int offset;
+  final ValueChanged<int> onChangeOffset;
+
+  const _ClockActivityPanel({
+    required this.scenario,
+    required this.offset,
+    required this.onChangeOffset,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final currentTotal = scenario.hour * 60 + scenario.minute + offset;
+    final targetReached = offset == scenario.targetOffset;
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        children: [
+          Wrap(
+            spacing: 20,
+            runSpacing: 16,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            alignment: WrapAlignment.center,
+            children: [
+              _AnalogTimeClock(
+                totalMinutes: currentTotal,
+                progress: scenario.targetOffset == 0
+                    ? 0
+                    : offset.abs() / scenario.targetOffset.abs(),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _formatTime(currentTotal),
+                    style: const TextStyle(
+                      fontFamily: AppFonts.display,
+                      fontSize: 36,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '動かした時間：${offset.abs()}分',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF374151),
+                    ),
+                  ),
+                  if (targetReached) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      scenario.targetOffset < 0 ? '時計を戻せたね。' : 'ここまで進められたね。',
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF059669),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => onChangeOffset(-5),
+                  icon: const Icon(Icons.remove_rounded),
+                  label: const Text('5分もどす'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () => onChangeOffset(5),
+                  icon: const Icon(Icons.add_rounded),
+                  label: const Text('5分すすめる'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AnalogTimeClock extends StatelessWidget {
+  final int totalMinutes;
+  final double progress;
+
+  const _AnalogTimeClock({required this.totalMinutes, required this.progress});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: const Size(210, 210),
+      painter: _AnalogTimeClockPainter(
+        totalMinutes: totalMinutes,
+        progress: progress.clamp(0, 1),
+      ),
+    );
+  }
+}
+
+class _AnalogTimeClockPainter extends CustomPainter {
+  final int totalMinutes;
+  final double progress;
+
+  const _AnalogTimeClockPainter({
+    required this.totalMinutes,
+    required this.progress,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    final radius = size.shortestSide / 2 - 12;
+    final basePaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    final rimPaint = Paint()
+      ..color = const Color(0xFFCBD5E1)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3;
+    canvas.drawCircle(center, radius, basePaint);
+    canvas.drawCircle(center, radius, rimPaint);
+
+    final tickPaint = Paint()
+      ..color = const Color(0xFF94A3B8)
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 60; i += 5) {
+      final angle = -math.pi / 2 + i / 60 * math.pi * 2;
+      final outer = center + Offset(math.cos(angle), math.sin(angle)) * radius;
+      final inner =
+          center + Offset(math.cos(angle), math.sin(angle)) * (radius - 10);
+      canvas.drawLine(inner, outer, tickPaint);
+    }
+
+    final arcPaint = Paint()
+      ..color = const Color(0xFF60A5FA)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 7
+      ..strokeCap = StrokeCap.round;
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius - 18),
+      -math.pi / 2,
+      progress * math.pi * 2,
+      false,
+      arcPaint,
+    );
+
+    final minutesInHour = totalMinutes % 60;
+    final hourInTwelve = (totalMinutes / 60) % 12;
+    final minuteAngle = -math.pi / 2 + minutesInHour / 60 * math.pi * 2;
+    final hourAngle = -math.pi / 2 + hourInTwelve / 12 * math.pi * 2;
+    final handPaint = Paint()
+      ..color = const Color(0xFF111827)
+      ..strokeWidth = 5
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(
+      center,
+      center + Offset(math.cos(hourAngle), math.sin(hourAngle)) * (radius * .5),
+      handPaint,
+    );
+    handPaint.strokeWidth = 3;
+    canvas.drawLine(
+      center,
+      center +
+          Offset(math.cos(minuteAngle), math.sin(minuteAngle)) * (radius * .78),
+      handPaint,
+    );
+    canvas.drawCircle(center, 5, Paint()..color = const Color(0xFF2563EB));
+  }
+
+  @override
+  bool shouldRepaint(covariant _AnalogTimeClockPainter oldDelegate) {
+    return totalMinutes != oldDelegate.totalMinutes ||
+        progress != oldDelegate.progress;
+  }
+}
+
+String _formatTime(int totalMinutes) {
+  final normalized = totalMinutes % (24 * 60);
+  final hour = normalized ~/ 60;
+  final minute = normalized % 60;
+  return '$hour時${minute.toString().padLeft(2, '0')}分';
+}
+
+class _TimePointAndArcPanel extends StatelessWidget {
+  const _TimePointAndArcPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _MiniConceptCard(
+            title: '時こく',
+            body: '時計の上の1つの点',
+            icon: Icons.radio_button_checked_rounded,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _MiniConceptCard(
+            title: '時間',
+            body: '点から点までの長さ',
+            icon: Icons.timeline_rounded,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MiniConceptCard extends StatelessWidget {
+  final String title;
+  final String body;
+  final IconData icon;
+
+  const _MiniConceptCard({
+    required this.title,
+    required this.body,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: const Color(0xFF2563EB)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                Text(
+                  body,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    height: 1.4,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF4B5563),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TenSecondChallenge extends StatelessWidget {
+  final DateTime? startedAt;
+  final double? resultSeconds;
+  final VoidCallback onStart;
+  final VoidCallback onStop;
+
+  const _TenSecondChallenge({
+    required this.startedAt,
+    required this.resultSeconds,
+    required this.onStart,
+    required this.onStop,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final running = startedAt != null;
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        children: [
+          const Icon(Icons.timer_rounded, size: 56, color: Color(0xFF2563EB)),
+          const SizedBox(height: 12),
+          if (resultSeconds == null)
+            Text(
+              running ? '心の中で10秒を数えよう。' : '秒数はかくして始めます。',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF374151),
+              ),
+            )
+          else
+            Text(
+              '${resultSeconds!.toStringAsFixed(1)}秒だったよ',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontFamily: AppFonts.display,
+                fontSize: 30,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF111827),
+              ),
+            ),
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: running ? onStop : onStart,
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(220, 52),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(running ? 'いまだと思う' : 'スタート'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SecondHandPanel extends StatelessWidget {
+  const _SecondHandPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      children: [
+        _AnalogTimeClock(totalMinutes: 0, progress: 1),
+        SizedBox(height: 12),
+        Text(
+          '60秒 = 1分',
+          style: TextStyle(
+            fontFamily: AppFonts.display,
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MinuteSecondPanel extends StatelessWidget {
+  const _MinuteSecondPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _DurationBlock(label: '1分', value: '60秒'),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _DurationBlock(label: 'あと', value: '20秒'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        const Text(
+          '60秒 + 20秒 = 80秒',
+          style: TextStyle(
+            fontFamily: AppFonts.display,
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DurationBlock extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _DurationBlock({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF2563EB),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF111827),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _MultiplicationDivisionLearn extends StatefulWidget {
