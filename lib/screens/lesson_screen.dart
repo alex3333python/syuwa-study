@@ -203,6 +203,9 @@ class _LessonScreenState extends State<LessonScreen> {
     final questionLanguage = isJapaneseOnlyChallenge
         ? AppLanguage.japanese
         : widget.selectedLanguage;
+    final explanationLanguage = question.unit == 'time'
+        ? widget.selectedLanguage
+        : questionLanguage;
     final promptModeForQuestion = isIndependent
         ? QuestionPromptMode.schoolJa
         : promptMode == QuestionPromptMode.easyJa
@@ -366,6 +369,7 @@ class _LessonScreenState extends State<LessonScreen> {
             isCorrect: isCorrect,
             question: question,
             questionLanguage: questionLanguage,
+            explanationLanguage: explanationLanguage,
             correctAnswerText: question.resolvedCorrectAnswerTextRuby,
             explanationText: question.explanationRubyFor(questionLanguage),
             formulaExplanation: widget.lesson.id == 7
@@ -844,6 +848,9 @@ class _IndependentPracticeHeader extends StatelessWidget {
 }
 
 String _independentPracticeHint(Question question, AppLanguage language) {
+  final timeHint = _timeIndependentPracticeHint(question);
+  if (timeHint.isNotEmpty) return timeHint;
+
   final text =
       '${question.promptSchoolJa} ${question.promptEasyJa} '
       '${question.vocabulary.join(' ')}';
@@ -890,6 +897,22 @@ String _independentPracticeHint(Question question, AppLanguage language) {
   }
 
   return '問題文の大事なことばを見て、何を聞かれているかをたしかめましょう。';
+}
+
+String _timeIndependentPracticeHint(Question question) {
+  if (question.unit != 'time') return '';
+
+  return switch (question.type) {
+    'across_hour' => 'まず、次のちょうどの時こくまで何分あるか見てみましょう。そこまで進めたら、残りの分をもう一度進めます。',
+    'noon' => '12時をまたぐと、午前から午後に変わります。まず正午まで何分あるかを見てみましょう。',
+    'minutes_after' => '「何分後」は時計を進めます。近いちょうどの時こくまで進めてから、残りの分を考えましょう。',
+    'minutes_before' ||
+    'start_time' => '「前」や「何時に出た」は時計を戻して考えます。終わりの時こくから、かかった時間だけ戻しましょう。',
+    'compare_time' => '単位がちがうときは、同じ単位にそろえて比べます。1分は60秒です。',
+    'seconds_life' => '50m走はとても短い時間です。「時・分・秒」の中で、短い時間を表しやすい単位を考えましょう。',
+    'minutes_seconds' => '分と秒がまざっているときは、分を秒に直してから考えます。1分は60秒です。',
+    _ => '',
+  };
 }
 
 class _IndependentHintSupport {
@@ -1368,30 +1391,21 @@ class _ShortTimeLearnState extends State<_ShortTimeLearn> {
     return switch (_page) {
       0 => const [
         SupportLine(
-          japanese: '秒針が1目もり進むと1秒です。ストップウォッチの数字も、1秒ごとに1ふえます。',
-          ruby:
-              '{秒針|びょうしん}が1{目|め}もり{進|すす}むと1{秒|びょう}です。ストップウォッチの{数字|すうじ}も、1{秒|びょう}ごとに1ふえます。',
+          japanese: '1分より短い時間の単位に、秒があります。',
+          ruby: '1{分|ぷん}より{短|みじか}い{時間|じかん}の{単位|たんい}に、{秒|びょう}があります。',
           native: {
             AppLanguage.portuguese:
-                'Quando o ponteiro dos segundos avança uma marca, passa 1 segundo. O número do cronômetro também aumenta de 1 a cada segundo.',
-          },
-        ),
-        SupportLine(
-          japanese: '秒針が1周すると60秒。60秒は1分です。',
-          ruby: '{秒針|びょうしん}が1{周|しゅう}すると60{秒|びょう}。60{秒|びょう}は1{分|ぷん}です。',
-          native: {
-            AppLanguage.portuguese:
-                'Quando o ponteiro dos segundos dá uma volta, passam 60 segundos. 60 segundos são 1 minuto.',
+                'O segundo é uma unidade de tempo menor que 1 minuto.',
           },
         ),
       ],
       _ => const [
         SupportLine(
-          japanese: '1分20秒は、60秒と20秒を合わせて80秒です。',
-          ruby: '1{分|ぷん}20{秒|びょう}は、60{秒|びょう}と20{秒|びょう}を{合|あ}わせて80{秒|びょう}です。',
+          japanese: 'ストップウォッチの01:20は、1分20秒を表しています。',
+          ruby: 'ストップウォッチの01:20は、1{分|ぷん}20{秒|びょう}を{表|あらわ}しています。',
           native: {
             AppLanguage.portuguese:
-                '1 minuto e 20 segundos são 60 segundos mais 20 segundos, ou seja, 80 segundos.',
+                'No cronômetro, 01:20 mostra 1 minuto e 20 segundos.',
           },
         ),
       ],
@@ -2116,25 +2130,26 @@ class _SecondHandPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       children: [
-        Wrap(
+        const Wrap(
           spacing: 18,
           runSpacing: 18,
           alignment: WrapAlignment.center,
           children: [_SecondClockCard(), _StopwatchSecondCard()],
         ),
-        SizedBox(height: 16),
-        Text(
+        const SizedBox(height: 18),
+        const Text(
           '60秒 = 1分',
           style: TextStyle(
             fontFamily: AppFonts.display,
+            color: Color(0xFF2563EB),
             fontSize: 28,
             fontWeight: FontWeight.w700,
           ),
         ),
-        SizedBox(height: 8),
-        Text(
+        const SizedBox(height: 10),
+        const Text(
           '秒針が1目もり進むと1秒。ストップウォッチの数字が1ふえると1秒です。',
           textAlign: TextAlign.center,
           style: TextStyle(
@@ -2163,12 +2178,14 @@ class _SecondClockCardState extends State<_SecondClockCard> {
   Widget build(BuildContext context) {
     return Container(
       width: 250,
+      height: 248,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           TweenAnimationBuilder<double>(
             key: ValueKey(_cycle),
@@ -2189,7 +2206,7 @@ class _SecondClockCardState extends State<_SecondClockCard> {
           ),
           const SizedBox(height: 10),
           const Text(
-            '赤い針が秒針です',
+            '赤い針が秒針',
             style: TextStyle(
               color: Color(0xFF111827),
               fontSize: 16,
@@ -2328,12 +2345,14 @@ class _StopwatchSecondCardState extends State<_StopwatchSecondCard> {
   Widget build(BuildContext context) {
     return Container(
       width: 250,
+      height: 248,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           TweenAnimationBuilder<double>(
             key: ValueKey(_cycle),
@@ -2348,42 +2367,79 @@ class _StopwatchSecondCardState extends State<_StopwatchSecondCard> {
             },
             builder: (context, value, _) {
               final seconds = value.floor().clamp(0, 59);
-              return Container(
-                width: 184,
-                height: 112,
-                padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Color(0xFF1F2937), Color(0xFF0F172A)],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFF334155)),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x16000000),
-                      blurRadius: 14,
-                      offset: Offset(0, 8),
+              return SizedBox(
+                height: 178,
+                child: Center(
+                  child: Container(
+                    width: 184,
+                    height: 112,
+                    padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0xFF1F2937), Color(0xFF0F172A)],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFF334155)),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x16000000),
+                          blurRadius: 14,
+                          offset: Offset(0, 8),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Row(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Container(
-                          width: 7,
-                          height: 7,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF22C55E),
-                            shape: BoxShape.circle,
+                        Row(
+                          children: [
+                            Container(
+                              width: 7,
+                              height: 7,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF22C55E),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'STOPWATCH',
+                              style: TextStyle(
+                                color: Color(0xFF94A3B8),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Spacer(),
+                        RichText(
+                          text: TextSpan(
+                            style: const TextStyle(
+                              fontFamily: AppFonts.display,
+                              color: Colors.white,
+                              fontSize: 42,
+                              fontWeight: FontWeight.w700,
+                              height: 1,
+                              letterSpacing: 0,
+                            ),
+                            children: [
+                              const TextSpan(text: '00:'),
+                              TextSpan(
+                                text: seconds.toString().padLeft(2, '0'),
+                                style: const TextStyle(
+                                  color: Color(0xFFEF4444),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(width: 6),
+                        const Spacer(),
                         const Text(
-                          'STOPWATCH',
+                          'SECONDS',
                           style: TextStyle(
                             color: Color(0xFF94A3B8),
                             fontSize: 10,
@@ -2393,36 +2449,14 @@ class _StopwatchSecondCardState extends State<_StopwatchSecondCard> {
                         ),
                       ],
                     ),
-                    const Spacer(),
-                    Text(
-                      '00:${seconds.toString().padLeft(2, '0')}',
-                      style: const TextStyle(
-                        fontFamily: AppFonts.display,
-                        color: Colors.white,
-                        fontSize: 42,
-                        fontWeight: FontWeight.w700,
-                        height: 1,
-                        letterSpacing: 0,
-                      ),
-                    ),
-                    const Spacer(),
-                    const Text(
-                      'SECONDS',
-                      style: TextStyle(
-                        color: Color(0xFF94A3B8),
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               );
             },
           ),
           const SizedBox(height: 10),
           const Text(
-            '数字が1ふえると1秒',
+            '赤文字が秒数',
             style: TextStyle(
               color: Color(0xFF111827),
               fontSize: 16,
@@ -2440,67 +2474,155 @@ class _MinuteSecondPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: _DurationBlock(label: '1分', value: '60秒'),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _DurationBlock(label: 'あと', value: '20秒'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        const Text(
-          '60秒 + 20秒 = 80秒',
-          style: TextStyle(
-            fontFamily: AppFonts.display,
-            fontSize: 28,
-            fontWeight: FontWeight.w700,
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Wrap(
+            spacing: 18,
+            runSpacing: 18,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            alignment: WrapAlignment.center,
+            children: const [
+              _StaticStopwatchDisplay(),
+              Icon(
+                Icons.arrow_forward_rounded,
+                color: Color(0xFF64748B),
+                size: 34,
+              ),
+              _SecondsOnlyDisplay(),
+            ],
           ),
-        ),
-      ],
+          const SizedBox(height: 18),
+          const Text(
+            '1分は60秒。だから、1分20秒は80秒です。',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color(0xFF111827),
+              fontSize: 18,
+              height: 1.45,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class _DurationBlock extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _DurationBlock({required this.label, required this.value});
+class _StaticStopwatchDisplay extends StatelessWidget {
+  const _StaticStopwatchDisplay();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: 220,
+      height: 124,
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFEFF6FF),
-        borderRadius: BorderRadius.circular(14),
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF1F2937), Color(0xFF0F172A)],
+        ),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFF334155)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x12000000),
+            blurRadius: 12,
+            offset: Offset(0, 7),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF2563EB),
+          Row(
+            children: [
+              Container(
+                width: 7,
+                height: 7,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF22C55E),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 6),
+              const Text(
+                'STOPWATCH',
+                style: TextStyle(
+                  color: Color(0xFF94A3B8),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0,
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          RichText(
+            text: const TextSpan(
+              style: TextStyle(
+                fontFamily: AppFonts.display,
+                color: Colors.white,
+                fontSize: 44,
+                fontWeight: FontWeight.w700,
+                height: 1,
+                letterSpacing: 0,
+              ),
+              children: [
+                TextSpan(text: '01'),
+                TextSpan(text: ':'),
+                TextSpan(
+                  text: '20',
+                  style: TextStyle(color: Color(0xFFEF4444)),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-              color: Color(0xFF111827),
+          const Spacer(),
+          const Text(
+            'MIN : SEC',
+            style: TextStyle(
+              color: Color(0xFF94A3B8),
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0,
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SecondsOnlyDisplay extends StatelessWidget {
+  const _SecondsOnlyDisplay();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 190,
+      height: 124,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: const Text(
+        '80秒',
+        style: TextStyle(
+          fontFamily: AppFonts.display,
+          color: Color(0xFF2563EB),
+          fontSize: 44,
+          fontWeight: FontWeight.w700,
+          height: 1,
+        ),
       ),
     );
   }
@@ -8817,6 +8939,7 @@ class _ExplanationOverlay extends StatelessWidget {
   final bool isCorrect;
   final Question question;
   final AppLanguage questionLanguage;
+  final AppLanguage explanationLanguage;
   final String correctAnswerText;
   final String explanationText;
   final String formulaExplanation;
@@ -8829,6 +8952,7 @@ class _ExplanationOverlay extends StatelessWidget {
     required this.isCorrect,
     required this.question,
     required this.questionLanguage,
+    required this.explanationLanguage,
     required this.correctAnswerText,
     required this.explanationText,
     required this.formulaExplanation,
@@ -8914,11 +9038,11 @@ class _ExplanationOverlay extends StatelessWidget {
                               ],
                               _SolutionExplanationCard(
                                 question: question,
-                                language: questionLanguage,
+                                language: explanationLanguage,
                                 japaneseExplanation: question
                                     .explanationRubyFor(AppLanguage.japanese),
                                 nativeExplanation: question
-                                    .explanationNative[questionLanguage],
+                                    .explanationNative[explanationLanguage],
                                 formulaText: formulaExplanation,
                                 visualHint: visualHint,
                               ),

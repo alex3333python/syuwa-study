@@ -275,10 +275,10 @@ final List<Lesson> grade3TimeLessons = [
           _q(
             id: 19104,
             type: 'seconds_life',
-            school: '50m走に12秒かかりました。これはどの単位で表していますか。',
+            school: '50m走の記録を表すとき、使う単位はどれがよいですか。',
             easy: '短い時間を表す単位を選びます。',
             questionTextRuby:
-                '50m{走|そう}に12{秒|びょう}かかりました。これはどの{単位|たんい}で{表|あらわ}していますか。',
+                '50m{走|そう}の{記録|きろく}を{表|あらわ}すとき、{使|つか}う{単位|たんい}はどれがよいですか。',
             choices: ['時', '分', '秒'],
             correct: 2,
             explanation: '50m走のような短い時間は、秒で表すことがあります。',
@@ -332,71 +332,71 @@ final List<Lesson> grade3TimeLessons = [
           _q(
             id: 20101,
             type: 'elapsed_time',
-            school: '7時50分に家を出て、8時15分に学校につきました。何分かかりましたか。',
-            easy: '7時50分から8時15分までを考えます。',
-            choices: ['15分', '25分', '35分'],
+            school: '9時35分に公園につきました。10時5分まで遊びました。何分遊びましたか。',
+            easy: '9時35分から10時5分までを考えます。',
+            choices: ['20分', '30分', '40分'],
             correct: 1,
-            explanation: '7時50分から8時までは10分、8時から8時15分までは15分です。合わせて25分です。',
+            explanation: '9時35分から10時までは25分、10時から10時5分までは5分です。合わせて30分です。',
             tags: ['time', 'elapsed_time'],
             diagramData: const {
-              'points': '7:50|8:00|8:15',
-              'spans': '10分|15分',
-              'caption': '10分 + 15分 = 25分',
+              'points': '9:35|10:00|10:05',
+              'spans': '25分|5分',
+              'caption': '25分 + 5分 = 30分',
             },
           ),
           _q(
             id: 20102,
             type: 'minutes_after',
-            school: '午後2時10分から45分勉強しました。終わった時こくは何時何分ですか。',
-            easy: '午後2時10分から45分進めます。',
-            choices: ['午後2時45分', '午後2時55分', '午後3時5分'],
+            school: '午後1時25分から40分、読書をしました。終わった時こくは何時何分ですか。',
+            easy: '午後1時25分から40分進めます。',
+            choices: ['午後1時55分', '午後2時5分', '午後2時15分'],
             correct: 1,
-            explanation: '午後2時10分から45分進めると、午後2時55分です。',
+            explanation: '午後1時25分から午後2時までは35分です。あと5分進めると、午後2時5分です。',
             tags: ['time', 'minutes_after', 'pm'],
             diagramData: const {
-              'points': '午後2:10|午後2:55',
-              'spans': '45分',
-              'caption': '45分後は午後2時55分',
+              'points': '午後1:25|午後2:00|午後2:05',
+              'spans': '35分|5分',
+              'caption': '40分後は午後2時5分',
             },
           ),
           _q(
             id: 20103,
             type: 'noon',
-            school: '午前11時40分に出発し、50分後に着きました。何時何分ですか。',
-            easy: '午前11時40分から50分進めます。',
-            choices: ['午前11時50分', '午後0時30分', '午後1時30分'],
-            correct: 1,
-            explanation: '午前11時40分から正午まで20分、さらに30分で午後0時30分です。',
+            school: '午前11時35分から45分後は何時何分ですか。',
+            easy: '午前11時35分から45分進めます。',
+            choices: ['午後0時20分', '午後0時10分', '午前11時50分'],
+            correct: 0,
+            explanation: '午前11時35分から正午までは25分です。あと20分進めると午後0時20分です。',
             tags: ['time', 'noon', 'am_pm'],
             diagramData: const {
-              'points': '午前11:40|正午|午後0:30',
-              'spans': '20分|30分',
-              'caption': '50分後は午後0時30分',
+              'points': '午前11:35|正午|午後0:20',
+              'spans': '25分|20分',
+              'caption': '45分後は午後0時20分',
             },
           ),
           _q(
             id: 20104,
             type: 'minutes_seconds',
-            school: '1分30秒は何秒ですか。',
-            easy: '1分は60秒です。',
-            choices: ['80秒', '90秒', '130秒'],
-            correct: 1,
-            explanation: '1分は60秒です。60秒+30秒=90秒です。',
+            school: '2分10秒は何秒ですか。',
+            easy: '2分は120秒です。',
+            choices: ['70秒', '120秒', '130秒'],
+            correct: 2,
+            explanation: '1分は60秒です。2分は120秒です。120秒に10秒を足すと130秒です。',
             tags: ['time', 'seconds', 'conversion'],
             diagramData: const {
-              'points': '0秒|60秒|90秒',
-              'spans': '1分|30秒',
-              'caption': '60秒 + 30秒 = 90秒',
+              'points': '0秒|60秒|120秒|130秒',
+              'spans': '1分|1分|10秒',
+              'caption': '120秒 + 10秒 = 130秒',
             },
           ),
           _q(
             id: 20105,
             type: 'compare_time',
-            school: '1分と50秒では、どちらが長いですか。',
-            easy: '1分は60秒です。',
-            choices: ['1分', '50秒', '同じ'],
+            school: '1分20秒と75秒では、どちらが長いですか。',
+            easy: '1分20秒を秒だけで考えます。',
+            choices: ['1分20秒', '75秒', '同じ'],
             correct: 0,
-            explanation: '1分は60秒です。60秒は50秒より長いです。',
+            explanation: '1分20秒は80秒です。80秒は75秒より長いので、1分20秒のほうが長いです。',
             tags: ['time', 'compare_time'],
           ),
         ],
@@ -450,6 +450,7 @@ Question _q({
     explanationEasyJa: explanation,
     explanation: explanation,
     explanationRuby: explanationRuby,
+    explanationNative: _timeExplanationNative(id),
     tags: ['grade3', 'math', 'time', ...tags],
     diagramType: diagramData.isEmpty ? '' : 'time_line',
     diagramData: diagramData,
@@ -457,4 +458,44 @@ Question _q({
     subject: 'math',
     unit: 'time',
   );
+}
+
+Map<AppLanguage, String> _timeExplanationNative(int id) {
+  final portuguese = switch (id) {
+    18101 =>
+      'De 7:45 até 8:00 são 15 minutos. De 8:00 até 8:10 são 10 minutos. 15 minutos mais 10 minutos são 25 minutos.',
+    18102 =>
+      'Avançando o relógio 20 minutos a partir de 8:10, chegamos a 8:30.',
+    18103 =>
+      'Voltando 10 minutos a partir de 8:10, chegamos a 8:00. Voltando mais 15 minutos, chegamos a 7:45.',
+    18104 =>
+      'De 9:45 até 10:00 são 15 minutos. Avançando mais 15 minutos, chegamos a 10:15.',
+    18105 =>
+      'De 11:40 da manhã até o meio-dia são 20 minutos. Avançando mais 30 minutos, chegamos a 0:30 da tarde.',
+    18106 => 'Voltando 30 minutos a partir de 10:00, chegamos a 9:30.',
+    19101 =>
+      'Quando o ponteiro dos segundos dá uma volta no relógio, passam 60 segundos. 1 minuto tem 60 segundos.',
+    19102 =>
+      '1 minuto tem 60 segundos. Somando mais 20 segundos, temos 80 segundos.',
+    19103 =>
+      '1 minuto tem 60 segundos. 60 segundos é mais longo que 50 segundos, então 1 minuto é mais longo.',
+    19104 =>
+      'Uma corrida de 50 m leva pouco tempo. Para tempos curtos, usamos segundos.',
+    19105 =>
+      '1 minuto tem 60 segundos. 60 segundos mais 30 segundos são 90 segundos.',
+    20101 =>
+      'De 9:35 até 10:00 são 25 minutos. De 10:00 até 10:05 são 5 minutos. Ao todo, são 30 minutos.',
+    20102 =>
+      'De 1:25 da tarde até 2:00 são 35 minutos. Avançando mais 5 minutos, chegamos a 2:05 da tarde.',
+    20103 =>
+      'De 11:35 da manhã até o meio-dia são 25 minutos. Avançando mais 20 minutos, chegamos a 0:20 da tarde.',
+    20104 =>
+      '1 minuto tem 60 segundos. 2 minutos têm 120 segundos. 120 segundos mais 10 segundos são 130 segundos.',
+    20105 =>
+      '1 minuto e 20 segundos são 80 segundos. 80 segundos é mais longo que 75 segundos.',
+    _ => '',
+  };
+
+  if (portuguese.isEmpty) return const {};
+  return {AppLanguage.portuguese: portuguese};
 }
