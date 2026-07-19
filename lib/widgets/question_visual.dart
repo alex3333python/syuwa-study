@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/question.dart';
+import '../theme/app_fonts.dart';
 
 class QuestionVisual extends StatelessWidget {
   final Question question;
@@ -73,6 +74,15 @@ class _TimeLineVisual extends StatelessWidget {
     final spans = _splitData(question.diagramData['spans']);
     final caption = question.diagramData['caption']?.trim() ?? '';
     if (points.length < 2) return const SizedBox.shrink();
+    final useSecondsScale =
+        points.any((point) => point.contains('秒')) ||
+        spans.any((span) => span.contains('秒'));
+    final durations = spans
+        .map((span) => _parseDurationValue(span, useSecondsScale))
+        .toList();
+    if (durations.any((value) => value <= 0)) {
+      return const SizedBox.shrink();
+    }
 
     return Container(
       width: double.infinity,
@@ -85,59 +95,17 @@ class _TimeLineVisual extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final canUseLine = constraints.maxWidth >= 420;
-              if (!canUseLine) {
-                return Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  alignment: WrapAlignment.center,
-                  children: [
-                    for (var i = 0; i < points.length; i++)
-                      _TimePointChip(label: points[i]),
-                  ],
-                );
-              }
-
-              return Column(
-                children: [
-                  Row(
-                    children: [
-                      for (var i = 0; i < points.length; i++) ...[
-                        Expanded(child: _TimePointChip(label: points[i])),
-                        if (i != points.length - 1)
-                          Expanded(
-                            child: Column(
-                              children: [
-                                Container(
-                                  height: 4,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFBFDBFE),
-                                    borderRadius: BorderRadius.circular(999),
-                                  ),
-                                ),
-                                if (i < spans.length) ...[
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    spans[i],
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: const Color(0xFF2563EB),
-                                      fontSize: compact ? 13 : 15,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                      ],
-                    ],
-                  ),
-                ],
-              );
-            },
+          SizedBox(
+            height: compact ? 104 : 118,
+            child: CustomPaint(
+              painter: _QuestionTimeRulerPainter(
+                points: points,
+                spans: spans,
+                durations: durations,
+                compact: compact,
+              ),
+              child: const SizedBox.expand(),
+            ),
           ),
           if (caption.isNotEmpty) ...[
             const SizedBox(height: 14),
@@ -157,42 +125,158 @@ class _TimeLineVisual extends StatelessWidget {
   }
 }
 
-class _TimePointChip extends StatelessWidget {
-  final String label;
+class _QuestionTimeRulerPainter extends CustomPainter {
+  final List<String> points;
+  final List<String> spans;
+  final List<int> durations;
+  final bool compact;
 
-  const _TimePointChip({required this.label});
+  const _QuestionTimeRulerPainter({
+    required this.points,
+    required this.spans,
+    required this.durations,
+    required this.compact,
+  });
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 16,
-          height: 16,
-          decoration: const BoxDecoration(
-            color: Color(0xFF2563EB),
-            shape: BoxShape.circle,
-          ),
+  void paint(Canvas canvas, Size size) {
+    final total = durations.fold<int>(0, (sum, value) => sum + value);
+    if (total <= 0) return;
+
+    final left = compact ? 18.0 : 24.0;
+    final right = size.width - left;
+    final y = compact ? 58.0 : 66.0;
+    final width = right - left;
+    final basePaint = Paint()
+      ..color = const Color(0xFFCBD5E1)
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset(left, y), Offset(right, y), basePaint);
+
+    final boundaries = _cumulativeDurations(durations);
+    for (var value = 0; value <= total; value += 10) {
+      final x = left + width * value / total;
+      final isBoundary =
+          value == 0 || value == total || boundaries.contains(value);
+      canvas.drawLine(
+        Offset(x, y - (isBoundary ? 14 : 8)),
+        Offset(x, y + (isBoundary ? 14 : 8)),
+        Paint()
+          ..color = isBoundary
+              ? const Color(0xFF475569)
+              : const Color(0xFF94A3B8)
+          ..strokeWidth = isBoundary ? 2.2 : 1.6
+          ..strokeCap = StrokeCap.round,
+      );
+    }
+
+    var elapsed = 0;
+    for (var i = 0; i < durations.length; i++) {
+      final startX = left + width * elapsed / total;
+      elapsed += durations[i];
+      final endX = left + width * elapsed / total;
+      final barY = compact ? 26.0 : 28.0;
+      final barPaint = Paint()
+        ..color = const Color(0xFF2563EB)
+        ..strokeWidth = 3
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(
+        Offset(startX + 4, barY),
+        Offset(endX - 4, barY),
+        barPaint,
+      );
+      canvas.drawLine(Offset(startX, barY), Offset(startX, barY + 9), barPaint);
+      canvas.drawLine(Offset(endX, barY), Offset(endX, barY + 9), barPaint);
+      _paintText(
+        canvas,
+        spans[i],
+        Offset((startX + endX) / 2, barY - 12),
+        compact ? 12 : 13,
+        const Color(0xFF2563EB),
+      );
+    }
+
+    final positions = <double>[0];
+    var sum = 0;
+    for (final duration in durations) {
+      sum += duration;
+      positions.add(sum / total);
+    }
+    for (var i = 0; i < points.length && i < positions.length; i++) {
+      _paintText(
+        canvas,
+        points[i],
+        Offset(left + width * positions[i], y + 30),
+        compact ? 11 : 12,
+        const Color(0xFF334155),
+      );
+    }
+  }
+
+  List<int> _cumulativeDurations(List<int> values) {
+    var sum = 0;
+    final result = <int>[];
+    for (final value in values) {
+      sum += value;
+      if (sum > 0) result.add(sum);
+    }
+    return result;
+  }
+
+  void _paintText(
+    Canvas canvas,
+    String text,
+    Offset center,
+    double fontSize,
+    Color color,
+  ) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          fontFamily: AppFonts.interface,
+          color: color,
+          fontSize: fontSize,
+          fontWeight: FontWeight.w800,
         ),
-        const SizedBox(height: 6),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: Color(0xFF111827),
-            fontSize: 15,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ],
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    painter.paint(
+      canvas,
+      center - Offset(painter.width / 2, painter.height / 2),
     );
+  }
+
+  @override
+  bool shouldRepaint(covariant _QuestionTimeRulerPainter oldDelegate) {
+    return points != oldDelegate.points ||
+        spans != oldDelegate.spans ||
+        durations != oldDelegate.durations ||
+        compact != oldDelegate.compact;
   }
 }
 
 List<String> _splitData(String? value) {
   if (value == null || value.trim().isEmpty) return const [];
   return value.split('|').where((part) => part.trim().isNotEmpty).toList();
+}
+
+int _parseDurationValue(String value, bool useSecondsScale) {
+  final normalized = value.replaceAll(' ', '');
+  final minutesMatch = RegExp(r'(\d+)分').firstMatch(normalized);
+  final secondsMatch = RegExp(r'(\d+)秒').firstMatch(normalized);
+  final minutes = minutesMatch == null
+      ? 0
+      : int.tryParse(minutesMatch.group(1)!) ?? 0;
+  final seconds = secondsMatch == null
+      ? 0
+      : int.tryParse(secondsMatch.group(1)!) ?? 0;
+  if (minutesMatch != null) {
+    return useSecondsScale ? minutes * 60 + seconds : minutes;
+  }
+  if (secondsMatch != null) return seconds;
+  return int.tryParse(normalized.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
 }
 
 enum _DiagramDivisionMode { equalShare, groupsOf }

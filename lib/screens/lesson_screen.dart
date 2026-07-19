@@ -1116,6 +1116,22 @@ const _timeVocabularyEntries = [
     category: 'school_language',
   ),
   VocabularyEntry(
+    term: '午前',
+    reading: 'ごぜん',
+    simpleJapanese: '夜中の12時から、正午までの時こくにつける言葉です。',
+    translations: {AppLanguage.portuguese: 'da manhã / a.m.'},
+    exampleSentence: '午前7時40分に出発します。',
+    category: 'time_language',
+  ),
+  VocabularyEntry(
+    term: '午後',
+    reading: 'ごご',
+    simpleJapanese: '正午をすぎたあとの時こくにつける言葉です。',
+    translations: {AppLanguage.portuguese: 'da tarde / p.m.'},
+    exampleSentence: '午後3時40分に始まります。',
+    category: 'time_language',
+  ),
+  VocabularyEntry(
     term: '秒',
     reading: 'びょう',
     simpleJapanese: '分より短い時間の単位です。',
@@ -1147,7 +1163,7 @@ class _TimeMainLearnState extends State<_TimeMainLearn> {
   bool _showNative = false;
   int _minuteOffset = 0;
 
-  static const _lastPage = 6;
+  static const _lastPage = 1;
 
   void _previous() {
     if (_page == 0) return;
@@ -1169,118 +1185,85 @@ class _TimeMainLearnState extends State<_TimeMainLearn> {
     LearningAudio.speakJapanese(
       context,
       label: '時こくと時間',
-      text: _pageLines.first.japanese,
+      text: _currentPage.problem.japanese,
     );
   }
 
-  List<SupportLine> get _pageLines {
+  _TimeLearnPage get _currentPage {
     return switch (_page) {
-      0 => const [
-        SupportLine(
-          japanese: 'あさ7時45分。学校へ行く時間です。',
-          ruby: 'あさ7{時|じ}45{分|ふん}。{学校|がっこう}へ{行|い}く{時間|じかん}です。',
-          native: {
-            AppLanguage.portuguese:
-                'São 7:45 da manhã. É hora de ir para a escola.',
-          },
-        ),
-        SupportLine(
-          japanese: '8時10分に学校につきました。どのくらい時間がかかったかな？',
-          ruby: '8{時|じ}10{分|ぷん}に{学校|がっこう}につきました。どのくらい{時間|じかん}がかかったかな？',
-          native: {
-            AppLanguage.portuguese:
-                'Chegou à escola às 8:10. Quanto tempo levou?',
-          },
-        ),
-      ],
-      1 => const [
-        SupportLine(
-          japanese: '時計を進めて、7時45分から8時10分までを見てみよう。',
-          ruby: '{時計|とけい}を{進|すす}めて、7{時|じ}45{分|ふん}から8{時|じ}10{分|ぷん}までを{見|み}てみよう。',
-          native: {AppLanguage.portuguese: 'Mova o relógio de 7:45 até 8:10.'},
-        ),
-      ],
-      2 => const [
-        SupportLine(
-          japanese: '8時10分は時こく。25分は、時こくから時こくまでの時間です。',
+      0 => const _TimeLearnPage(
+        title: '学校につく時こくを見つけよう',
+        problem: SupportLine(
+          japanese: '午前7時40分に家を出発してから、学校に着くまでに30分かかりました。学校に着いた時こくは何時何分ですか。',
           ruby:
-              '8{時|じ}10{分|ぷん}は{時こく|じこく}。25{分|ふん}は、{時こく|じこく}から{時こく|じこく}までの{時間|じかん}です。',
+              '{午前|ごぜん}7{時|じ}40{分|ぷん}に{家|いえ}を{出発|しゅっぱつ}してから、{学校|がっこう}に{着|つ}くまでに30{分|ぷん}かかりました。{学校|がっこう}に{着|つ}いた{時|じ}こくは{何時|なんじ}{何分|なんぷん}ですか。',
           native: {
             AppLanguage.portuguese:
-                '8:10 é um horário. 25 minutos é a duração entre dois horários.',
+                'Saiu de casa às 7:40 da manhã e levou 30 minutos para chegar à escola. A que horas chegou?',
           },
         ),
-      ],
-      3 => const [
-        SupportLine(
-          japanese: '8時10分から20分後。時計を進めると、8時30分です。',
+        guide: SupportLine(
+          japanese: '時計を30分動かしてみよう。',
+          ruby: '{時計|とけい}を30{分|ぷん}{動|うご}かしてみよう。',
+          native: {AppLanguage.portuguese: 'Mova o relógio 30 minutos.'},
+        ),
+        scenario: _ClockScenario(
+          hour: 7,
+          minute: 40,
+          targetOffset: 30,
+          completionMessage: '学校に着いたよ。',
+        ),
+        answer: '午前8時10分',
+        explanation: 'かかった時間は30分だから、8時まで20分かかり、8時から10分かかる。だから、午前8時10分です。',
+        splitLabels: ['20分', '10分'],
+        splitStarts: [40, 0],
+        splitMinutes: [20, 10],
+        timelineLabels: ['午前7:40', '8:00', '午前8:10'],
+      ),
+      _ => const _TimeLearnPage(
+        title: '映画の時間を見つけよう',
+        problem: SupportLine(
+          japanese: '午後3時40分に映画が始まって、午後4時50分に映画が終わりました。映画は何時間何分ありましたか。',
           ruby:
-              '8{時|じ}10{分|ぷん}から20{分|ぷん}{後|ご}。{時計|とけい}を{進|すす}めると、8{時|じ}30{分|ぷん}です。',
-          native: {AppLanguage.portuguese: '20 minutos depois de 8:10 é 8:30.'},
-        ),
-      ],
-      4 => const [
-        SupportLine(
-          japanese: '8時10分から25分前。時計を戻すと、7時45分です。',
-          ruby:
-              '8{時|じ}10{分|ぷん}から25{分|ふん}{前|まえ}。{時計|とけい}を{戻|もど}すと、7{時|じ}45{分|ふん}です。',
-          native: {AppLanguage.portuguese: '25 minutos antes de 8:10 é 7:45.'},
-        ),
-      ],
-      5 => const [
-        SupportLine(
-          japanese: '9時45分から30分後は、まず10時まで進めます。',
-          ruby: '9{時|じ}45{分|ふん}から30{分|ぷん}{後|ご}は、まず10{時|じ}まで{進|すす}めます。',
+              '{午後|ごご}3{時|じ}40{分|ぷん}に{映画|えいが}が{始|はじ}まって、{午後|ごご}4{時|じ}50{分|ぷん}に{映画|えいが}が{終|お}わりました。{映画|えいが}は{何時間|なんじかん}{何分|なんぷん}ありましたか。',
           native: {
             AppLanguage.portuguese:
-                'Para 30 minutos depois de 9:45, avance primeiro até 10:00.',
+                'O filme começou às 3:40 da tarde e terminou às 4:50 da tarde. Quanto tempo durou?',
           },
         ),
-        SupportLine(
-          japanese: '15分進んで10時。あと15分進むと、10時15分です。',
-          ruby: '15{分|ふん}{進|すす}んで10{時|じ}。あと15{分|ふん}{進|すす}むと、10{時|じ}15{分|ふん}です。',
-          native: {
-            AppLanguage.portuguese:
-                'Avance 15 minutos até 10:00. Mais 15 minutos dá 10:15.',
-          },
+        guide: SupportLine(
+          japanese: '午後4時50分まで時計を動かしてみよう。',
+          ruby: '{午後|ごご}4{時|じ}50{分|ぷん}まで{時計|とけい}を{動|うご}かしてみよう。',
+          native: {AppLanguage.portuguese: 'Mova o relógio até 4:50 da tarde.'},
         ),
-      ],
-      _ => const [
-        SupportLine(
-          japanese: '午前11時40分から50分後。正午をこえると、午後0時30分です。',
-          ruby:
-              '{午前|ごぜん}11{時|じ}40{分|ぷん}から50{分|ぷん}{後|ご}。{正午|しょうご}をこえると、{午後|ごご}0{時|じ}30{分|ぷん}です。',
-          native: {
-            AppLanguage.portuguese:
-                '50 minutos depois de 11:40 da manhã passa pelo meio-dia e chega a 12:30 da tarde.',
-          },
+        scenario: _ClockScenario(
+          hour: 15,
+          minute: 40,
+          targetOffset: 70,
+          completionMessage: '映画が終わったよ。',
         ),
-      ],
-    };
-  }
-
-  _ClockScenario get _scenario {
-    return switch (_page) {
-      0 => const _ClockScenario(hour: 7, minute: 45, targetOffset: 25),
-      1 => const _ClockScenario(hour: 7, minute: 45, targetOffset: 25),
-      2 => const _ClockScenario(hour: 7, minute: 45, targetOffset: 25),
-      3 => const _ClockScenario(hour: 8, minute: 10, targetOffset: 20),
-      4 => const _ClockScenario(hour: 8, minute: 10, targetOffset: -25),
-      5 => const _ClockScenario(hour: 9, minute: 45, targetOffset: 30),
-      _ => const _ClockScenario(hour: 11, minute: 40, targetOffset: 50),
+        answer: '1時間10分',
+        explanation: '3時40分から4時まで20分、4時から4時50分まで50分。20+50=70分。70分は1時間10分です。',
+        splitLabels: ['20分', '50分'],
+        splitStarts: [40, 0],
+        splitMinutes: [20, 50],
+        timelineLabels: ['午後3:40', '4:00', '午後4:50'],
+      ),
     };
   }
 
   @override
   Widget build(BuildContext context) {
-    final scenario = _scenario;
+    final page = _currentPage;
+    final scenario = page.scenario;
     final minOffset = math.min(0, scenario.targetOffset);
     final maxOffset = math.max(0, scenario.targetOffset);
     final clampedOffset = _minuteOffset.clamp(minOffset, maxOffset).toInt();
+    final reached = clampedOffset == scenario.targetOffset;
 
     return _RemainderLearnShell(
       icon: Icons.schedule_rounded,
-      title: '時計を動かして考えよう',
+      title: page.title,
       selectedLanguage: widget.selectedLanguage,
       showNative: _showNative,
       onToggleNative: () {
@@ -1297,15 +1280,23 @@ class _TimeMainLearnState extends State<_TimeMainLearn> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _SupportedTextLines(
-            lines: _pageLines,
+            lines: [page.problem],
             language: widget.selectedLanguage,
             showNative: _showNative,
             vocabularyEntries: _timeVocabularyEntries,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
+          _SupportedTextLines(
+            lines: [page.guide],
+            language: widget.selectedLanguage,
+            showNative: _showNative,
+            vocabularyEntries: _timeVocabularyEntries,
+          ),
+          const SizedBox(height: 18),
           _ClockActivityPanel(
             scenario: scenario,
             offset: clampedOffset,
+            locked: reached,
             onChangeOffset: (delta) {
               setState(() {
                 _minuteOffset = (_minuteOffset + delta)
@@ -1314,14 +1305,40 @@ class _TimeMainLearnState extends State<_TimeMainLearn> {
               });
             },
           ),
-          if (_page == 2) ...[
+          if (reached) ...[
             const SizedBox(height: 16),
-            const _TimePointAndArcPanel(),
+            _TimeResultBox(page: page),
           ],
         ],
       ),
     );
   }
+}
+
+class _TimeLearnPage {
+  final String title;
+  final SupportLine problem;
+  final SupportLine guide;
+  final _ClockScenario scenario;
+  final String answer;
+  final String explanation;
+  final List<String> splitLabels;
+  final List<int> splitStarts;
+  final List<int> splitMinutes;
+  final List<String> timelineLabels;
+
+  const _TimeLearnPage({
+    required this.title,
+    required this.problem,
+    required this.guide,
+    required this.scenario,
+    required this.answer,
+    required this.explanation,
+    required this.splitLabels,
+    required this.splitStarts,
+    required this.splitMinutes,
+    required this.timelineLabels,
+  });
 }
 
 class _ShortTimeLearn extends StatefulWidget {
@@ -1336,10 +1353,8 @@ class _ShortTimeLearn extends StatefulWidget {
 class _ShortTimeLearnState extends State<_ShortTimeLearn> {
   int _page = 0;
   bool _showNative = false;
-  DateTime? _startedAt;
-  double? _resultSeconds;
 
-  static const _lastPage = 2;
+  static const _lastPage = 1;
 
   void _speak() {
     LearningAudio.speakJapanese(
@@ -1353,15 +1368,14 @@ class _ShortTimeLearnState extends State<_ShortTimeLearn> {
     return switch (_page) {
       0 => const [
         SupportLine(
-          japanese: '10秒だと思ったら、ボタンを押してみよう。',
-          ruby: '10{秒|びょう}だと{思|おも}ったら、ボタンを{押|お}してみよう。',
+          japanese: '秒針が1目もり進むと1秒です。ストップウォッチの数字も、1秒ごとに1ふえます。',
+          ruby:
+              '{秒針|びょうしん}が1{目|め}もり{進|すす}むと1{秒|びょう}です。ストップウォッチの{数字|すうじ}も、1{秒|びょう}ごとに1ふえます。',
           native: {
             AppLanguage.portuguese:
-                'Aperte o botão quando achar que passaram 10 segundos.',
+                'Quando o ponteiro dos segundos avança uma marca, passa 1 segundo. O número do cronômetro também aumenta de 1 a cada segundo.',
           },
         ),
-      ],
-      1 => const [
         SupportLine(
           japanese: '秒針が1周すると60秒。60秒は1分です。',
           ruby: '{秒針|びょうしん}が1{周|しゅう}すると60{秒|びょう}。60{秒|びょう}は1{分|ぷん}です。',
@@ -1403,16 +1417,12 @@ class _ShortTimeLearnState extends State<_ShortTimeLearn> {
         if (_page == 0) return;
         setState(() {
           _page--;
-          _startedAt = null;
-          _resultSeconds = null;
         });
       },
       onNext: () {
         if (_page == _lastPage) return;
         setState(() {
           _page++;
-          _startedAt = null;
-          _resultSeconds = null;
         });
       },
       child: Column(
@@ -1426,26 +1436,7 @@ class _ShortTimeLearnState extends State<_ShortTimeLearn> {
           ),
           const SizedBox(height: 20),
           switch (_page) {
-            0 => _TenSecondChallenge(
-              startedAt: _startedAt,
-              resultSeconds: _resultSeconds,
-              onStart: () {
-                setState(() {
-                  _startedAt = DateTime.now();
-                  _resultSeconds = null;
-                });
-              },
-              onStop: () {
-                final start = _startedAt;
-                if (start == null) return;
-                setState(() {
-                  _resultSeconds =
-                      DateTime.now().difference(start).inMilliseconds / 1000;
-                  _startedAt = null;
-                });
-              },
-            ),
-            1 => const _SecondHandPanel(),
+            0 => const _SecondHandPanel(),
             _ => const _MinuteSecondPanel(),
           },
         ],
@@ -1458,22 +1449,26 @@ class _ClockScenario {
   final int hour;
   final int minute;
   final int targetOffset;
+  final String completionMessage;
 
   const _ClockScenario({
     required this.hour,
     required this.minute,
     required this.targetOffset,
+    this.completionMessage = 'ここまで進めたね。',
   });
 }
 
 class _ClockActivityPanel extends StatelessWidget {
   final _ClockScenario scenario;
   final int offset;
+  final bool locked;
   final ValueChanged<int> onChangeOffset;
 
   const _ClockActivityPanel({
     required this.scenario,
     required this.offset,
+    required this.locked,
     required this.onChangeOffset,
   });
 
@@ -1498,6 +1493,7 @@ class _ClockActivityPanel extends StatelessWidget {
             alignment: WrapAlignment.center,
             children: [
               _AnalogTimeClock(
+                startTotalMinutes: scenario.hour * 60 + scenario.minute,
                 totalMinutes: currentTotal,
                 progress: scenario.targetOffset == 0
                     ? 0
@@ -1527,7 +1523,9 @@ class _ClockActivityPanel extends StatelessWidget {
                   if (targetReached) ...[
                     const SizedBox(height: 10),
                     Text(
-                      scenario.targetOffset < 0 ? '時計を戻せたね。' : 'ここまで進められたね。',
+                      scenario.targetOffset < 0
+                          ? '時計を戻せたね。'
+                          : scenario.completionMessage,
                       style: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w900,
@@ -1544,7 +1542,7 @@ class _ClockActivityPanel extends StatelessWidget {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () => onChangeOffset(-5),
+                  onPressed: locked ? null : () => onChangeOffset(-5),
                   icon: const Icon(Icons.remove_rounded),
                   label: const Text('5分もどす'),
                 ),
@@ -1552,7 +1550,7 @@ class _ClockActivityPanel extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: FilledButton.icon(
-                  onPressed: () => onChangeOffset(5),
+                  onPressed: locked ? null : () => onChangeOffset(5),
                   icon: const Icon(Icons.add_rounded),
                   label: const Text('5分すすめる'),
                 ),
@@ -1566,16 +1564,22 @@ class _ClockActivityPanel extends StatelessWidget {
 }
 
 class _AnalogTimeClock extends StatelessWidget {
+  final int startTotalMinutes;
   final int totalMinutes;
   final double progress;
 
-  const _AnalogTimeClock({required this.totalMinutes, required this.progress});
+  const _AnalogTimeClock({
+    this.startTotalMinutes = 0,
+    required this.totalMinutes,
+    required this.progress,
+  });
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
       size: const Size(210, 210),
       painter: _AnalogTimeClockPainter(
+        startTotalMinutes: startTotalMinutes,
         totalMinutes: totalMinutes,
         progress: progress.clamp(0, 1),
       ),
@@ -1584,10 +1588,12 @@ class _AnalogTimeClock extends StatelessWidget {
 }
 
 class _AnalogTimeClockPainter extends CustomPainter {
+  final int startTotalMinutes;
   final int totalMinutes;
   final double progress;
 
   const _AnalogTimeClockPainter({
+    required this.startTotalMinutes,
     required this.totalMinutes,
     required this.progress,
   });
@@ -1607,29 +1613,45 @@ class _AnalogTimeClockPainter extends CustomPainter {
     canvas.drawCircle(center, radius, rimPaint);
 
     final tickPaint = Paint()
-      ..color = const Color(0xFF94A3B8)
+      ..color = const Color(0xFFCBD5E1)
+      ..strokeWidth = 1
+      ..strokeCap = StrokeCap.round;
+    final majorTickPaint = Paint()
+      ..color = const Color(0xFF64748B)
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;
-    for (var i = 0; i < 60; i += 5) {
+    for (var i = 0; i < 60; i++) {
       final angle = -math.pi / 2 + i / 60 * math.pi * 2;
       final outer = center + Offset(math.cos(angle), math.sin(angle)) * radius;
+      final isMajor = i % 5 == 0;
       final inner =
-          center + Offset(math.cos(angle), math.sin(angle)) * (radius - 10);
-      canvas.drawLine(inner, outer, tickPaint);
+          center +
+          Offset(math.cos(angle), math.sin(angle)) *
+              (radius - (isMajor ? 12 : 6));
+      canvas.drawLine(inner, outer, isMajor ? majorTickPaint : tickPaint);
     }
 
-    final arcPaint = Paint()
-      ..color = const Color(0xFF60A5FA)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 7
-      ..strokeCap = StrokeCap.round;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius - 18),
-      -math.pi / 2,
-      progress * math.pi * 2,
-      false,
-      arcPaint,
-    );
+    for (var hour = 1; hour <= 12; hour++) {
+      final angle = -math.pi / 2 + hour / 12 * math.pi * 2;
+      final position =
+          center + Offset(math.cos(angle), math.sin(angle)) * (radius - 28);
+      final painter = TextPainter(
+        text: TextSpan(
+          text: '$hour',
+          style: const TextStyle(
+            fontFamily: AppFonts.interface,
+            color: Color(0xFF334155),
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      painter.paint(
+        canvas,
+        position - Offset(painter.width / 2, painter.height / 2),
+      );
+    }
 
     final minutesInHour = totalMinutes % 60;
     final hourInTwelve = (totalMinutes / 60) % 12;
@@ -1656,8 +1678,429 @@ class _AnalogTimeClockPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _AnalogTimeClockPainter oldDelegate) {
-    return totalMinutes != oldDelegate.totalMinutes ||
+    return startTotalMinutes != oldDelegate.startTotalMinutes ||
+        totalMinutes != oldDelegate.totalMinutes ||
         progress != oldDelegate.progress;
+  }
+}
+
+class _TimeResultBox extends StatelessWidget {
+  final _TimeLearnPage page;
+
+  const _TimeResultBox({required this.page});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFECFDF5),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '答え',
+            style: TextStyle(
+              color: Color(0xFF047857),
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            page.answer,
+            style: const TextStyle(
+              fontFamily: AppFonts.display,
+              color: Color(0xFF111827),
+              fontSize: 34,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            page.explanation,
+            style: const TextStyle(
+              color: Color(0xFF111827),
+              fontSize: 17,
+              height: 1.55,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 18),
+          Wrap(
+            spacing: 14,
+            runSpacing: 14,
+            children: [
+              for (var i = 0; i < page.splitLabels.length; i++)
+                _SplitClockCard(
+                  label: page.splitLabels[i],
+                  startTotalMinutes:
+                      page.scenario.hour * 60 +
+                      page.scenario.minute +
+                      page.splitMinutes
+                          .take(i)
+                          .fold(0, (sum, value) => sum + value),
+                  minutes: page.splitMinutes[i],
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _TimeRuler(
+            startTotalMinutes: page.scenario.hour * 60 + page.scenario.minute,
+            labels: page.timelineLabels,
+            spans: page.splitLabels,
+            splitMinutes: page.splitMinutes,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SplitClockCard extends StatelessWidget {
+  final String label;
+  final int startTotalMinutes;
+  final int minutes;
+
+  const _SplitClockCard({
+    required this.label,
+    required this.startTotalMinutes,
+    required this.minutes,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 150,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: .76),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        children: [
+          CustomPaint(
+            size: const Size(132, 132),
+            painter: _MiniArcClockPainter(
+              startTotalMinutes: startTotalMinutes,
+              endTotalMinutes: startTotalMinutes + minutes,
+              minutes: minutes,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFF2563EB),
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MiniArcClockPainter extends CustomPainter {
+  final int startTotalMinutes;
+  final int endTotalMinutes;
+  final int minutes;
+
+  const _MiniArcClockPainter({
+    required this.startTotalMinutes,
+    required this.endTotalMinutes,
+    required this.minutes,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    final radius = size.shortestSide / 2 - 8;
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = const Color(0xFFCBD5E1)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+
+    final tickPaint = Paint()
+      ..color = const Color(0xFFCBD5E1)
+      ..strokeWidth = 1
+      ..strokeCap = StrokeCap.round;
+    final majorTickPaint = Paint()
+      ..color = const Color(0xFF94A3B8)
+      ..strokeWidth = 1.7
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 60; i++) {
+      final angle = -math.pi / 2 + i / 60 * math.pi * 2;
+      final isMajor = i % 5 == 0;
+      final outer = center + Offset(math.cos(angle), math.sin(angle)) * radius;
+      final inner =
+          center +
+          Offset(math.cos(angle), math.sin(angle)) *
+              (radius - (isMajor ? 9 : 5));
+      canvas.drawLine(inner, outer, isMajor ? majorTickPaint : tickPaint);
+    }
+
+    for (var hour = 1; hour <= 12; hour++) {
+      final angle = -math.pi / 2 + hour / 12 * math.pi * 2;
+      final position =
+          center + Offset(math.cos(angle), math.sin(angle)) * (radius - 22);
+      final painter = TextPainter(
+        text: TextSpan(
+          text: '$hour',
+          style: const TextStyle(
+            fontFamily: AppFonts.interface,
+            color: Color(0xFF334155),
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      painter.paint(
+        canvas,
+        position - Offset(painter.width / 2, painter.height / 2),
+      );
+    }
+
+    final startMinute = startTotalMinutes % 60;
+    final arcStart = -math.pi / 2 + startMinute / 60 * math.pi * 2;
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius - 10),
+      arcStart,
+      minutes / 60 * math.pi * 2,
+      false,
+      Paint()
+        ..color = const Color(0xFF2563EB)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 7
+        ..strokeCap = StrokeCap.round,
+    );
+
+    _drawClockHands(
+      canvas,
+      center,
+      radius,
+      startTotalMinutes,
+      const Color(0x66111827),
+      2.5,
+    );
+    _drawClockHands(
+      canvas,
+      center,
+      radius,
+      endTotalMinutes,
+      const Color(0xFF111827),
+      4,
+    );
+    canvas.drawCircle(center, 4, Paint()..color = const Color(0xFF2563EB));
+  }
+
+  void _drawClockHands(
+    Canvas canvas,
+    Offset center,
+    double radius,
+    int totalMinutes,
+    Color color,
+    double strokeWidth,
+  ) {
+    final minutesInHour = totalMinutes % 60;
+    final hourInTwelve = (totalMinutes / 60) % 12;
+    final minuteAngle = -math.pi / 2 + minutesInHour / 60 * math.pi * 2;
+    final hourAngle = -math.pi / 2 + hourInTwelve / 12 * math.pi * 2;
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(
+      center,
+      center +
+          Offset(math.cos(hourAngle), math.sin(hourAngle)) * (radius * .45),
+      paint,
+    );
+    canvas.drawLine(
+      center,
+      center +
+          Offset(math.cos(minuteAngle), math.sin(minuteAngle)) * (radius * .72),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _MiniArcClockPainter oldDelegate) {
+    return startTotalMinutes != oldDelegate.startTotalMinutes ||
+        endTotalMinutes != oldDelegate.endTotalMinutes ||
+        minutes != oldDelegate.minutes;
+  }
+}
+
+class _TimeRuler extends StatelessWidget {
+  final int startTotalMinutes;
+  final List<String> labels;
+  final List<String> spans;
+  final List<int> splitMinutes;
+
+  const _TimeRuler({
+    required this.startTotalMinutes,
+    required this.labels,
+    required this.spans,
+    required this.splitMinutes,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 90,
+      child: CustomPaint(
+        painter: _TimeRulerPainter(
+          startTotalMinutes: startTotalMinutes,
+          labels: labels,
+          spans: spans,
+          splitMinutes: splitMinutes,
+        ),
+        child: const SizedBox.expand(),
+      ),
+    );
+  }
+}
+
+class _TimeRulerPainter extends CustomPainter {
+  final int startTotalMinutes;
+  final List<String> labels;
+  final List<String> spans;
+  final List<int> splitMinutes;
+
+  const _TimeRulerPainter({
+    required this.startTotalMinutes,
+    required this.labels,
+    required this.spans,
+    required this.splitMinutes,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final totalMinutes = splitMinutes.fold<int>(0, (sum, value) => sum + value);
+    if (totalMinutes <= 0) return;
+
+    const left = 24.0;
+    final right = size.width - 24;
+    const y = 42.0;
+    final width = right - left;
+    canvas.drawLine(
+      const Offset(left, y),
+      Offset(right, y),
+      Paint()
+        ..color = const Color(0xFFCBD5E1)
+        ..strokeWidth = 3
+        ..strokeCap = StrokeCap.round,
+    );
+
+    for (var minute = 0; minute <= totalMinutes; minute += 10) {
+      final total = startTotalMinutes + minute;
+      final x = left + width * minute / totalMinutes;
+      final isHour = total % 60 == 0;
+      canvas.drawLine(
+        Offset(x, y - (isHour ? 20 : 13)),
+        Offset(x, y + (isHour ? 20 : 13)),
+        Paint()
+          ..color = isHour ? const Color(0xFF475569) : const Color(0xFF64748B)
+          ..strokeWidth = isHour ? 2.8 : 2
+          ..strokeCap = StrokeCap.round,
+      );
+    }
+
+    var elapsed = 0;
+    for (var i = 0; i < splitMinutes.length; i++) {
+      final startX = left + width * elapsed / totalMinutes;
+      elapsed += splitMinutes[i];
+      final endX = left + width * elapsed / totalMinutes;
+      const arrowY = y - 28;
+      canvas.drawLine(
+        Offset(startX, arrowY),
+        Offset(math.max(startX, endX - 12), arrowY),
+        Paint()
+          ..color = const Color(0xFF2563EB)
+          ..strokeWidth = 4
+          ..strokeCap = StrokeCap.round,
+      );
+      final path = Path()
+        ..moveTo(endX, arrowY)
+        ..lineTo(endX - 10, arrowY - 6)
+        ..lineTo(endX - 10, arrowY + 6)
+        ..close();
+      canvas.drawPath(path, Paint()..color = const Color(0xFF2563EB));
+      _paintText(
+        canvas,
+        spans[i],
+        Offset((startX + endX) / 2, arrowY - 17),
+        13,
+        color: const Color(0xFF2563EB),
+      );
+    }
+
+    final labelPositions = <double>[0];
+    var sum = 0;
+    for (final minutes in splitMinutes) {
+      sum += minutes;
+      labelPositions.add(sum / totalMinutes);
+    }
+    for (var i = 0; i < labels.length && i < labelPositions.length; i++) {
+      final x = left + width * labelPositions[i];
+      _paintText(
+        canvas,
+        labels[i],
+        Offset(x, y + 38),
+        12,
+        color: const Color(0xFF334155),
+      );
+    }
+  }
+
+  void _paintText(
+    Canvas canvas,
+    String text,
+    Offset center,
+    double fontSize, {
+    Color color = const Color(0xFF475569),
+  }) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          fontFamily: AppFonts.interface,
+          color: color,
+          fontSize: fontSize,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    painter.paint(
+      canvas,
+      center - Offset(painter.width / 2, painter.height / 2),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _TimeRulerPainter oldDelegate) {
+    return startTotalMinutes != oldDelegate.startTotalMinutes ||
+        labels != oldDelegate.labels ||
+        spans != oldDelegate.spans ||
+        splitMinutes != oldDelegate.splitMinutes;
   }
 }
 
@@ -1668,151 +2111,6 @@ String _formatTime(int totalMinutes) {
   return '$hour時${minute.toString().padLeft(2, '0')}分';
 }
 
-class _TimePointAndArcPanel extends StatelessWidget {
-  const _TimePointAndArcPanel();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _MiniConceptCard(
-            title: '時こく',
-            body: '時計の上の1つの点',
-            icon: Icons.radio_button_checked_rounded,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _MiniConceptCard(
-            title: '時間',
-            body: '点から点までの長さ',
-            icon: Icons.timeline_rounded,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _MiniConceptCard extends StatelessWidget {
-  final String title;
-  final String body;
-  final IconData icon;
-
-  const _MiniConceptCard({
-    required this.title,
-    required this.body,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: const Color(0xFF2563EB)),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                Text(
-                  body,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    height: 1.4,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF4B5563),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TenSecondChallenge extends StatelessWidget {
-  final DateTime? startedAt;
-  final double? resultSeconds;
-  final VoidCallback onStart;
-  final VoidCallback onStop;
-
-  const _TenSecondChallenge({
-    required this.startedAt,
-    required this.resultSeconds,
-    required this.onStart,
-    required this.onStop,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final running = startedAt != null;
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Column(
-        children: [
-          const Icon(Icons.timer_rounded, size: 56, color: Color(0xFF2563EB)),
-          const SizedBox(height: 12),
-          if (resultSeconds == null)
-            Text(
-              running ? '心の中で10秒を数えよう。' : '秒数はかくして始めます。',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF374151),
-              ),
-            )
-          else
-            Text(
-              '${resultSeconds!.toStringAsFixed(1)}秒だったよ',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontFamily: AppFonts.display,
-                fontSize: 30,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF111827),
-              ),
-            ),
-          const SizedBox(height: 16),
-          FilledButton(
-            onPressed: running ? onStop : onStart,
-            style: FilledButton.styleFrom(
-              minimumSize: const Size(220, 52),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text(running ? 'いまだと思う' : 'スタート'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _SecondHandPanel extends StatelessWidget {
   const _SecondHandPanel();
 
@@ -1820,8 +2118,13 @@ class _SecondHandPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Column(
       children: [
-        _AnalogTimeClock(totalMinutes: 0, progress: 1),
-        SizedBox(height: 12),
+        Wrap(
+          spacing: 18,
+          runSpacing: 18,
+          alignment: WrapAlignment.center,
+          children: [_SecondClockCard(), _StopwatchSecondCard()],
+        ),
+        SizedBox(height: 16),
         Text(
           '60秒 = 1分',
           style: TextStyle(
@@ -1830,7 +2133,304 @@ class _SecondHandPanel extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
+        SizedBox(height: 8),
+        Text(
+          '秒針が1目もり進むと1秒。ストップウォッチの数字が1ふえると1秒です。',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Color(0xFF374151),
+            fontSize: 17,
+            height: 1.45,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ],
+    );
+  }
+}
+
+class _SecondClockCard extends StatefulWidget {
+  const _SecondClockCard();
+
+  @override
+  State<_SecondClockCard> createState() => _SecondClockCardState();
+}
+
+class _SecondClockCardState extends State<_SecondClockCard> {
+  var _cycle = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 250,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          TweenAnimationBuilder<double>(
+            key: ValueKey(_cycle),
+            tween: Tween(begin: 0, end: 60),
+            duration: const Duration(seconds: 12),
+            onEnd: () {
+              if (!mounted) return;
+              setState(() {
+                _cycle++;
+              });
+            },
+            builder: (context, second, _) {
+              return CustomPaint(
+                size: const Size(178, 178),
+                painter: _SecondClockPainter(second: second),
+              );
+            },
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            '赤い針が秒針です',
+            style: TextStyle(
+              color: Color(0xFF111827),
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SecondClockPainter extends CustomPainter {
+  final double second;
+
+  const _SecondClockPainter({required this.second});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    final radius = size.shortestSide / 2 - 10;
+    canvas.drawCircle(
+      center + const Offset(0, 3),
+      radius,
+      Paint()
+        ..color = const Color(0x12000000)
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = const Color(0xFFCBD5E1)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+
+    for (var i = 0; i < 60; i++) {
+      final angle = -math.pi / 2 + i / 60 * math.pi * 2;
+      final isMajor = i % 5 == 0;
+      final outer = center + Offset(math.cos(angle), math.sin(angle)) * radius;
+      final inner =
+          center +
+          Offset(math.cos(angle), math.sin(angle)) *
+              (radius - (isMajor ? 11 : 6));
+      canvas.drawLine(
+        inner,
+        outer,
+        Paint()
+          ..color = isMajor ? const Color(0xFF64748B) : const Color(0xFFCBD5E1)
+          ..strokeWidth = isMajor ? 2 : 1
+          ..strokeCap = StrokeCap.round,
+      );
+    }
+
+    for (var hour = 1; hour <= 12; hour++) {
+      final angle = -math.pi / 2 + hour / 12 * math.pi * 2;
+      final position =
+          center + Offset(math.cos(angle), math.sin(angle)) * (radius - 26);
+      final painter = TextPainter(
+        text: TextSpan(
+          text: '$hour',
+          style: const TextStyle(
+            fontFamily: AppFonts.interface,
+            color: Color(0xFF334155),
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      painter.paint(
+        canvas,
+        position - Offset(painter.width / 2, painter.height / 2),
+      );
+    }
+
+    final hourAngle = -math.pi / 2 + (10 + second / 3600) / 12 * math.pi * 2;
+    final minuteAngle = -math.pi / 2 + (10 + second / 60) / 60 * math.pi * 2;
+    final handPaint = Paint()
+      ..color = const Color(0xFF111827)
+      ..strokeWidth = 5
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(
+      center,
+      center +
+          Offset(math.cos(hourAngle), math.sin(hourAngle)) * (radius * .46),
+      handPaint,
+    );
+    handPaint.strokeWidth = 3.5;
+    canvas.drawLine(
+      center,
+      center +
+          Offset(math.cos(minuteAngle), math.sin(minuteAngle)) * (radius * .68),
+      handPaint,
+    );
+
+    final secondAngle = -math.pi / 2 + (second % 60) / 60 * math.pi * 2;
+    canvas.drawLine(
+      center,
+      center +
+          Offset(math.cos(secondAngle), math.sin(secondAngle)) * (radius - 12),
+      Paint()
+        ..color = const Color(0xFFDC2626)
+        ..strokeWidth = 2.8
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.drawCircle(center, 5, Paint()..color = const Color(0xFFDC2626));
+    canvas.drawCircle(center, 2, Paint()..color = Colors.white);
+  }
+
+  @override
+  bool shouldRepaint(covariant _SecondClockPainter oldDelegate) {
+    return second != oldDelegate.second;
+  }
+}
+
+class _StopwatchSecondCard extends StatefulWidget {
+  const _StopwatchSecondCard();
+
+  @override
+  State<_StopwatchSecondCard> createState() => _StopwatchSecondCardState();
+}
+
+class _StopwatchSecondCardState extends State<_StopwatchSecondCard> {
+  var _cycle = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 250,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          TweenAnimationBuilder<double>(
+            key: ValueKey(_cycle),
+            tween: Tween(begin: 0, end: 60),
+            duration: const Duration(seconds: 12),
+            onEnd: () {
+              if (mounted) {
+                setState(() {
+                  _cycle++;
+                });
+              }
+            },
+            builder: (context, value, _) {
+              final seconds = value.floor().clamp(0, 59);
+              return Container(
+                width: 184,
+                height: 112,
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFF1F2937), Color(0xFF0F172A)],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFF334155)),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x16000000),
+                      blurRadius: 14,
+                      offset: Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 7,
+                          height: 7,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF22C55E),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        const Text(
+                          'STOPWATCH',
+                          style: TextStyle(
+                            color: Color(0xFF94A3B8),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    Text(
+                      '00:${seconds.toString().padLeft(2, '0')}',
+                      style: const TextStyle(
+                        fontFamily: AppFonts.display,
+                        color: Colors.white,
+                        fontSize: 42,
+                        fontWeight: FontWeight.w700,
+                        height: 1,
+                        letterSpacing: 0,
+                      ),
+                    ),
+                    const Spacer(),
+                    const Text(
+                      'SECONDS',
+                      style: TextStyle(
+                        color: Color(0xFF94A3B8),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            '数字が1ふえると1秒',
+            style: TextStyle(
+              color: Color(0xFF111827),
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -7810,7 +8410,7 @@ class _CompactChoiceText extends StatelessWidget {
             plain,
             textAlign: TextAlign.center,
             strutStyle: const StrutStyle(
-              fontSize: 44,
+              fontSize: 38,
               height: 1,
               forceStrutHeight: true,
               fontFamily: AppFonts.interface,
@@ -7818,7 +8418,7 @@ class _CompactChoiceText extends StatelessWidget {
             style: TextStyle(
               color: color,
               fontFamily: AppFonts.interface,
-              fontSize: 44,
+              fontSize: 38,
               height: 1,
               fontWeight: FontWeight.w900,
               letterSpacing: 0,
@@ -7839,14 +8439,14 @@ class _CompactChoiceText extends StatelessWidget {
             language: language,
             style: TextStyle(
               color: color,
-              fontSize: 42,
+              fontSize: 36,
               height: 1.1,
               fontWeight: FontWeight.w900,
               letterSpacing: 0,
             ),
             rubyStyle: TextStyle(
               color: color.withValues(alpha: 0.72),
-              fontSize: 14,
+              fontSize: 13,
               height: 1,
               fontWeight: FontWeight.w800,
               letterSpacing: 0,
@@ -7879,14 +8479,11 @@ class _CompactChoiceText extends StatelessWidget {
             if (number != null)
               TextSpan(
                 text: number,
-                style: const TextStyle(fontSize: 46, letterSpacing: 0),
+                style: const TextStyle(fontSize: 38, letterSpacing: 0),
               ),
             TextSpan(
               text: suffix,
-              style: TextStyle(
-                fontSize: number == null ? 42 : 42,
-                letterSpacing: 0,
-              ),
+              style: const TextStyle(fontSize: 38, letterSpacing: 0),
             ),
           ],
         ),

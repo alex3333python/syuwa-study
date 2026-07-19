@@ -694,6 +694,20 @@ const timeMainLessonVocabulary = [
     translations: {AppLanguage.portuguese: 'chegada'},
     visual: LessonVocabularyVisual.none,
   ),
+  LessonVocabulary(
+    word: '午前',
+    reading: 'ごぜん',
+    explanation: '夜中の12時から、正午までの時こくにつける言葉です。',
+    translations: {AppLanguage.portuguese: 'da manhã / a.m.'},
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: '午後',
+    reading: 'ごご',
+    explanation: '正午をすぎたあとの時こくにつける言葉です。',
+    translations: {AppLanguage.portuguese: 'da tarde / p.m.'},
+    visual: LessonVocabularyVisual.none,
+  ),
 ];
 
 const shortTimeLessonVocabulary = [
