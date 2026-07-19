@@ -174,6 +174,7 @@ class LessonMapScreen extends StatelessWidget {
     var addedDivisionUnit = false;
     var addedRemainderUnit = false;
     var addedTimeUnit = false;
+    var addedLengthUnit = false;
 
     for (final lesson in lessons) {
       if (_isGrade3DivisionLesson(lesson)) {
@@ -225,6 +226,23 @@ class LessonMapScreen extends StatelessWidget {
             description: '時計を動かして、時こくと時間を考えます。',
             color1: const Color(0xFF0EA5E9),
             color2: const Color(0xFF2563EB),
+          ),
+        );
+        continue;
+      }
+
+      if (_isGrade3LengthLesson(lesson)) {
+        if (addedLengthUnit) continue;
+        addedLengthUnit = true;
+
+        final lengthLessons = lessons.where(_isGrade3LengthLesson).toList();
+        entries.add(
+          _buildUnitEntry(
+            unitLessons: lengthLessons,
+            title: '長さ',
+            description: '道具を選んではかり、kmとmの関係を考えます。',
+            color1: const Color(0xFF22C55E),
+            color2: const Color(0xFF0EA5E9),
           ),
         );
         continue;
@@ -333,6 +351,10 @@ class LessonMapScreen extends StatelessWidget {
 
   bool _isGrade3TimeLesson(Lesson lesson) {
     return lesson.id >= 18 && lesson.id <= 20;
+  }
+
+  bool _isGrade3LengthLesson(Lesson lesson) {
+    return lesson.id == 21 || lesson.id == 22;
   }
 }
 

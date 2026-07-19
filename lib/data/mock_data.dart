@@ -5,6 +5,7 @@ import '../models/question.dart';
 import 'diagnostic_questions.dart';
 import 'grade3_division_unit.dart';
 import 'grade3_division_remainder_unit.dart';
+import 'grade3_length_unit.dart';
 import 'grade3_time_unit.dart';
 
 final List<Lesson> _allMockLessons = [
@@ -230,6 +231,7 @@ final List<Lesson> _allMockLessons = [
   ...grade3DivisionLessons,
   ...grade3DivisionRemainderLessons,
   ...grade3TimeLessons,
+  ...grade3LengthLessons,
 ];
 
 const Set<int> _hiddenLessonIds = {2, 3, 4, 5, 6, 10, 13, 14};

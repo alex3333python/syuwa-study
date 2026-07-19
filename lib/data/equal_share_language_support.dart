@@ -741,6 +741,100 @@ const shortTimeLessonVocabulary = [
   ),
 ];
 
+const lengthMeasureLessonVocabulary = [
+  LessonVocabulary(
+    word: '長さ',
+    reading: 'ながさ',
+    explanation: 'もののはしからはしまでの大きさです。',
+    translations: {
+      AppLanguage.portuguese: 'comprimento',
+      AppLanguage.tagalog: 'haba',
+      AppLanguage.vietnamese: 'độ dài',
+    },
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: 'はかる',
+    reading: 'はかる',
+    explanation: '長さや重さなどを調べることです。',
+    translations: {
+      AppLanguage.portuguese: 'medir',
+      AppLanguage.tagalog: 'sukatin',
+      AppLanguage.vietnamese: 'đo',
+    },
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: '目もり',
+    reading: 'めもり',
+    explanation: 'ものさしやまきじゃくについている、小さなしるしです。',
+    translations: {
+      AppLanguage.portuguese: 'marca / escala',
+      AppLanguage.tagalog: 'marka sa panukat',
+      AppLanguage.vietnamese: 'vạch chia',
+    },
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: 'まきじゃく',
+    reading: 'まきじゃく',
+    explanation: '長いものや、曲がったところをはかりやすい道具です。',
+    translations: {
+      AppLanguage.portuguese: 'fita métrica',
+      AppLanguage.tagalog: 'metro / tape measure',
+      AppLanguage.vietnamese: 'thước dây',
+    },
+    visual: LessonVocabularyVisual.none,
+  ),
+];
+
+const kilometerLessonVocabulary = [
+  LessonVocabulary(
+    word: 'キロメートル',
+    reading: 'きろめーとる',
+    explanation: '長い道のりを表すときに使う単位です。1kmは1000mです。',
+    translations: {
+      AppLanguage.portuguese: 'quilômetro',
+      AppLanguage.tagalog: 'kilometro',
+      AppLanguage.vietnamese: 'ki-lô-mét',
+    },
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: '道のり',
+    reading: 'みちのり',
+    explanation: '実際に通る道の長さです。',
+    translations: {
+      AppLanguage.portuguese: 'caminho / percurso',
+      AppLanguage.tagalog: 'haba ng dinaanan',
+      AppLanguage.vietnamese: 'quãng đường đi',
+    },
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: 'きょり',
+    reading: 'きょり',
+    explanation: '2つの場所の間の長さです。',
+    translations: {
+      AppLanguage.portuguese: 'distância',
+      AppLanguage.tagalog: 'distansya',
+      AppLanguage.vietnamese: 'khoảng cách',
+    },
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: '比べる',
+    reading: 'くらべる',
+    explanation: 'どちらが長いか、同じ単位にして見ます。',
+    translations: {
+      AppLanguage.portuguese: 'comparar',
+      AppLanguage.tagalog: 'ihambing',
+      AppLanguage.vietnamese: 'so sánh',
+    },
+    visual: LessonVocabularyVisual.none,
+  ),
+];
+
 const zeroOneDivisionVocabularyEntries = [
   ...equalShareVocabularyEntries,
   VocabularyEntry(

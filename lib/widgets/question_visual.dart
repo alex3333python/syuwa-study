@@ -36,6 +36,11 @@ class QuestionVisual extends StatelessWidget {
           mode: _DiagramDivisionMode.groupsOf,
         ),
         'time_line' => _TimeLineVisual(question: question, compact: compact),
+        'length_bar' => _LengthBarVisual(question: question, compact: compact),
+        'distance_map' => _DistanceMapVisual(
+          question: question,
+          compact: compact,
+        ),
         _ => const SizedBox.shrink(),
       };
     }
@@ -59,6 +64,267 @@ class QuestionVisual extends StatelessWidget {
       case QuestionVisualType.fraction:
         return const SizedBox.shrink();
     }
+  }
+}
+
+class _LengthBarVisual extends StatelessWidget {
+  final Question question;
+  final bool compact;
+
+  const _LengthBarVisual({required this.question, required this.compact});
+
+  @override
+  Widget build(BuildContext context) {
+    final label = question.diagramData['label']?.trim() ?? '';
+    final value = question.diagramData['value']?.trim() ?? '';
+    final ticks = _splitData(question.diagramData['ticks']);
+    if (ticks.length < 2) return const SizedBox.shrink();
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(compact ? 14 : 18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (label.isNotEmpty) ...[
+            Text(
+              label,
+              style: TextStyle(
+                color: const Color(0xFF111827),
+                fontSize: compact ? 15 : 17,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 10),
+          ],
+          SizedBox(
+            height: compact ? 82 : 96,
+            child: CustomPaint(
+              painter: _QuestionLengthBarPainter(ticks: ticks, value: value),
+              child: const SizedBox.expand(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuestionLengthBarPainter extends CustomPainter {
+  final List<String> ticks;
+  final String value;
+
+  const _QuestionLengthBarPainter({required this.ticks, required this.value});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final left = 20.0;
+    final right = size.width - 20;
+    final y = 34.0;
+    final width = right - left;
+    final basePaint = Paint()
+      ..color = const Color(0xFFFDE68A)
+      ..strokeWidth = 18
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset(left, y), Offset(right, y), basePaint);
+
+    for (var i = 0; i < ticks.length; i++) {
+      final x = left + width * i / (ticks.length - 1);
+      canvas.drawLine(
+        Offset(x, y - 17),
+        Offset(x, y + 17),
+        Paint()
+          ..color = const Color(0xFF475569)
+          ..strokeWidth = 2
+          ..strokeCap = StrokeCap.round,
+      );
+      _paintText(
+        canvas,
+        ticks[i],
+        Offset(x, y + 34),
+        11,
+        const Color(0xFF334155),
+      );
+    }
+    if (value.isNotEmpty) {
+      _paintText(
+        canvas,
+        value,
+        Offset(right, y - 28),
+        16,
+        const Color(0xFF2563EB),
+      );
+    }
+  }
+
+  void _paintText(
+    Canvas canvas,
+    String text,
+    Offset center,
+    double size,
+    Color color,
+  ) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          fontFamily: AppFonts.interface,
+          fontSize: size,
+          fontWeight: FontWeight.w900,
+          color: color,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    painter.paint(
+      canvas,
+      center - Offset(painter.width / 2, painter.height / 2),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _QuestionLengthBarPainter oldDelegate) {
+    return ticks != oldDelegate.ticks || value != oldDelegate.value;
+  }
+}
+
+class _DistanceMapVisual extends StatelessWidget {
+  final Question question;
+  final bool compact;
+
+  const _DistanceMapVisual({required this.question, required this.compact});
+
+  @override
+  Widget build(BuildContext context) {
+    final places = _splitData(question.diagramData['places']);
+    final segments = _splitData(question.diagramData['segments']);
+    final caption = question.diagramData['caption']?.trim() ?? '';
+    if (places.length < 2 || segments.length != places.length - 1) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(compact ? 14 : 18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        children: [
+          SizedBox(
+            height: compact ? 132 : 156,
+            child: CustomPaint(
+              painter: _QuestionDistanceMapPainter(
+                places: places,
+                segments: segments,
+              ),
+              child: const SizedBox.expand(),
+            ),
+          ),
+          if (caption.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Text(
+              caption,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: const Color(0xFF111827),
+                fontSize: compact ? 15 : 17,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _QuestionDistanceMapPainter extends CustomPainter {
+  final List<String> places;
+  final List<String> segments;
+
+  const _QuestionDistanceMapPainter({
+    required this.places,
+    required this.segments,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final points = <Offset>[];
+    for (var i = 0; i < places.length; i++) {
+      final x = size.width * (0.08 + 0.84 * i / (places.length - 1));
+      final y = size.height * (i.isEven ? .58 : .36);
+      points.add(Offset(x, y));
+    }
+    final road = Paint()
+      ..color = const Color(0xFF2563EB)
+      ..strokeWidth = 6
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < points.length - 1; i++) {
+      canvas.drawLine(points[i], points[i + 1], road);
+      _paintText(
+        canvas,
+        segments[i],
+        (points[i] + points[i + 1]) / 2 + const Offset(0, -16),
+        12,
+        const Color(0xFF334155),
+      );
+    }
+    for (var i = 0; i < points.length; i++) {
+      canvas.drawCircle(points[i], 11, Paint()..color = Colors.white);
+      canvas.drawCircle(
+        points[i],
+        11,
+        Paint()
+          ..color = const Color(0xFF2563EB)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3,
+      );
+      _paintText(
+        canvas,
+        places[i],
+        points[i] + const Offset(0, 28),
+        12,
+        const Color(0xFF111827),
+      );
+    }
+  }
+
+  void _paintText(
+    Canvas canvas,
+    String text,
+    Offset center,
+    double size,
+    Color color,
+  ) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          fontFamily: AppFonts.interface,
+          fontSize: size,
+          fontWeight: FontWeight.w900,
+          color: color,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    painter.paint(
+      canvas,
+      center - Offset(painter.width / 2, painter.height / 2),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _QuestionDistanceMapPainter oldDelegate) {
+    return places != oldDelegate.places || segments != oldDelegate.segments;
   }
 }
 

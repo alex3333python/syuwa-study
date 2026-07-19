@@ -850,6 +850,8 @@ class _IndependentPracticeHeader extends StatelessWidget {
 String _independentPracticeHint(Question question, AppLanguage language) {
   final timeHint = _timeIndependentPracticeHint(question);
   if (timeHint.isNotEmpty) return timeHint;
+  final lengthHint = _lengthIndependentPracticeHint(question);
+  if (lengthHint.isNotEmpty) return lengthHint;
 
   final text =
       '${question.promptSchoolJa} ${question.promptEasyJa} '
@@ -911,6 +913,21 @@ String _timeIndependentPracticeHint(Question question) {
     'compare_time' => '単位がちがうときは、同じ単位にそろえて比べます。1分は60秒です。',
     'seconds_life' => '50m走はとても短い時間です。「時・分・秒」の中で、短い時間を表しやすい単位を考えましょう。',
     'minutes_seconds' => '分と秒がまざっているときは、分を秒に直してから考えます。1分は60秒です。',
+    _ => '',
+  };
+}
+
+String _lengthIndependentPracticeHint(Question question) {
+  if (question.unit != 'length') return '';
+
+  return switch (question.type) {
+    'tool_choice' =>
+      'はかるものの大きさや形を見ましょう。短くてまっすぐならものさし、長いものや曲がったものならまきじゃくが使いやすいです。',
+    'read_measure' => '目もりの数字を見ましょう。はじめは0に合わせて、先がどの数字を指しているかを読みます。',
+    'km_relation' => '1000mと1kmは同じ長さです。mの数が大きくなったら、kmで表せないか考えましょう。',
+    'km_to_m' || 'm_to_km' => '1kmは1000mです。kmをmに直すと、たし算しやすくなります。',
+    'compare_length' => '単位がちがうときは、mにそろえて比べましょう。1kmは1000mです。',
+    'route_addition' => '道のりは、通った道をつなげて考えます。区間の長さを順番に合わせましょう。',
     _ => '',
   };
 }
@@ -1084,6 +1101,20 @@ Widget? _buildRichLearnCard(LessonStep step, AppLanguage selectedLanguage) {
       return _EqualShareWordsCard(
         selectedLanguage: selectedLanguage,
         vocabularyItems: shortTimeLessonVocabulary,
+      );
+    case 'length-measure-learn':
+      return _LengthMeasureLearn(selectedLanguage: selectedLanguage);
+    case 'length-measure-words':
+      return _EqualShareWordsCard(
+        selectedLanguage: selectedLanguage,
+        vocabularyItems: lengthMeasureLessonVocabulary,
+      );
+    case 'length-km-learn':
+      return _KilometerLearn(selectedLanguage: selectedLanguage);
+    case 'length-km-words':
+      return _EqualShareWordsCard(
+        selectedLanguage: selectedLanguage,
+        vocabularyItems: kilometerLessonVocabulary,
       );
   }
   return null;
@@ -2627,6 +2658,1224 @@ class _SecondsOnlyDisplay extends StatelessWidget {
     );
   }
 }
+
+class _LengthMeasureLearn extends StatefulWidget {
+  final AppLanguage selectedLanguage;
+
+  const _LengthMeasureLearn({required this.selectedLanguage});
+
+  @override
+  State<_LengthMeasureLearn> createState() => _LengthMeasureLearnState();
+}
+
+class _LengthMeasureLearnState extends State<_LengthMeasureLearn> {
+  int _page = 0;
+  double _rulerOffset = 34;
+  double _tapeValue = 1.5;
+  bool _showNative = false;
+
+  static const _lastPage = 4;
+
+  void _speak() {
+    LearningAudio.speakJapanese(
+      context,
+      label: '長さ',
+      text: _pageLines.first.japanese,
+    );
+  }
+
+  List<SupportLine> get _pageLines {
+    return switch (_page) {
+      0 => const [
+        SupportLine(
+          japanese: 'えんぴつのはしに、ものさしの0を合わせてみよう。',
+          ruby: 'えんぴつのはしに、ものさしの0を{合|あ}わせてみよう。',
+          native: {
+            AppLanguage.portuguese: 'Alinhe o 0 da régua com a ponta do lápis.',
+          },
+        ),
+      ],
+      1 => const [
+        SupportLine(
+          japanese: '教室のよこの長さは、ものさしだけでははかりにくいね。',
+          ruby: '{教室|きょうしつ}のよこの{長さ|ながさ}は、ものさしだけでははかりにくいね。',
+          native: {
+            AppLanguage.portuguese:
+                'A largura da sala é difícil de medir só com uma régua.',
+          },
+        ),
+      ],
+      2 => const [
+        SupportLine(
+          japanese: 'まきじゃくを教室のはしからはしまで伸ばしてみよう。',
+          ruby: 'まきじゃくを{教室|きょうしつ}のはしからはしまで{伸|の}ばしてみよう。',
+          native: {
+            AppLanguage.portuguese:
+                'Estique a fita métrica de uma ponta à outra da sala.',
+          },
+        ),
+      ],
+      3 => const [
+        SupportLine(
+          japanese: '木のみきのまわりは、まきじゃくをそわせてはかります。',
+          ruby: '{木|き}のみきのまわりは、まきじゃくをそわせてはかります。',
+          native: {
+            AppLanguage.portuguese:
+                'Medimos ao redor do tronco acompanhando com a fita métrica.',
+          },
+        ),
+      ],
+      _ => const [
+        SupportLine(
+          japanese: 'はかるものに合わせて、ものさしとまきじゃくを選びます。',
+          ruby: '{はかる|はかる}ものに{合わせて|あわせて}、ものさしとまきじゃくを{選びます|えらびます}。',
+          native: {
+            AppLanguage.portuguese:
+                'Escolhemos régua ou fita métrica de acordo com o que vamos medir.',
+          },
+        ),
+      ],
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _RemainderLearnShell(
+      icon: Icons.straighten_rounded,
+      title: '長さに合う道具を選ぼう',
+      selectedLanguage: widget.selectedLanguage,
+      showNative: _showNative,
+      onToggleNative: () => setState(() => _showNative = !_showNative),
+      onAudio: _speak,
+      page: _page,
+      lastPage: _lastPage,
+      onPrevious: () {
+        if (_page == 0) return;
+        setState(() => _page--);
+      },
+      onNext: () {
+        if (_page == _lastPage) return;
+        setState(() => _page++);
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SupportedTextLines(
+            lines: _pageLines,
+            language: widget.selectedLanguage,
+            showNative: _showNative,
+            vocabularyEntries: _lengthVocabularyEntries,
+          ),
+          const SizedBox(height: 18),
+          switch (_page) {
+            0 => _InteractiveRulerPanel(
+              rulerOffset: _rulerOffset,
+              onChanged: (value) => setState(() => _rulerOffset = value),
+            ),
+            1 => const _RulerLimitPanel(),
+            2 => _InteractiveTapeMeasurePanel(
+              value: _tapeValue,
+              onChanged: (value) => setState(() => _tapeValue = value),
+            ),
+            3 => const _CurvedTapePanel(),
+            _ => const _ToolChoiceSummaryPanel(),
+          },
+        ],
+      ),
+    );
+  }
+}
+
+class _InteractiveRulerPanel extends StatelessWidget {
+  final double rulerOffset;
+  final ValueChanged<double> onChanged;
+
+  const _InteractiveRulerPanel({
+    required this.rulerOffset,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isAligned = rulerOffset <= 8;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          height: 230,
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Stack(
+            children: [
+              Positioned(
+                left: 70,
+                right: 70,
+                top: 32,
+                child: Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF7ED),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 24,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFF97316),
+                          borderRadius: BorderRadius.horizontal(
+                            left: Radius.circular(999),
+                          ),
+                        ),
+                      ),
+                      const Expanded(
+                        child: Center(
+                          child: Text(
+                            'えんぴつ 8cm',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ),
+                      CustomPaint(
+                        size: const Size(24, 48),
+                        painter: _PencilTipPainter(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 70 + rulerOffset,
+                right: 70 - rulerOffset,
+                top: 116,
+                child: const _MiniRuler(lengthLabel: '8cm'),
+              ),
+              Positioned(
+                left: 70,
+                top: 88,
+                child: Container(
+                  width: 2,
+                  height: 84,
+                  color: const Color(0xFF2563EB),
+                ),
+              ),
+              const Positioned(
+                left: 86,
+                top: 168,
+                child: Text(
+                  'えんぴつのはし',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Slider(
+          value: rulerOffset,
+          max: 48,
+          divisions: 6,
+          label: isAligned ? '0を合わせた' : 'ずれている',
+          onChanged: onChanged,
+        ),
+        _SoftResultLine(
+          text: isAligned ? '0を合わせると、右のはしが8cmを指しています。' : 'ものさしの0を、えんぴつのはしに近づけよう。',
+          good: isAligned,
+        ),
+      ],
+    );
+  }
+}
+
+class _PencilTipPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width, size.height / 2)
+      ..lineTo(0, size.height)
+      ..close();
+    canvas.drawPath(path, Paint()..color = const Color(0xFFFBBF24));
+    final lead = Path()
+      ..moveTo(size.width * .58, size.height * .28)
+      ..lineTo(size.width, size.height / 2)
+      ..lineTo(size.width * .58, size.height * .72)
+      ..close();
+    canvas.drawPath(lead, Paint()..color = const Color(0xFF334155));
+  }
+
+  @override
+  bool shouldRepaint(covariant _PencilTipPainter oldDelegate) => false;
+}
+
+class _MiniRuler extends StatelessWidget {
+  final String lengthLabel;
+
+  const _MiniRuler({required this.lengthLabel});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 46,
+      width: double.infinity,
+      child: CustomPaint(
+        painter: _MiniRulerPainter(lengthLabel),
+        child: const SizedBox.expand(),
+      ),
+    );
+  }
+}
+
+class _MiniRulerPainter extends CustomPainter {
+  final String lengthLabel;
+
+  const _MiniRulerPainter(this.lengthLabel);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      const Radius.circular(10),
+    );
+    canvas.drawRRect(rect, Paint()..color = const Color(0xFFFFFBEB));
+    canvas.drawRRect(
+      rect,
+      Paint()
+        ..color = const Color(0xFFE5E7EB)
+        ..style = PaintingStyle.stroke,
+    );
+    for (var i = 0; i <= 7; i++) {
+      final x = size.width * i / 7;
+      final h = i == 0 || i == 7 ? 24.0 : 15.0;
+      canvas.drawLine(
+        Offset(x, 0),
+        Offset(x, h),
+        Paint()
+          ..color = const Color(0xFF334155)
+          ..strokeWidth = 1.6,
+      );
+      if (i == 0 || i == 7) {
+        _paintText(canvas, i == 0 ? '0' : lengthLabel, Offset(x, 34), 12);
+      }
+    }
+  }
+
+  void _paintText(Canvas canvas, String text, Offset center, double fontSize) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          fontFamily: AppFonts.interface,
+          fontSize: fontSize,
+          color: const Color(0xFF111827),
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    painter.paint(
+      canvas,
+      center - Offset(painter.width / 2, painter.height / 2),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _MiniRulerPainter oldDelegate) {
+    return lengthLabel != oldDelegate.lengthLabel;
+  }
+}
+
+class _RulerLimitPanel extends StatelessWidget {
+  const _RulerLimitPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 86,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  child: const Text(
+                    '教室のよこ',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Container(
+                width: 150,
+                height: 86,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFBEB),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                alignment: Alignment.center,
+                child: const Text(
+                  '30cm\nものさし',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 17,
+                    height: 1.35,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          const _SoftResultLine(text: '長いところを30cmのものさしで少しずつはかると、何回も置き直すことになります。'),
+        ],
+      ),
+    );
+  }
+}
+
+class _InteractiveTapeMeasurePanel extends StatelessWidget {
+  final double value;
+  final ValueChanged<double> onChanged;
+
+  const _InteractiveTapeMeasurePanel({
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final meters = value.round();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      '教室のよこ',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '${meters}m',
+                    style: const TextStyle(
+                      fontFamily: AppFonts.display,
+                      fontSize: 30,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF2563EB),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              _TapeMeasureBar(meters: meters, maxMeters: 6),
+            ],
+          ),
+        ),
+        Slider(
+          value: value,
+          min: 1,
+          max: 6,
+          divisions: 5,
+          label: '${meters}m',
+          onChanged: onChanged,
+        ),
+        _SoftResultLine(
+          text: meters >= 6 ? '教室のはしからはしまで届きました。長いところは、まきじゃくが使いやすいね。' : 'まきじゃくを教室のはしまで伸ばしてみよう。',
+          good: meters >= 6,
+        ),
+      ],
+    );
+  }
+}
+
+class _TapeMeasureBar extends StatelessWidget {
+  final int meters;
+  final int maxMeters;
+
+  const _TapeMeasureBar({required this.meters, required this.maxMeters});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        return Column(
+          children: [
+            Stack(
+              children: [
+                Container(
+                  height: 26,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE5E7EB),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  width: width * meters / maxMeters,
+                  height: 26,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFDE68A),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                for (var i = 0; i <= maxMeters; i++)
+                  Text(
+                    '${i}m',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _CurvedTapePanel extends StatelessWidget {
+  const _CurvedTapePanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 230,
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: CustomPaint(
+        painter: _CurvedTapePainter(),
+        child: const SizedBox.expand(),
+      ),
+    );
+  }
+}
+
+class _CurvedTapePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width * .5, size.height * .48);
+    canvas.drawCircle(center, 54, Paint()..color = const Color(0xFF92400E));
+    canvas.drawCircle(center, 38, Paint()..color = const Color(0xFFA16207));
+    final tape = Paint()
+      ..color = const Color(0xFFFDE68A)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 12
+      ..strokeCap = StrokeCap.round;
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: 72),
+      math.pi * .12,
+      math.pi * 1.72,
+      false,
+      tape,
+    );
+    _paintText(canvas, '木のみきのまわり', Offset(center.dx, 24), 18);
+    _paintText(canvas, 'まきじゃくをそわせる', Offset(center.dx, size.height - 22), 16);
+  }
+
+  void _paintText(Canvas canvas, String text, Offset center, double fontSize) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          fontFamily: AppFonts.interface,
+          fontSize: fontSize,
+          fontWeight: FontWeight.w900,
+          color: const Color(0xFF111827),
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    painter.paint(
+      canvas,
+      center - Offset(painter.width / 2, painter.height / 2),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _CurvedTapePainter oldDelegate) => false;
+}
+
+class _ToolChoiceSummaryPanel extends StatelessWidget {
+  const _ToolChoiceSummaryPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: const [
+        _ToolChoiceChip(icon: Icons.edit_rounded, label: 'えんぴつ', tool: 'ものさし'),
+        _ToolChoiceChip(icon: Icons.table_bar_rounded, label: 'つくえ', tool: 'ものさし'),
+        _ToolChoiceChip(icon: Icons.meeting_room_rounded, label: '教室のよこ', tool: 'まきじゃく'),
+        _ToolChoiceChip(icon: Icons.park_rounded, label: '木のみきのまわり', tool: 'まきじゃく'),
+      ],
+    );
+  }
+}
+
+class _ToolChoiceChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String tool;
+
+  const _ToolChoiceChip({
+    required this.icon,
+    required this.label,
+    required this.tool,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 210,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: const Color(0xFF64748B)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            tool,
+            style: const TextStyle(
+              fontSize: 22,
+              color: Color(0xFF2563EB),
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _KilometerLearn extends StatefulWidget {
+  final AppLanguage selectedLanguage;
+
+  const _KilometerLearn({required this.selectedLanguage});
+
+  @override
+  State<_KilometerLearn> createState() => _KilometerLearnState();
+}
+
+class _KilometerLearnState extends State<_KilometerLearn> {
+  int _page = 0;
+  int _routeStep = 0;
+  bool _showNative = false;
+
+  static const _lastPage = 4;
+
+  void _speak() {
+    LearningAudio.speakJapanese(
+      context,
+      label: 'キロメートル',
+      text: _pageLines.first.japanese,
+    );
+  }
+
+  List<SupportLine> get _pageLines {
+    return switch (_page) {
+      0 => const [
+        SupportLine(
+          japanese: '学校から公園まで、道を順番に歩いてみよう。',
+          ruby: '{学校|がっこう}から{公園|こうえん}まで、{道|みち}を{順番|じゅんばん}に{歩|ある}いてみよう。',
+          native: {
+            AppLanguage.portuguese:
+                'Vamos caminhar pelo caminho da escola até o parque.',
+          },
+        ),
+      ],
+      1 => const [
+        SupportLine(
+          japanese: '1000mは、1kmと同じ長さです。',
+          ruby: '1000mは、1kmと{同|おな}じ{長さ|ながさ}です。',
+          native: {
+            AppLanguage.portuguese: '1000 m têm o mesmo comprimento que 1 km.',
+          },
+        ),
+      ],
+      2 => const [
+        SupportLine(
+          japanese: '町の中の長い道のりは、kmで表すと見やすくなります。',
+          ruby: '{町|まち}の{中|なか}の{長|なが}い{道のり|みちのり}は、kmで{表|あらわ}すと{見|み}やすくなります。',
+          native: {
+            AppLanguage.portuguese:
+                'Caminhos longos na cidade ficam mais fáceis de ler em km.',
+          },
+        ),
+      ],
+      3 => const [
+        SupportLine(
+          japanese: '1km200mは、1kmをこえて、さらに200m進んだ長さです。',
+          ruby: '1km200mは、1kmをこえて、さらに200m{進|すす}んだ{長さ|ながさ}です。',
+          native: {
+            AppLanguage.portuguese:
+                '1 km e 200 m é passar de 1 km e andar mais 200 m.',
+          },
+        ),
+      ],
+      _ => const [
+        SupportLine(
+          japanese: '単位をmにそろえると、長さを比べやすくなります。',
+          ruby: '{単位|たんい}をmにそろえると、{長さ|ながさ}を{比|くら}べやすくなります。',
+          native: {
+            AppLanguage.portuguese:
+                'Quando usamos a mesma unidade, fica mais fácil comparar comprimentos.',
+          },
+        ),
+      ],
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _RemainderLearnShell(
+      icon: Icons.map_rounded,
+      title: '学校から町へ出かけよう',
+      selectedLanguage: widget.selectedLanguage,
+      showNative: _showNative,
+      onToggleNative: () => setState(() => _showNative = !_showNative),
+      onAudio: _speak,
+      page: _page,
+      lastPage: _lastPage,
+      onPrevious: () {
+        if (_page == 0) return;
+        setState(() => _page--);
+      },
+      onNext: () {
+        if (_page == _lastPage) return;
+        setState(() {
+          if (_page == 0) _routeStep = 0;
+          _page++;
+        });
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SupportedTextLines(
+            lines: _pageLines,
+            language: widget.selectedLanguage,
+            showNative: _showNative,
+            vocabularyEntries: _lengthVocabularyEntries,
+          ),
+          const SizedBox(height: 18),
+          switch (_page) {
+            0 => _DistanceRoutePanel(
+              step: _routeStep,
+              onAdvance: () => setState(() {
+                _routeStep = (_routeStep + 1).clamp(0, 3);
+              }),
+            ),
+            1 => const _KilometerConversionPanel(),
+            2 => const _ZoomOutMapPanel(),
+            3 => const _KilometerMeterPanel(),
+            _ => const _LengthComparePanel(),
+          },
+        ],
+      ),
+    );
+  }
+}
+
+class _DistanceRoutePanel extends StatelessWidget {
+  final int step;
+  final VoidCallback onAdvance;
+
+  const _DistanceRoutePanel({required this.step, required this.onAdvance});
+
+  @override
+  Widget build(BuildContext context) {
+    final total = [0, 300, 700, 1000][step];
+    final label = step >= 3 ? '公園についた' : '道を進んでみよう';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _SimpleDistanceMap(highlightedSegments: step),
+        const SizedBox(height: 14),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '進んだ道のり：$total m',
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontFamily: AppFonts.display,
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF2563EB),
+          ),
+        ),
+        const SizedBox(height: 12),
+        FilledButton(
+          onPressed: step >= 3 ? null : onAdvance,
+          child: Text(step >= 3 ? '1kmになった' : 'つぎの道を進む'),
+        ),
+      ],
+    );
+  }
+}
+
+class _SimpleDistanceMap extends StatelessWidget {
+  final int highlightedSegments;
+
+  const _SimpleDistanceMap({required this.highlightedSegments});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 210,
+      width: double.infinity,
+      child: CustomPaint(
+        painter: _SimpleDistanceMapPainter(highlightedSegments),
+        child: const SizedBox.expand(),
+      ),
+    );
+  }
+}
+
+class _SimpleDistanceMapPainter extends CustomPainter {
+  final int highlightedSegments;
+
+  const _SimpleDistanceMapPainter(this.highlightedSegments);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final points = [
+      Offset(size.width * .12, size.height * .75),
+      Offset(size.width * .36, size.height * .45),
+      Offset(size.width * .62, size.height * .56),
+      Offset(size.width * .86, size.height * .25),
+    ];
+    final labels = ['学校', '交差点', 'コンビニ', '公園'];
+    final segments = ['300m', '400m', '300m'];
+    final grey = Paint()
+      ..color = const Color(0xFFCBD5E1)
+      ..strokeWidth = 8
+      ..strokeCap = StrokeCap.round;
+    final blue = Paint()
+      ..color = const Color(0xFF2563EB)
+      ..strokeWidth = 8
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < points.length - 1; i++) {
+      canvas.drawLine(
+        points[i],
+        points[i + 1],
+        i < highlightedSegments ? blue : grey,
+      );
+      _paintText(
+        canvas,
+        segments[i],
+        (points[i] + points[i + 1]) / 2 + const Offset(0, -18),
+        13,
+        const Color(0xFF334155),
+      );
+    }
+    for (var i = 0; i < points.length; i++) {
+      canvas.drawCircle(
+        points[i],
+        13,
+        Paint()..color = const Color(0xFFFFFFFF),
+      );
+      canvas.drawCircle(
+        points[i],
+        13,
+        Paint()
+          ..color = const Color(0xFF2563EB)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3,
+      );
+      _paintText(
+        canvas,
+        labels[i],
+        points[i] + const Offset(0, 32),
+        14,
+        const Color(0xFF111827),
+      );
+    }
+  }
+
+  void _paintText(
+    Canvas canvas,
+    String text,
+    Offset center,
+    double size,
+    Color color,
+  ) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          fontFamily: AppFonts.interface,
+          fontSize: size,
+          fontWeight: FontWeight.w900,
+          color: color,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    painter.paint(
+      canvas,
+      center - Offset(painter.width / 2, painter.height / 2),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _SimpleDistanceMapPainter oldDelegate) {
+    return highlightedSegments != oldDelegate.highlightedSegments;
+  }
+}
+
+class _KilometerConversionPanel extends StatelessWidget {
+  const _KilometerConversionPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: const Column(
+        children: [
+          Text(
+            '1000m',
+            style: TextStyle(
+              fontFamily: AppFonts.display,
+              fontSize: 40,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF2563EB),
+            ),
+          ),
+          Icon(
+            Icons.arrow_downward_rounded,
+            size: 34,
+            color: Color(0xFF64748B),
+          ),
+          Text(
+            '1km',
+            style: TextStyle(
+              fontFamily: AppFonts.display,
+              fontSize: 44,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF16A34A),
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            '同じ長さです',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ZoomOutMapPanel extends StatelessWidget {
+  const _ZoomOutMapPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: const [
+        _PlaceDistanceCard(place: '公園', distance: '1km'),
+        _PlaceDistanceCard(place: '図書館', distance: '1km500m'),
+        _PlaceDistanceCard(place: '駅', distance: '2km'),
+        _PlaceDistanceCard(place: 'となり町', distance: '4km'),
+      ],
+    );
+  }
+}
+
+class _PlaceDistanceCard extends StatelessWidget {
+  final String place;
+  final String distance;
+
+  const _PlaceDistanceCard({required this.place, required this.distance});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 190,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            place,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            distance,
+            style: const TextStyle(
+              fontFamily: AppFonts.display,
+              color: Color(0xFF2563EB),
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _KilometerMeterPanel extends StatelessWidget {
+  const _KilometerMeterPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          const _KilometerPlusMeterBar(),
+          const SizedBox(height: 16),
+          const Text(
+            '1km200m = 1200m',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: AppFonts.display,
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            '1kmをこえて、あと200m進んだ長さです。',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _KilometerPlusMeterBar extends StatelessWidget {
+  const _KilometerPlusMeterBar();
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final kmWidth = width * 5 / 6;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Stack(
+              children: [
+                Container(
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE5E7EB),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                Container(
+                  width: kmWidth,
+                  height: 34,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFBFDBFE),
+                    borderRadius: BorderRadius.horizontal(
+                      left: Radius.circular(999),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: kmWidth,
+                  right: 0,
+                  child: Container(
+                    height: 34,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFDE68A),
+                      borderRadius: BorderRadius.horizontal(
+                        right: Radius.circular(999),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('0m', style: TextStyle(fontWeight: FontWeight.w800)),
+                Text('1000m = 1km', style: TextStyle(fontWeight: FontWeight.w900)),
+                Text('1200m', style: TextStyle(fontWeight: FontWeight.w800)),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _LengthComparePanel extends StatelessWidget {
+  const _LengthComparePanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: const [
+        _SoftResultLine(text: '900m と 1km200m を比べるときは、1km200m を 1200m に直します。'),
+        SizedBox(height: 12),
+        _SoftResultLine(
+          text: '800m + 600m = 1400m。1400m は 1km400m とも表せます。',
+          good: true,
+        ),
+      ],
+    );
+  }
+}
+
+class _SoftResultLine extends StatelessWidget {
+  final String text;
+  final bool good;
+
+  const _SoftResultLine({required this.text, this.good = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: good ? const Color(0xFFECFDF5) : const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: good ? const Color(0xFF047857) : const Color(0xFF1E3A8A),
+          fontSize: 16,
+          height: 1.45,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+const _lengthVocabularyEntries = [
+  VocabularyEntry(
+    term: '長さ',
+    reading: 'ながさ',
+    simpleJapanese: 'もののはしからはしまでの大きさ。',
+    translations: {AppLanguage.portuguese: 'comprimento'},
+    exampleSentence: 'つくえの長さをはかります。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: 'はかる',
+    reading: 'はかる',
+    simpleJapanese: '長さなどを調べること。',
+    translations: {AppLanguage.portuguese: 'medir'},
+    exampleSentence: 'まきじゃくで長さをはかります。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '目もり',
+    reading: 'めもり',
+    simpleJapanese: 'ものさしについている小さなしるし。',
+    translations: {AppLanguage.portuguese: 'marca / escala'},
+    exampleSentence: '目もりを読みます。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '道のり',
+    reading: 'みちのり',
+    simpleJapanese: '実際に通る道の長さ。',
+    translations: {AppLanguage.portuguese: 'caminho / percurso'},
+    exampleSentence: '学校から公園までの道のりを考えます。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: 'キロメートル',
+    reading: 'きろめーとる',
+    simpleJapanese: '長い長さを表す単位。1kmは1000m。',
+    translations: {AppLanguage.portuguese: 'quilômetro'},
+    exampleSentence: '1000mは1kmです。',
+    category: 'math_language',
+  ),
+];
 
 class _MultiplicationDivisionLearn extends StatefulWidget {
   final AppLanguage selectedLanguage;
