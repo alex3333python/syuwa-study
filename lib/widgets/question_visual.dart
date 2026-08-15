@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../models/question.dart';
@@ -37,6 +39,10 @@ class QuestionVisual extends StatelessWidget {
         ),
         'time_line' => _TimeLineVisual(question: question, compact: compact),
         'length_bar' => _LengthBarVisual(question: question, compact: compact),
+        'eraser_ruler' => _EraserRulerVisual(
+          question: question,
+          compact: compact,
+        ),
         'distance_map' => _DistanceMapVisual(
           question: question,
           compact: compact,
@@ -64,6 +70,236 @@ class QuestionVisual extends StatelessWidget {
       case QuestionVisualType.fraction:
         return const SizedBox.shrink();
     }
+  }
+}
+
+class _EraserRulerVisual extends StatelessWidget {
+  final Question question;
+  final bool compact;
+
+  const _EraserRulerVisual({required this.question, required this.compact});
+
+  @override
+  Widget build(BuildContext context) {
+    final lengthCm =
+        double.tryParse(question.diagramData['lengthCm'] ?? '') ?? 4;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(compact ? 14 : 18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: SizedBox(
+        height: compact ? 150 : 190,
+        child: CustomPaint(
+          painter: _EraserRulerPainter(lengthCm: lengthCm),
+          child: const SizedBox.expand(),
+        ),
+      ),
+    );
+  }
+}
+
+class _EraserRulerPainter extends CustomPainter {
+  final double lengthCm;
+
+  const _EraserRulerPainter({required this.lengthCm});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rulerWidth = math.min(size.width - 80, 520.0);
+    final rulerLeft = (size.width - rulerWidth) / 2;
+    final rulerRight = rulerLeft + rulerWidth;
+    final rulerTop = size.height - 70;
+    final rulerHeight = 44.0;
+    final cmWidth = rulerWidth / 6;
+    final eraserLeft = rulerLeft;
+    final eraserRight = rulerLeft + cmWidth * lengthCm.clamp(1, 6);
+    final eraserTop = rulerTop - 62;
+    final eraserHeight = 42.0;
+
+    final guidePaint = Paint()
+      ..color = const Color(0xFFCBD5E1)
+      ..strokeWidth = 1.5;
+    canvas.drawLine(
+      Offset(eraserLeft, eraserTop + eraserHeight),
+      Offset(eraserLeft, rulerTop + rulerHeight + 12),
+      guidePaint,
+    );
+    canvas.drawLine(
+      Offset(eraserRight, eraserTop + eraserHeight),
+      Offset(eraserRight, rulerTop + rulerHeight + 12),
+      guidePaint,
+    );
+
+    final shadowRect = RRect.fromRectAndRadius(
+      Rect.fromLTRB(
+        eraserLeft + 2,
+        eraserTop + 5,
+        eraserRight + 2,
+        eraserTop + eraserHeight + 5,
+      ),
+      const Radius.circular(10),
+    );
+    canvas.drawRRect(
+      shadowRect,
+      Paint()..color = const Color(0xFF94A3B8).withOpacity(.18),
+    );
+
+    final eraserRect = RRect.fromRectAndRadius(
+      Rect.fromLTRB(
+        eraserLeft,
+        eraserTop,
+        eraserRight,
+        eraserTop + eraserHeight,
+      ),
+      const Radius.circular(10),
+    );
+    canvas.drawRRect(
+      eraserRect,
+      Paint()..color = const Color(0xFFF8FAFC),
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTRB(
+          eraserLeft + 8,
+          eraserTop + 6,
+          eraserRight - 8,
+          eraserTop + 16,
+        ),
+        const Radius.circular(999),
+      ),
+      Paint()..color = Colors.white.withOpacity(.8),
+    );
+    canvas.drawRRect(
+      eraserRect,
+      Paint()
+        ..color = const Color(0xFFCBD5E1)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndCorners(
+        Rect.fromLTRB(
+          eraserLeft,
+          eraserTop,
+          eraserLeft + 30,
+          eraserTop + eraserHeight,
+        ),
+        topLeft: const Radius.circular(10),
+        bottomLeft: const Radius.circular(10),
+      ),
+      Paint()..color = const Color(0xFFFCA5A5),
+    );
+    final sleeveLeft = eraserLeft + (eraserRight - eraserLeft) * 0.46;
+    final sleeveRight = eraserLeft + (eraserRight - eraserLeft) * 0.76;
+    final sleeveRect = Rect.fromLTRB(
+      sleeveLeft,
+      eraserTop,
+      sleeveRight,
+      eraserTop + eraserHeight,
+    );
+    canvas.drawRect(sleeveRect, Paint()..color = const Color(0xFF60A5FA));
+    canvas.drawRect(
+      Rect.fromLTRB(sleeveLeft, eraserTop, sleeveLeft + 5, eraserTop + eraserHeight),
+      Paint()..color = const Color(0xFF2563EB).withOpacity(.45),
+    );
+    canvas.drawRect(
+      Rect.fromLTRB(sleeveRight - 5, eraserTop, sleeveRight, eraserTop + eraserHeight),
+      Paint()..color = const Color(0xFF2563EB).withOpacity(.45),
+    );
+    canvas.drawLine(
+      Offset(sleeveLeft + 10, eraserTop + eraserHeight * .62),
+      Offset(sleeveRight - 10, eraserTop + eraserHeight * .62),
+      Paint()
+        ..color = Colors.white.withOpacity(.7)
+        ..strokeWidth = 2
+        ..strokeCap = StrokeCap.round,
+    );
+
+    final rulerRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(rulerLeft, rulerTop, rulerWidth, rulerHeight),
+      const Radius.circular(8),
+    );
+    canvas.drawRRect(
+      rulerRect,
+      Paint()..color = const Color(0xFFFEF3C7),
+    );
+    canvas.drawRRect(
+      rulerRect,
+      Paint()
+        ..color = const Color(0xFFCBD5E1)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1,
+    );
+
+    for (var cm = 0; cm <= 6; cm++) {
+      final x = rulerLeft + cmWidth * cm;
+      canvas.drawLine(
+        Offset(x, rulerTop),
+        Offset(x, rulerTop + 24),
+        Paint()
+          ..color = const Color(0xFF111827)
+          ..strokeWidth = cm == 0 || cm == 5 ? 2.8 : 2,
+      );
+      if (cm == 5) {
+        _paintText(
+          canvas,
+          '5',
+          Offset(x, rulerTop + 34),
+          12,
+          const Color(0xFF334155),
+          FontWeight.w800,
+        );
+      }
+      if (cm < 6) {
+        for (var sub = 1; sub < 10; sub++) {
+          final sx = x + cmWidth * sub / 10;
+          final isHalf = sub == 5;
+          canvas.drawLine(
+            Offset(sx, rulerTop),
+            Offset(sx, rulerTop + (isHalf ? 17 : 10)),
+            Paint()
+              ..color = const Color(0xFF64748B)
+              ..strokeWidth = isHalf ? 1.4 : 0.8,
+          );
+        }
+      }
+    }
+  }
+
+  void _paintText(
+    Canvas canvas,
+    String text,
+    Offset center,
+    double size,
+    Color color,
+    FontWeight weight,
+  ) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          fontFamily: AppFonts.interface,
+          fontSize: size,
+          fontWeight: weight,
+          color: color,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    painter.paint(
+      canvas,
+      center - Offset(painter.width / 2, painter.height / 2),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _EraserRulerPainter oldDelegate) {
+    return lengthCm != oldDelegate.lengthCm;
   }
 }
 

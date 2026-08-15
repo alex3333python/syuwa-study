@@ -46,19 +46,13 @@ final List<Lesson> grade3LengthLessons = [
                   'Vamos medir a largura da mesa. Qual ferramenta é melhor usar?',
             },
             questionTextRuby:
-                'つくえのよこの{長さ|ながさ}を{はかります|はかります}。どの{道具|どうぐ}を{使|つか}うとよいですか。',
+                'つくえのよこの{長|なが}さをはかります。どの{道具|どうぐ}を{使|つか}うとよいですか。',
             choices: ['ものさし', 'まきじゃく', '地図'],
             correct: 0,
             explanation: 'つくえのような短いものは、ものさしではかりやすいです。0の目もりをはしに合わせます。',
             explanationRuby:
-                'つくえのような{短|みじか}いものは、ものさしで{はかり|はかり}やすいです。0の{目もり|めもり}をはしに{合|あ}わせます。',
+                'つくえのような{短|みじか}いものは、ものさしではかりやすいです。0の{目|め}もりをはしに{合|あ}わせます。',
             tags: ['length', 'ruler', 'tool_choice'],
-            diagramType: 'length_bar',
-            diagramData: const {
-              'label': 'つくえ',
-              'value': '70cm',
-              'ticks': '0|10|20|30|40|50|60|70',
-            },
           ),
           _q(
             id: 21102,
@@ -70,19 +64,13 @@ final List<Lesson> grade3LengthLessons = [
                   'Vamos medir a largura da sala. Qual ferramenta é melhor usar?',
             },
             questionTextRuby:
-                '{教室|きょうしつ}のよこの{長さ|ながさ}を{はかります|はかります}。どの{道具|どうぐ}を{使|つか}うとよいですか。',
+                '{教室|きょうしつ}のよこの{長|なが}さをはかります。どの{道具|どうぐ}を{使|つか}うとよいですか。',
             choices: ['ものさし', 'まきじゃく', '時計'],
             correct: 1,
             explanation: '教室のように長いものは、まきじゃくを使うとはかりやすいです。',
             explanationRuby:
-                '{教室|きょうしつ}のように{長|なが}いものは、まきじゃくを{使|つか}うと{はかり|はかり}やすいです。',
+                '{教室|きょうしつ}のように{長|なが}いものは、まきじゃくを{使|つか}うとはかりやすいです。',
             tags: ['length', 'tape_measure', 'tool_choice'],
-            diagramType: 'length_bar',
-            diagramData: const {
-              'label': '教室のよこ',
-              'value': '6m',
-              'ticks': '0|1|2|3|4|5|6',
-            },
           ),
         ],
       ),
@@ -94,20 +82,25 @@ final List<Lesson> grade3LengthLessons = [
           _q(
             id: 21103,
             type: 'read_measure',
-            school: 'まきじゃくが4mを指しています。長さはどれですか。',
-            easy: 'まきじゃくの目もりを読みます。',
-            questionTextRuby: 'まきじゃくが4mを{指|さ}しています。{長さ|ながさ}はどれですか。',
-            choices: ['3m', '4m', '40m'],
+            school: '消しゴムの長さをものさしではかります。長さはどれくらいですか。',
+            easy: 'ものさしの目もりを見て、消しゴムの長さを読みます。',
+            native: {
+              AppLanguage.portuguese:
+                  'Medimos o comprimento da borracha com uma régua. Qual é o comprimento?',
+            },
+            questionTextRuby:
+                '{消|け}しゴムの{長|なが}さをものさしではかります。{長|なが}さはどれくらいですか。',
+            choices: ['3cm', '4cm', '5cm'],
             correct: 1,
-            explanation: 'まきじゃくの目もりが4mのところを指しているので、長さは4mです。',
+            explanation: '消しゴムの左はしを0に合わせると、右はしが4cmの目もりにあります。',
             explanationRuby:
-                'まきじゃくの{目もり|めもり}が4mのところを{指|さ}しているので、{長さ|ながさ}は4mです。',
-            tags: ['length', 'read_scale'],
-            diagramType: 'length_bar',
+                '{消|け}しゴムの{左|ひだり}はしを0に{合|あ}わせると、{右|みぎ}はしが4cmの{目|め}もりにあります。',
+            tags: ['length', 'ruler', 'read_scale'],
+            diagramType: 'eraser_ruler',
             diagramData: const {
-              'label': 'まきじゃく',
-              'value': '4m',
-              'ticks': '0|1|2|3|4|5',
+              'object': 'eraser',
+              'lengthCm': '4',
+              'showInExplanation': 'false',
             },
           ),
           _q(
@@ -116,11 +109,11 @@ final List<Lesson> grade3LengthLessons = [
             school: '木のみきのまわりをはかります。どの道具を使うとよいですか。',
             easy: '曲がったところにそわせやすい道具を選びます。',
             questionTextRuby:
-                '{木|き}のみきのまわりを{はかります|はかります}。どの{道具|どうぐ}を{使|つか}うとよいですか。',
+                '{木|き}のみきのまわりをはかります。どの{道具|どうぐ}を{使|つか}うとよいですか。',
             choices: ['ものさし', 'まきじゃく', '時計'],
             correct: 1,
             explanation: 'まきじゃくは、曲がったところにそわせてはかることもできます。',
-            explanationRuby: 'まきじゃくは、{曲|ま}がったところにそわせて{はかる|はかる}こともできます。',
+            explanationRuby: 'まきじゃくは、{曲|ま}がったところにそわせてはかることもできます。',
             tags: ['length', 'tape_measure', 'curved'],
           ),
         ],
@@ -189,12 +182,6 @@ final List<Lesson> grade3LengthLessons = [
             explanation: '1000mと1kmは同じ長さです。',
             explanationRuby: '1000mと1kmは{同|おな}じ{長さ|ながさ}です。',
             tags: ['length', 'kilometer', 'conversion'],
-            diagramType: 'distance_map',
-            diagramData: const {
-              'places': '学校|交差点|コンビニ|公園',
-              'segments': '300m|400m|300m',
-              'caption': '300m + 400m + 300m = 1000m = 1km',
-            },
           ),
           _q(
             id: 22102,
@@ -210,12 +197,6 @@ final List<Lesson> grade3LengthLessons = [
             explanation: '1kmは1000mです。1000mと200mを合わせると1200mです。',
             explanationRuby: '1kmは1000mです。1000mと200mを{合|あ}わせると1200mです。',
             tags: ['length', 'kilometer', 'conversion'],
-            diagramType: 'length_bar',
-            diagramData: const {
-              'label': '1km200m',
-              'value': '1200m',
-              'ticks': '0|200|400|600|800|1000|1200',
-            },
           ),
         ],
       ),
@@ -249,12 +230,6 @@ final List<Lesson> grade3LengthLessons = [
             explanationRuby:
                 '800mと600mを{合|あ}わせると1400mです。1400mは1km400mとも{表|あらわ}せます。',
             tags: ['length', 'kilometer', 'route_addition'],
-            diagramType: 'distance_map',
-            diagramData: const {
-              'places': '学校|公園|図書館',
-              'segments': '800m|600m',
-              'caption': '800m + 600m = 1400m',
-            },
           ),
         ],
       ),
@@ -341,7 +316,8 @@ Map<AppLanguage, String> _lengthExplanationNative(int id) {
       'Para objetos curtos, como uma mesa, é fácil medir com uma régua. Alinhe o 0 da régua com a ponta.',
     21102 =>
       'Para objetos longos, como a sala de aula, é mais fácil medir com uma fita métrica.',
-    21103 => 'A marca da fita está em 4 m, então o comprimento é 4 m.',
+    21103 =>
+      'Quando a ponta esquerda da borracha está no 0, a ponta direita fica na marca de 4 cm.',
     21104 =>
       'A fita métrica também pode acompanhar partes curvas para medir ao redor.',
     21105 => 'Para objetos curtos, como um lápis, é fácil medir com uma régua.',
