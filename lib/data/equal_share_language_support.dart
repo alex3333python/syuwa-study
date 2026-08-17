@@ -97,7 +97,7 @@ const equalShareProblemLines = [
 ];
 
 const equalShareInstruction = SupportLine(
-  japanese: 'いちごをおさらに分けてみよう！',
+  japanese: 'いちごをお皿に分けてみよう！',
   ruby: 'いちごをお{皿|さら}に{分けて|わけて}みよう！',
   native: {
     AppLanguage.portuguese: 'Vamos dividir os morangos nos pratos!',
@@ -830,6 +830,111 @@ const kilometerLessonVocabulary = [
       AppLanguage.portuguese: 'comparar',
       AppLanguage.tagalog: 'ihambing',
       AppLanguage.vietnamese: 'so sánh',
+    },
+    visual: LessonVocabularyVisual.none,
+  ),
+];
+
+const weightGramKgLessonVocabulary = [
+  LessonVocabulary(
+    word: '重い',
+    reading: 'おもい',
+    explanation: '持ったときに、力がたくさんいる感じです。',
+    translations: {
+      AppLanguage.portuguese: 'pesado',
+      AppLanguage.tagalog: 'mabigat',
+      AppLanguage.vietnamese: 'nặng',
+    },
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: '軽い',
+    reading: 'かるい',
+    explanation: '持ったときに、力があまりいらない感じです。',
+    translations: {
+      AppLanguage.portuguese: 'leve',
+      AppLanguage.tagalog: 'magaan',
+      AppLanguage.vietnamese: 'nhẹ',
+    },
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: '重さ',
+    reading: 'おもさ',
+    explanation: 'ものがどれくらい重いかを表します。',
+    translations: {
+      AppLanguage.portuguese: 'peso',
+      AppLanguage.tagalog: 'bigat',
+      AppLanguage.vietnamese: 'cân nặng / trọng lượng',
+    },
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: 'はかり',
+    reading: 'はかり',
+    explanation: '重さを調べる道具です。',
+    translations: {
+      AppLanguage.portuguese: 'balança',
+      AppLanguage.tagalog: 'timbangan',
+      AppLanguage.vietnamese: 'cái cân',
+    },
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: '目もり',
+    reading: 'めもり',
+    explanation: 'はかりやものさしについている、小さなしるしです。',
+    translations: {
+      AppLanguage.portuguese: 'marcação / escala',
+      AppLanguage.tagalog: 'marka / guhit',
+      AppLanguage.vietnamese: 'vạch chia',
+    },
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: 'キログラム',
+    reading: 'きろぐらむ',
+    explanation: '重いものの重さを表すときに使う単位です。1kgは1000gです。',
+    translations: {
+      AppLanguage.portuguese: 'quilograma',
+      AppLanguage.tagalog: 'kilogramo',
+      AppLanguage.vietnamese: 'ki-lô-gam',
+    },
+    visual: LessonVocabularyVisual.none,
+  ),
+];
+
+const weightTonLessonVocabulary = [
+  LessonVocabulary(
+    word: 'トン',
+    reading: 'とん',
+    explanation: 'とても重いものを表すときに使う単位です。1tは1000kgです。',
+    translations: {
+      AppLanguage.portuguese: 'tonelada',
+      AppLanguage.tagalog: 'tonelada',
+      AppLanguage.vietnamese: 'tấn',
+    },
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: '積む',
+    reading: 'つむ',
+    explanation: '荷物などを、上や中にのせることです。',
+    translations: {
+      AppLanguage.portuguese: 'carregar / colocar carga',
+      AppLanguage.tagalog: 'ikarga',
+      AppLanguage.vietnamese: 'chất lên / xếp lên',
+    },
+    visual: LessonVocabularyVisual.none,
+  ),
+  LessonVocabulary(
+    word: '単位',
+    reading: 'たんい',
+    explanation: 'g、kg、tのように、量を表すための言葉です。',
+    translations: {
+      AppLanguage.portuguese: 'unidade',
+      AppLanguage.tagalog: 'yunit',
+      AppLanguage.vietnamese: 'đơn vị',
     },
     visual: LessonVocabularyVisual.none,
   ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_fonts.dart';
+
 class CompletionScreen extends StatelessWidget {
   final int stars;
   final int totalQuestions;
@@ -199,6 +201,7 @@ class CompletionScreen extends StatelessWidget {
                         label: Text(
                           '間違えた問題を復習（$wrongQuestionCount問）',
                           style: const TextStyle(
+                            fontFamily: AppFonts.interface,
                             fontWeight: FontWeight.bold,
                             fontSize: 15,
                           ),
@@ -222,6 +225,7 @@ class CompletionScreen extends StatelessWidget {
                         child: const Text(
                           '次のレッスンへ',
                           style: TextStyle(
+                            fontFamily: AppFonts.interface,
                             fontWeight: FontWeight.bold,
                             fontSize: 15,
                           ),
@@ -243,8 +247,11 @@ class CompletionScreen extends StatelessWidget {
                           ),
                           onPressed: onHome,
                           child: const Text(
-                            'ホーム',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                          'ホーム',
+                          style: TextStyle(
+                            fontFamily: AppFonts.interface,
+                            fontWeight: FontWeight.bold,
+                          ),
                           ),
                         ),
                       ),
@@ -259,8 +266,11 @@ class CompletionScreen extends StatelessWidget {
                           ),
                           onPressed: onRestart,
                           child: const Text(
-                            'もう一度',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                          'もう一度',
+                          style: TextStyle(
+                            fontFamily: AppFonts.interface,
+                            fontWeight: FontWeight.bold,
+                          ),
                           ),
                         ),
                       ),

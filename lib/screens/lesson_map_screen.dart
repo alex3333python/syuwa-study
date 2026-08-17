@@ -175,6 +175,7 @@ class LessonMapScreen extends StatelessWidget {
     var addedRemainderUnit = false;
     var addedTimeUnit = false;
     var addedLengthUnit = false;
+    var addedWeightUnit = false;
 
     for (final lesson in lessons) {
       if (_isGrade3DivisionLesson(lesson)) {
@@ -243,6 +244,23 @@ class LessonMapScreen extends StatelessWidget {
             description: '道具を選んではかり、kmとmの関係を考えます。',
             color1: const Color(0xFF22C55E),
             color2: const Color(0xFF0EA5E9),
+          ),
+        );
+        continue;
+      }
+
+      if (_isGrade3WeightLesson(lesson)) {
+        if (addedWeightUnit) continue;
+        addedWeightUnit = true;
+
+        final weightLessons = lessons.where(_isGrade3WeightLesson).toList();
+        entries.add(
+          _buildUnitEntry(
+            unitLessons: weightLessons,
+            title: '重さ',
+            description: 'はかりを使って、g・kg・tの感覚をつかみます。',
+            color1: const Color(0xFFF59E0B),
+            color2: const Color(0xFF14B8A6),
           ),
         );
         continue;
@@ -354,7 +372,11 @@ class LessonMapScreen extends StatelessWidget {
   }
 
   bool _isGrade3LengthLesson(Lesson lesson) {
-    return lesson.id == 21 || lesson.id == 22;
+    return lesson.id == 21 || lesson.id == 22 || lesson.id == 25;
+  }
+
+  bool _isGrade3WeightLesson(Lesson lesson) {
+    return lesson.id == 23 || lesson.id == 24 || lesson.id == 26;
   }
 }
 

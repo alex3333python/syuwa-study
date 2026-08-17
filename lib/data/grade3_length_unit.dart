@@ -252,6 +252,92 @@ final List<Lesson> grade3LengthLessons = [
       ),
     ],
   ),
+  Lesson(
+    id: 25,
+    levelId: 3,
+    title: 'たしかめ問題',
+    description: '',
+    completed: false,
+    locked: true,
+    stars: 0,
+    maxStars: 3,
+    questions: const [],
+    steps: [
+      LessonStep(
+        id: 'length-check',
+        type: LessonStepType.independentPractice,
+        title: 'たしかめ問題',
+        questions: [
+          _q(
+            id: 25101,
+            type: 'read_measure',
+            school: '消しゴムの長さをものさしではかります。長さは何cmですか。',
+            easy: 'ものさしの目もりを読みます。',
+            choices: ['3cm', '4cm', '5cm'],
+            correct: 1,
+            explanation: '消しゴムの左はしを0に合わせると、右はしが4cmの目もりにあります。',
+            explanationRuby:
+                '{消|け}しゴムの{左|ひだり}はしを0に{合|あ}わせると、{右|みぎ}はしが4cmの{目|め}もりにあります。',
+            diagramType: 'eraser_ruler',
+            diagramData: const {
+              'object': 'eraser',
+              'lengthCm': '4',
+              'showInExplanation': 'false',
+            },
+            tags: ['check', 'ruler', 'read_scale'],
+          ),
+          _q(
+            id: 25102,
+            type: 'tool_choice',
+            school: 'ろうかの長さをはかるとき、どの道具を使いますか。',
+            easy: '長いものをはかる道具を選びます。',
+            choices: ['ものさし', 'まきじゃく', '時計'],
+            correct: 1,
+            explanation: 'ろうかのように長いものは、まきじゃくを使うとはかりやすいです。',
+            explanationRuby:
+                'ろうかのように{長|なが}いものは、まきじゃくを{使|つか}うとはかりやすいです。',
+            tags: ['check', 'tool', 'tape_measure'],
+          ),
+          _q(
+            id: 25103,
+            type: 'km_relation',
+            school: '2kmは何mですか。',
+            easy: 'キロメートルをメートルにします。',
+            choices: ['200m', '2000m', '20000m'],
+            correct: 1,
+            explanation: '1kmは1000mです。2kmは1000mが2つなので、2000mです。',
+            explanationRuby:
+                '1kmは1000mです。2kmは1000mが2つなので、2000mです。',
+            tags: ['check', 'kilometer', 'conversion'],
+          ),
+          _q(
+            id: 25104,
+            type: 'compare_length',
+            school: '1km500mと1400mでは、どちらが長いですか。',
+            easy: '同じ単位にそろえて比べます。',
+            choices: ['1km500m', '1400m', '同じ'],
+            correct: 0,
+            explanation: '1km500mは1500mです。1500mは1400mより長いです。',
+            explanationRuby:
+                '1km500mは1500mです。1500mは1400mより{長|なが}いです。',
+            tags: ['check', 'kilometer', 'compare'],
+          ),
+          _q(
+            id: 25105,
+            type: 'route_addition',
+            school: '学校から公園まで400m、公園から図書館まで600mです。全部で何kmですか。',
+            easy: '2つの道のりを合わせます。',
+            choices: ['1km', '10km', '1000km'],
+            correct: 0,
+            explanation: '400mと600mを合わせると1000mです。1000mは1kmです。',
+            explanationRuby:
+                '400mと600mを{合|あ}わせると1000mです。1000mは1kmです。',
+            tags: ['check', 'distance', 'addition'],
+          ),
+        ],
+      ),
+    ],
+  ),
 ];
 
 LessonStep _learn({

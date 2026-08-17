@@ -318,7 +318,8 @@ class _LessonScreenState extends State<LessonScreen> {
                         ],
                         if (question.hasVisual &&
                             (!isIndependent ||
-                                question.diagramType == 'eraser_ruler') &&
+                                question.diagramType == 'eraser_ruler' ||
+                                question.diagramType == 'weight_scale') &&
                             question.diagramType != 'time_line') ...[
                           const SizedBox(height: 24),
                           QuestionVisual(question: question),
@@ -508,6 +509,7 @@ class _LessonScreenState extends State<LessonScreen> {
                 child: Text(
                   actionLabel,
                   style: const TextStyle(
+                    fontFamily: AppFonts.interface,
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
                   ),
@@ -642,6 +644,7 @@ class _LessonScreenState extends State<LessonScreen> {
 
             return _DiagramAnswerCard(
               diagram: diagrams[index],
+              itemKind: _choiceDiagramItemKind(currentQuestion),
               backgroundColor: style.backgroundColor,
               borderColor: style.borderColor,
               textColor: style.textColor,
@@ -702,6 +705,24 @@ class _LessonScreenState extends State<LessonScreen> {
       trailingIcon: trailingIcon,
       trailingColor: trailingColor,
     );
+  }
+
+  String _choiceDiagramItemKind(Question question) {
+    final text = [
+      question.promptSchoolJa,
+      question.promptEasyJa,
+      question.visualHint,
+      question.pictureDescription,
+    ].join(' ');
+    if (text.contains('いちご')) return 'strawberry';
+    if (text.contains('りんご')) return 'apple';
+    if (text.contains('あめ')) return 'candy';
+    if (text.contains('クッキー')) return 'cookie';
+    if (text.contains('シール')) return 'sticker';
+    if (text.contains('カード')) return 'card';
+    if (text.contains('ビー玉')) return 'marble';
+    if (text.contains('えんぴつ')) return 'pencil';
+    return 'sticker';
   }
 }
 
@@ -1118,6 +1139,20 @@ Widget? _buildRichLearnCard(LessonStep step, AppLanguage selectedLanguage) {
         vocabularyItems: kilometerLessonVocabulary,
         vocabularyCardHeight: 214,
       );
+    case 'weight-gram-kg-learn':
+      return _WeightGramKgLearn(selectedLanguage: selectedLanguage);
+    case 'weight-gram-kg-words':
+      return _EqualShareWordsCard(
+        selectedLanguage: selectedLanguage,
+        vocabularyItems: weightGramKgLessonVocabulary,
+      );
+    case 'weight-ton-learn':
+      return _WeightTonLearn(selectedLanguage: selectedLanguage);
+    case 'weight-ton-words':
+      return _EqualShareWordsCard(
+        selectedLanguage: selectedLanguage,
+        vocabularyItems: weightTonLessonVocabulary,
+      );
   }
   return null;
 }
@@ -1217,6 +1252,7 @@ class _TimeMainLearn extends StatefulWidget {
 class _TimeMainLearnState extends State<_TimeMainLearn> {
   int _page = 0;
   bool _showNative = false;
+  bool _showGuideNative = false;
   int _minuteOffset = 0;
 
   static const _lastPage = 1;
@@ -1226,6 +1262,7 @@ class _TimeMainLearnState extends State<_TimeMainLearn> {
     setState(() {
       _page--;
       _minuteOffset = 0;
+      _showGuideNative = false;
     });
   }
 
@@ -1234,6 +1271,7 @@ class _TimeMainLearnState extends State<_TimeMainLearn> {
     setState(() {
       _page++;
       _minuteOffset = 0;
+      _showGuideNative = false;
     });
   }
 
@@ -1342,10 +1380,13 @@ class _TimeMainLearnState extends State<_TimeMainLearn> {
             vocabularyEntries: _timeVocabularyEntries,
           ),
           const SizedBox(height: 12),
-          _SupportedTextLines(
-            lines: [page.guide],
+          _SupportedInstruction(
+            line: page.guide,
             language: widget.selectedLanguage,
-            showNative: _showNative,
+            showNative: _showGuideNative,
+            onToggleNative: () {
+              setState(() => _showGuideNative = !_showGuideNative);
+            },
             vocabularyEntries: _timeVocabularyEntries,
           ),
           const SizedBox(height: 18),
@@ -1363,7 +1404,10 @@ class _TimeMainLearnState extends State<_TimeMainLearn> {
           ),
           if (reached) ...[
             const SizedBox(height: 16),
-            _TimeResultBox(page: page),
+            _TimeResultBox(
+              page: page,
+              selectedLanguage: widget.selectedLanguage,
+            ),
           ],
         ],
       ),
@@ -1483,8 +1527,8 @@ class _ShortTimeLearnState extends State<_ShortTimeLearn> {
           ),
           const SizedBox(height: 20),
           switch (_page) {
-            0 => const _SecondHandPanel(),
-            _ => const _MinuteSecondPanel(),
+            0 => _SecondHandPanel(selectedLanguage: widget.selectedLanguage),
+            _ => _MinuteSecondPanel(selectedLanguage: widget.selectedLanguage),
           },
         ],
       ),
@@ -1506,6 +1550,61 @@ class _ClockScenario {
   });
 }
 
+class _SupportedInstruction extends StatelessWidget {
+  final SupportLine line;
+  final AppLanguage language;
+  final bool showNative;
+  final VoidCallback onToggleNative;
+  final List<VocabularyEntry> vocabularyEntries;
+
+  const _SupportedInstruction({
+    required this.line,
+    required this.language,
+    required this.showNative,
+    required this.onToggleNative,
+    this.vocabularyEntries = const [],
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFBFDBFE)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: _SupportedTextLines(
+              lines: [line],
+              language: language,
+              showNative: showNative,
+              vocabularyEntries: vocabularyEntries,
+            ),
+          ),
+          const SizedBox(width: 10),
+          _IconSupportActions(
+            language: language,
+            showNative: showNative,
+            translateLabel: showNative ? '日本語で見る' : '${language.label}で見る',
+            audioLabel: '操作案内の音声',
+            onToggleNative: onToggleNative,
+            onAudio: () => LearningAudio.speakJapanese(
+              context,
+              label: '操作案内',
+              text: line.japanese,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ClockActivityPanel extends StatelessWidget {
   final _ClockScenario scenario;
   final int offset;
@@ -1523,89 +1622,110 @@ class _ClockActivityPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentTotal = scenario.hour * 60 + scenario.minute + offset;
     final targetReached = offset == scenario.targetOffset;
-
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Column(
-        children: [
-          Wrap(
-            spacing: 20,
-            runSpacing: 16,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            alignment: WrapAlignment.center,
-            children: [
-              _AnalogTimeClock(
-                startTotalMinutes: scenario.hour * 60 + scenario.minute,
-                totalMinutes: currentTotal,
-                progress: scenario.targetOffset == 0
-                    ? 0
-                    : offset.abs() / scenario.targetOffset.abs(),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _formatTime(currentTotal),
-                    style: const TextStyle(
-                      fontFamily: AppFonts.display,
-                      fontSize: 36,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF111827),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '動かした時間：${offset.abs()}分',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF374151),
-                    ),
-                  ),
-                  if (targetReached) ...[
-                    const SizedBox(height: 10),
-                    Text(
-                      scenario.targetOffset < 0
-                          ? '時計を戻せたね。'
-                          : scenario.completionMessage,
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF059669),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ],
+    final clock = _AnalogTimeClock(
+      startTotalMinutes: scenario.hour * 60 + scenario.minute,
+      totalMinutes: currentTotal,
+      progress: scenario.targetOffset == 0
+          ? 0
+          : offset.abs() / scenario.targetOffset.abs(),
+    );
+    final timeSummary = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          _formatTime(currentTotal),
+          style: const TextStyle(
+            fontFamily: AppFonts.display,
+            fontSize: 36,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF111827),
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: locked ? null : () => onChangeOffset(-5),
-                  icon: const Icon(Icons.remove_rounded),
-                  label: const Text('5分もどす'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: FilledButton.icon(
-                  onPressed: locked ? null : () => onChangeOffset(5),
-                  icon: const Icon(Icons.add_rounded),
-                  label: const Text('5分すすめる'),
-                ),
-              ),
-            ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          '動かした時間：${offset.abs()}分',
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF374151),
+          ),
+        ),
+        if (targetReached) ...[
+          const SizedBox(height: 10),
+          Text(
+            scenario.targetOffset < 0 ? '時計を戻せたね。' : scenario.completionMessage,
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF059669),
+            ),
           ),
         ],
-      ),
+      ],
+    );
+    final controls = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        OutlinedButton(
+          onPressed: locked ? null : () => onChangeOffset(-5),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: const Color(0xFF2563EB),
+            side: const BorderSide(color: Color(0xFF93C5FD)),
+            minimumSize: const Size.fromHeight(52),
+          ),
+          child: const Text('-5分'),
+        ),
+        const SizedBox(height: 10),
+        FilledButton(
+          onPressed: locked ? null : () => onChangeOffset(5),
+          style: FilledButton.styleFrom(
+            backgroundColor: const Color(0xFF2563EB),
+            disabledBackgroundColor: const Color(0xFFE5E7EB),
+            minimumSize: const Size.fromHeight(52),
+          ),
+          child: const Text('+5分'),
+        ),
+      ],
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 620) {
+          return Column(
+            children: [
+              clock,
+              const SizedBox(height: 16),
+              timeSummary,
+              const SizedBox(height: 16),
+              SizedBox(width: 240, child: controls),
+            ],
+          );
+        }
+
+        return Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              clock,
+              const SizedBox(width: 28),
+              SizedBox(
+                width: 240,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    timeSummary,
+                    const SizedBox(height: 18),
+                    controls,
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -1731,10 +1851,53 @@ class _AnalogTimeClockPainter extends CustomPainter {
   }
 }
 
-class _TimeResultBox extends StatelessWidget {
+class _TimeResultBox extends StatefulWidget {
   final _TimeLearnPage page;
+  final AppLanguage selectedLanguage;
 
-  const _TimeResultBox({required this.page});
+  const _TimeResultBox({
+    required this.page,
+    required this.selectedLanguage,
+  });
+
+  @override
+  State<_TimeResultBox> createState() => _TimeResultBoxState();
+}
+
+class _TimeResultBoxState extends State<_TimeResultBox> {
+  bool _showNative = false;
+
+  String get _nativeAnswer {
+    final isArrival = widget.page.answer == '午前8時10分';
+    return switch (widget.selectedLanguage) {
+      AppLanguage.portuguese => isArrival
+          ? '8:10 da manhã'
+          : '1 hora e 10 minutos',
+      AppLanguage.tagalog => isArrival
+          ? '8:10 ng umaga'
+          : '1 oras at 10 minuto',
+      AppLanguage.vietnamese => isArrival
+          ? '8 gio 10 phut sang'
+          : '1 gio 10 phut',
+      AppLanguage.japanese => '',
+    };
+  }
+
+  String get _nativeExplanation {
+    final isArrival = widget.page.answer == '午前8時10分';
+    return switch (widget.selectedLanguage) {
+      AppLanguage.portuguese => isArrival
+          ? 'Foram 20 minutos ate as 8:00 e mais 10 minutos ate as 8:10. Por isso, a chegada foi as 8:10 da manha.'
+          : 'Das 3:40 ate as 4:00 sao 20 minutos, e das 4:00 ate as 4:50 sao mais 50 minutos. 20 + 50 = 70 minutos, ou 1 hora e 10 minutos.',
+      AppLanguage.tagalog => isArrival
+          ? '20 minuto hanggang 8:00 at 10 minuto mula 8:00 hanggang 8:10. Kaya dumating nang 8:10 ng umaga.'
+          : '20 minuto mula 3:40 hanggang 4:00 at 50 minuto mula 4:00 hanggang 4:50. Ang 20 + 50 ay 70 minuto, o 1 oras at 10 minuto.',
+      AppLanguage.vietnamese => isArrival
+          ? 'Can 20 phut den 8 gio va 10 phut tu 8 gio den 8 gio 10. Vi vay den truong luc 8 gio 10 sang.'
+          : 'Tu 3 gio 40 den 4 gio la 20 phut, va tu 4 gio den 4 gio 50 la 50 phut. 20 + 50 = 70 phut, hay 1 gio 10 phut.',
+      AppLanguage.japanese => '',
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1748,58 +1911,105 @@ class _TimeResultBox extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '答え',
-            style: TextStyle(
-              color: Color(0xFF047857),
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.check_circle_rounded,
+                color: Color(0xFF059669),
+                size: 30,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  widget.page.answer,
+                  style: const TextStyle(
+                    fontFamily: AppFonts.display,
+                    color: Color(0xFF111827),
+                    fontSize: 34,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              _IconSupportActions(
+                language: widget.selectedLanguage,
+                showNative: _showNative,
+                translateLabel: _showNative
+                    ? '日本語で見る'
+                    : '${widget.selectedLanguage.label}で見る',
+                audioLabel: '答えの説明を聞く',
+                onToggleNative: () {
+                  setState(() => _showNative = !_showNative);
+                },
+                onAudio: () => LearningAudio.speakJapanese(
+                  context,
+                  label: '答えの説明',
+                  text: '${widget.page.answer}。${widget.page.explanation}',
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            page.answer,
-            style: const TextStyle(
-              fontFamily: AppFonts.display,
-              color: Color(0xFF111827),
-              fontSize: 34,
-              fontWeight: FontWeight.w700,
+          if (_showNative && _nativeAnswer.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(left: 40, top: 2),
+              child: Text(
+                _nativeAnswer,
+                style: const TextStyle(
+                  fontFamily: AppFonts.interface,
+                  color: Color(0xFF047857),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
-          ),
           const SizedBox(height: 12),
           Text(
-            page.explanation,
-            style: const TextStyle(
+            widget.page.explanation,
+            style: TextStyle(
               color: Color(0xFF111827),
               fontSize: 17,
               height: 1.55,
               fontWeight: FontWeight.w700,
             ),
           ),
+          if (_showNative && _nativeExplanation.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              _nativeExplanation,
+              style: const TextStyle(
+                fontFamily: AppFonts.interface,
+                color: Color(0xFF047857),
+                fontSize: 15,
+                height: 1.45,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
           const SizedBox(height: 18),
           Wrap(
             spacing: 14,
             runSpacing: 14,
             children: [
-              for (var i = 0; i < page.splitLabels.length; i++)
+              for (var i = 0; i < widget.page.splitLabels.length; i++)
                 _SplitClockCard(
-                  label: page.splitLabels[i],
+                  label: widget.page.splitLabels[i],
                   startTotalMinutes:
-                      page.scenario.hour * 60 +
-                      page.scenario.minute +
-                      page.splitMinutes
+                      widget.page.scenario.hour * 60 +
+                      widget.page.scenario.minute +
+                      widget.page.splitMinutes
                           .take(i)
                           .fold(0, (sum, value) => sum + value),
-                  minutes: page.splitMinutes[i],
+                  minutes: widget.page.splitMinutes[i],
                 ),
             ],
           ),
           const SizedBox(height: 16),
           _TimeRuler(
-            startTotalMinutes: page.scenario.hour * 60 + page.scenario.minute,
-            labels: page.timelineLabels,
-            spans: page.splitLabels,
-            splitMinutes: page.splitMinutes,
+            startTotalMinutes:
+                widget.page.scenario.hour * 60 + widget.page.scenario.minute,
+            labels: widget.page.timelineLabels,
+            spans: widget.page.splitLabels,
+            splitMinutes: widget.page.splitMinutes,
           ),
         ],
       ),
@@ -2159,40 +2369,55 @@ String _formatTime(int totalMinutes) {
 }
 
 class _SecondHandPanel extends StatelessWidget {
-  const _SecondHandPanel();
+  final AppLanguage selectedLanguage;
+
+  const _SecondHandPanel({required this.selectedLanguage});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const Wrap(
-          spacing: 18,
-          runSpacing: 18,
-          alignment: WrapAlignment.center,
-          children: [_SecondClockCard(), _StopwatchSecondCard()],
-        ),
-        const SizedBox(height: 18),
-        const Text(
-          '60秒 = 1分',
-          style: TextStyle(
-            fontFamily: AppFonts.display,
-            color: Color(0xFF2563EB),
-            fontSize: 28,
-            fontWeight: FontWeight.w700,
+    return SizedBox(
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Center(
+            child: Wrap(
+              spacing: 18,
+              runSpacing: 18,
+              alignment: WrapAlignment.center,
+              children: [_SecondClockCard(), _StopwatchSecondCard()],
+            ),
           ),
-        ),
-        const SizedBox(height: 10),
-        const Text(
-          '秒針が1目もり進むと1秒。ストップウォッチの数字が1ふえると1秒です。',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Color(0xFF374151),
-            fontSize: 17,
-            height: 1.45,
-            fontWeight: FontWeight.w700,
+          const SizedBox(height: 18),
+          const Text(
+            '60秒 = 1分',
+            style: TextStyle(
+              fontFamily: AppFonts.display,
+              color: Color(0xFF2563EB),
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        ),
-      ],
+          const SizedBox(height: 12),
+          _InlineExplanationSupport(
+            line: const SupportLine(
+              japanese: '秒針が1目もり進むと1秒。ストップウォッチの数字が1ふえると1秒です。',
+              ruby:
+                  '{秒針|びょうしん}が1{目|め}もり{進|すす}むと1{秒|びょう}。ストップウォッチの{数字|すうじ}が1ふえると1{秒|びょう}です。',
+              native: {
+                AppLanguage.portuguese:
+                    'Quando o ponteiro dos segundos avanca uma marca, passa 1 segundo. Quando o numero do cronometro aumenta 1, passa 1 segundo.',
+                AppLanguage.tagalog:
+                    'Kapag umusad ng isang marka ang segundo na kamay, isang segundo ang lumilipas. Kapag nadagdagan ng 1 ang numero ng stopwatch, isang segundo ang lumilipas.',
+                AppLanguage.vietnamese:
+                    'Kim giay tien mot vach la 1 giay. So tren dong ho bam gio tang them 1 la 1 giay.',
+              },
+            ),
+            language: selectedLanguage,
+            vocabularyEntries: _timeVocabularyEntries,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -2503,7 +2728,9 @@ class _StopwatchSecondCardState extends State<_StopwatchSecondCard> {
 }
 
 class _MinuteSecondPanel extends StatelessWidget {
-  const _MinuteSecondPanel();
+  final AppLanguage selectedLanguage;
+
+  const _MinuteSecondPanel({required this.selectedLanguage});
 
   @override
   Widget build(BuildContext context) {
@@ -2532,14 +2759,81 @@ class _MinuteSecondPanel extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 18),
-          const Text(
-            '1分は60秒。だから、1分20秒は80秒です。',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Color(0xFF111827),
-              fontSize: 18,
-              height: 1.45,
-              fontWeight: FontWeight.w800,
+          _InlineExplanationSupport(
+            line: const SupportLine(
+              japanese: '1分は60秒。だから、1分20秒は80秒です。',
+              ruby:
+                  '1{分|ぷん}は60{秒|びょう}。だから、1{分|ぷん}20{秒|びょう}は80{秒|びょう}です。',
+              native: {
+                AppLanguage.portuguese:
+                    '1 minuto tem 60 segundos. Por isso, 1 minuto e 20 segundos sao 80 segundos.',
+                AppLanguage.tagalog:
+                    'Ang 1 minuto ay 60 segundo. Kaya ang 1 minuto at 20 segundo ay 80 segundo.',
+                AppLanguage.vietnamese:
+                    '1 phut la 60 giay. Vi vay, 1 phut 20 giay la 80 giay.',
+              },
+            ),
+            language: selectedLanguage,
+            vocabularyEntries: _timeVocabularyEntries,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InlineExplanationSupport extends StatefulWidget {
+  final SupportLine line;
+  final AppLanguage language;
+  final List<VocabularyEntry> vocabularyEntries;
+
+  const _InlineExplanationSupport({
+    required this.line,
+    required this.language,
+    this.vocabularyEntries = const [],
+  });
+
+  @override
+  State<_InlineExplanationSupport> createState() =>
+      _InlineExplanationSupportState();
+}
+
+class _InlineExplanationSupportState extends State<_InlineExplanationSupport> {
+  bool _showNative = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: _SupportedTextLines(
+              lines: [widget.line],
+              language: widget.language,
+              showNative: _showNative,
+              vocabularyEntries: widget.vocabularyEntries,
+            ),
+          ),
+          const SizedBox(width: 10),
+          _IconSupportActions(
+            language: widget.language,
+            showNative: _showNative,
+            translateLabel: _showNative
+                ? '日本語で見る'
+                : '${widget.language.label}で見る',
+            audioLabel: '説明の音声',
+            onToggleNative: () => setState(() => _showNative = !_showNative),
+            onAudio: () => LearningAudio.speakJapanese(
+              context,
+              label: '説明',
+              text: widget.line.japanese,
             ),
           ),
         ],
@@ -2675,6 +2969,8 @@ class _LengthMeasureLearnState extends State<_LengthMeasureLearn> {
   Offset _rulerPosition = const Offset(104, 124);
   double _tapeValue = 0;
   bool _showNative = false;
+  bool _showRulerGuideNative = false;
+  bool _showTapeGuideNative = false;
 
   static const _lastPage = 1;
 
@@ -2730,6 +3026,24 @@ class _LengthMeasureLearnState extends State<_LengthMeasureLearn> {
     };
   }
 
+  static const _rulerGuide = SupportLine(
+    japanese: 'ものさしを動かして、0をえんぴつの左のはしに合わせよう。',
+    ruby: 'ものさしを{動|うご}かして、0をえんぴつの{左|ひだり}のはしに{合|あ}わせよう。',
+    native: {
+      AppLanguage.portuguese:
+          'Mova a régua e alinhe o zero com a ponta esquerda do lápis.',
+    },
+  );
+
+  static const _tapeGuide = SupportLine(
+    japanese: 'まきじゃくの先を引っぱって、ろうかのはしまでのばそう。',
+    ruby: 'まきじゃくの{先|さき}を{引|ひ}っぱって、ろうかのはしまでのばそう。',
+    native: {
+      AppLanguage.portuguese:
+          'Puxe a ponta da fita métrica até o fim do corredor.',
+    },
+  );
+
   @override
   Widget build(BuildContext context) {
     return _RemainderLearnShell(
@@ -2758,6 +3072,30 @@ class _LengthMeasureLearnState extends State<_LengthMeasureLearn> {
             showNative: _showNative,
             vocabularyEntries: _lengthVocabularyEntries,
           ),
+          if (_page == 0) ...[
+            const SizedBox(height: 12),
+            _SupportedInstruction(
+              line: _rulerGuide,
+              language: widget.selectedLanguage,
+              showNative: _showRulerGuideNative,
+              onToggleNative: () {
+                setState(() => _showRulerGuideNative = !_showRulerGuideNative);
+              },
+              vocabularyEntries: _lengthVocabularyEntries,
+            ),
+          ],
+          if (_page == 1) ...[
+            const SizedBox(height: 12),
+            _SupportedInstruction(
+              line: _tapeGuide,
+              language: widget.selectedLanguage,
+              showNative: _showTapeGuideNative,
+              onToggleNative: () {
+                setState(() => _showTapeGuideNative = !_showTapeGuideNative);
+              },
+              vocabularyEntries: _lengthVocabularyEntries,
+            ),
+          ],
           const SizedBox(height: 18),
           switch (_page) {
             0 => _InteractiveRulerPanel(
@@ -2855,7 +3193,13 @@ class _InteractiveRulerPanel extends StatelessWidget {
                     top: rulerPosition.dy,
                     child: GestureDetector(
                       onPanUpdate: (details) {
-                        onChanged(clampPosition(rulerPosition + details.delta));
+                        // A small finger movement should move the ruler far enough
+                        // to feel direct on touch screens.
+                        onChanged(
+                          clampPosition(
+                            rulerPosition + details.delta * 1.7,
+                          ),
+                        );
                       },
                       child: _RealisticRuler(
                         width: usableRulerWidth,
@@ -2864,29 +3208,13 @@ class _InteractiveRulerPanel extends StatelessWidget {
                       ),
                     ),
                   ),
-                  if (!isMeasured)
-                    Positioned(
-                      left: 20,
-                      right: 20,
-                      bottom: 12,
-                      child: Text(
-                        'ものさしを動かして、0をえんぴつの左のはしに合わせよう。',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.grey.shade700,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
                 ],
               ),
             ),
-            const SizedBox(height: 12),
-            if (isMeasured)
-              const _PencilMeasuredResult()
-            else
-              const _SoftResultLine(text: 'えんぴつの長さを、ものさしで調べてみよう。'),
+            if (isMeasured) ...[
+              const SizedBox(height: 12),
+              const _PencilMeasuredResult(),
+            ],
           ],
         );
       },
@@ -3135,6 +3463,7 @@ class _PencilMeasuredResult extends StatelessWidget {
       titlePrefix: 'えんぴつの長さは ',
       answer: '8cm',
       titleSuffix: ' です。',
+      portugueseTitle: 'O comprimento do lápis é 8 cm.',
       japaneseLines: [
         '長い目もりは5cmずつ、小さい目もりは1cmずつです。',
         '短いものは、ものさしやまきじゃくを使ってはかれます。',
@@ -3153,6 +3482,7 @@ class _LengthResultBox extends StatefulWidget {
   final String titlePrefix;
   final String answer;
   final String titleSuffix;
+  final String? portugueseTitle;
   final List<String> japaneseLines;
   final List<String> portugueseLines;
   final String audioText;
@@ -3161,6 +3491,7 @@ class _LengthResultBox extends StatefulWidget {
     required this.titlePrefix,
     required this.answer,
     required this.titleSuffix,
+    this.portugueseTitle,
     required this.japaneseLines,
     required this.portugueseLines,
     required this.audioText,
@@ -3196,27 +3527,53 @@ class _LengthResultBoxState extends State<_LengthResultBox> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const Padding(
+                  padding: EdgeInsets.only(top: 14),
+                  child: Icon(
+                    Icons.check_circle_rounded,
+                    color: Color(0xFF16A34A),
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: Text.rich(
-                    TextSpan(
-                      style: const TextStyle(
-                        fontFamily: AppFonts.display,
-                        color: Color(0xFF064E3B),
-                        fontSize: 25,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      children: [
-                        TextSpan(text: widget.titlePrefix),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text.rich(
                         TextSpan(
-                          text: widget.answer,
                           style: const TextStyle(
-                            color: Color(0xFF2563EB),
-                            fontSize: 32,
+                            fontFamily: AppFonts.display,
+                            color: Color(0xFF064E3B),
+                            fontSize: 25,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          children: [
+                            TextSpan(text: widget.titlePrefix),
+                            TextSpan(
+                              text: widget.answer,
+                              style: const TextStyle(
+                                color: Color(0xFF2563EB),
+                                fontSize: 32,
+                              ),
+                            ),
+                            TextSpan(text: widget.titleSuffix),
+                          ],
+                        ),
+                      ),
+                      if (_showNative && widget.portugueseTitle != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          widget.portugueseTitle!,
+                          style: const TextStyle(
+                            color: Color(0xFF475569),
+                            fontSize: 15,
+                            height: 1.4,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
-                        TextSpan(text: widget.titleSuffix),
                       ],
-                    ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -3269,8 +3626,7 @@ class _InteractiveTapeMeasurePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final meters = value.round();
-    final isMeasured = meters >= 6;
+    final isMeasured = value >= 5.85;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -3282,63 +3638,104 @@ class _InteractiveTapeMeasurePanel extends StatelessWidget {
           ),
           child: Column(
             children: [
-              _TapeMeasureBar(meters: meters, maxMeters: 6),
+              _TapeMeasureBar(
+                value: value,
+                maxMeters: 6,
+                onChanged: onChanged,
+              ),
             ],
           ),
         ),
-        Slider(
-          value: value,
-          min: 0,
-          max: 6,
-          divisions: 6,
-          onChanged: onChanged,
-        ),
         if (isMeasured)
-          const _LengthResultBox(
-            titlePrefix: 'ろうかの長さは ',
-            answer: '6m',
-            titleSuffix: ' でした。',
-            japaneseLines: ['長いものをはかるときには、まきじゃくを使います。'],
-            portugueseLines: [
-              'Para medir coisas compridas, usamos uma fita métrica.',
-            ],
-            audioText: 'ろうかの長さは6メートルでした。長いものをはかるときには、まきじゃくを使います。',
-          )
-        else
-          const _SoftResultLine(text: 'まきじゃくを引っぱって、ろうかのはしまで伸ばしてみよう。'),
+          const Padding(
+            padding: EdgeInsets.only(top: 12),
+            child: _LengthResultBox(
+              titlePrefix: 'ろうかの長さは ',
+              answer: '6m',
+              titleSuffix: ' でした。',
+              portugueseTitle: 'O comprimento do corredor é 6 m.',
+              japaneseLines: ['長いものをはかるときには、まきじゃくを使います。'],
+              portugueseLines: [
+                'Para medir coisas compridas, usamos uma fita métrica.',
+              ],
+              audioText: 'ろうかの長さは6メートルでした。長いものをはかるときには、まきじゃくを使います。',
+            ),
+          ),
       ],
     );
   }
 }
 
 class _TapeMeasureBar extends StatelessWidget {
-  final int meters;
+  final double value;
   final int maxMeters;
+  final ValueChanged<double> onChanged;
 
-  const _TapeMeasureBar({required this.meters, required this.maxMeters});
+  const _TapeMeasureBar({
+    required this.value,
+    required this.maxMeters,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 260,
-      width: double.infinity,
-      child: CustomPaint(
-        painter: _HallwayTapeMeasurePainter(
-          meters: meters,
-          maxMeters: maxMeters,
-        ),
-        child: const SizedBox.expand(),
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final tapeStart = 78.0;
+        final tapeEnd = constraints.maxWidth - 34;
+        final tapeWidth = tapeEnd - tapeStart;
+        final progress = (value / maxMeters).clamp(0.0, 1.0);
+        final handleLeft = tapeStart + tapeWidth * progress - 26;
+
+        return SizedBox(
+          height: 260,
+          width: double.infinity,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _HallwayTapeMeasurePainter(
+                    value: value,
+                    maxMeters: maxMeters,
+                  ),
+                ),
+              ),
+              Positioned(
+                left: handleLeft,
+                top: 155,
+                child: Semantics(
+                  label: 'まきじゃくの先を引っぱる',
+                  slider: true,
+                  value: '${value.round()}メートル',
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onPanUpdate: (details) {
+                      // Keep the pull tab responsive on touch screens.
+                      final next = (value +
+                              details.delta.dx / tapeWidth * maxMeters * 4)
+                          .clamp(0.0, maxMeters)
+                          .toDouble();
+                      onChanged(next);
+                    },
+                    child: const SizedBox(width: 52, height: 62),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
 
 class _HallwayTapeMeasurePainter extends CustomPainter {
-  final int meters;
+  final double value;
   final int maxMeters;
 
   const _HallwayTapeMeasurePainter({
-    required this.meters,
+    required this.value,
     required this.maxMeters,
   });
 
@@ -3365,27 +3762,30 @@ class _HallwayTapeMeasurePainter extends CustomPainter {
     final origin = Offset(78, size.height * .74);
     final endX = size.width - 34;
     final tapeWidth = endX - origin.dx;
-    final progress = (meters / maxMeters).clamp(0.0, 1.0);
+    final progress = (value / maxMeters).clamp(0.0, 1.0);
     final tapeEndX = origin.dx + tapeWidth * progress;
+    final wholeMeters = value.floor();
 
     _paintTapeCase(canvas, Offset(20, origin.dy - 34));
 
-    final tapeRect = RRect.fromRectAndRadius(
-      Rect.fromLTRB(origin.dx, origin.dy - 12, tapeEndX, origin.dy + 12),
-      const Radius.circular(3),
-    );
-    canvas.drawRRect(tapeRect, Paint()..color = const Color(0xFFFDE68A));
-    canvas.drawRRect(
-      tapeRect,
-      Paint()
-        ..color = const Color(0xFF111827)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.2,
-    );
+    if (value > 0) {
+      final tapeRect = RRect.fromRectAndRadius(
+        Rect.fromLTRB(origin.dx, origin.dy - 12, tapeEndX, origin.dy + 12),
+        const Radius.circular(3),
+      );
+      canvas.drawRRect(tapeRect, Paint()..color = const Color(0xFFFDE68A));
+      canvas.drawRRect(
+        tapeRect,
+        Paint()
+          ..color = const Color(0xFF111827)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.2,
+      );
+    }
 
-    for (var i = 0; i <= meters; i++) {
+    for (var i = 0; i <= wholeMeters; i++) {
       final x = origin.dx + tapeWidth * i / maxMeters;
-      final isLong = i == 0 || i == meters || i % 2 == 0;
+      final isLong = i == 0 || i == maxMeters || i % 2 == 0;
       canvas.drawLine(
         Offset(x, origin.dy - 12),
         Offset(x, origin.dy + (isLong ? 18 : 10)),
@@ -3403,9 +3803,25 @@ class _HallwayTapeMeasurePainter extends CustomPainter {
       );
     }
 
-    if (meters > 0) {
-      final hook = Rect.fromLTWH(tapeEndX - 2, origin.dy - 20, 4, 40);
-      canvas.drawRect(hook, Paint()..color = const Color(0xFF475569));
+    final pullTab = RRect.fromRectAndRadius(
+      Rect.fromLTWH(tapeEndX - 7, origin.dy - 25, 14, 50),
+      const Radius.circular(5),
+    );
+    canvas.drawRRect(pullTab, Paint()..color = const Color(0xFF475569));
+    canvas.drawRRect(
+      pullTab,
+      Paint()
+        ..color = const Color(0xFF1E293B)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2,
+    );
+    final gripPaint = Paint()
+      ..color = const Color(0xFFE2E8F0)
+      ..strokeWidth = 1.3
+      ..strokeCap = StrokeCap.round;
+    for (var i = -1; i <= 1; i++) {
+      final y = origin.dy + i * 9;
+      canvas.drawLine(Offset(tapeEndX - 3, y), Offset(tapeEndX + 3, y), gripPaint);
     }
 
     _paintText(
@@ -3511,7 +3927,7 @@ class _HallwayTapeMeasurePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _HallwayTapeMeasurePainter oldDelegate) {
-    return meters != oldDelegate.meters || maxMeters != oldDelegate.maxMeters;
+    return value != oldDelegate.value || maxMeters != oldDelegate.maxMeters;
   }
 }
 
@@ -3568,6 +3984,7 @@ class _CurvedTapePanelState extends State<_CurvedTapePanel> {
             titlePrefix: '木のみきのまわりは ',
             answer: '80cm',
             titleSuffix: ' でした。',
+            portugueseTitle: 'A volta do tronco da árvore tem 80 cm.',
             japaneseLines: [
               'まきじゃくは、まるいもののまわりをはかるときに便利です。',
             ],
@@ -4917,10 +5334,9 @@ class _MultiplicationDivisionLearn extends StatefulWidget {
 class _MultiplicationDivisionLearnState
     extends State<_MultiplicationDivisionLearn> {
   int _page = 0;
-  int? _selectedProduct;
   bool _showNative = false;
 
-  static const int _lastPage = 5;
+  static const int _lastPage = 1;
 
   void _speak(String label, String text) {
     LearningAudio.speakJapanese(context, label: label, text: text);
@@ -4930,7 +5346,6 @@ class _MultiplicationDivisionLearnState
     if (_page == 0) return;
     setState(() {
       _page--;
-      _selectedProduct = null;
     });
   }
 
@@ -4938,7 +5353,6 @@ class _MultiplicationDivisionLearnState
     if (_page == _lastPage) return;
     setState(() {
       _page++;
-      _selectedProduct = null;
     });
   }
 
@@ -5042,33 +5456,21 @@ class _MultiplicationDivisionLearnState
   String get _pageTitle {
     return switch (_page) {
       0 => 'かけ算を使って、わり算の答えを見つけよう',
-      1 => 'これまでの分け方',
-      2 => '同じ図をかけ算で見る',
-      3 => '同じ数がつながっているね',
-      4 => '□に入る数を探そう',
-      _ => 'まとめ',
+      _ => '同じ数がつながっているね',
     };
   }
 
   String get _plainJapanese {
     return switch (_page) {
       0 => 'かけ算を使って、わり算の答えを見つけよう。わり算とかけ算には、どんなつながりがあるかな。',
-      1 => 'クッキーが12こあります。3人に同じ数ずつ分けると、1人分は4こです。12わる3は4です。',
-      2 => 'こんどは、分けたあとの図を見てみよう。1人に4こずつあります。4こずつが3人分あるので、3かける4は12です。',
-      3 => '同じ3つの数を使って、わり算とかけ算の式を作ることができます。',
-      4 => '3に何をかけると15になるかな。',
-      _ => 'かけ算を使うと、わり算の答えが見つかるね。',
+      _ => '同じ3つの数を使って、わり算とかけ算の式を作ることができます。',
     };
   }
 
   Widget _buildPage() {
     return switch (_page) {
       0 => _buildAimPage(),
-      1 => _buildDivisionReviewPage(),
-      2 => _buildMultiplicationViewPage(),
-      3 => _buildEquationConnectionPage(),
-      4 => _buildBoxPracticePage(),
-      _ => _buildSummaryPage(),
+      _ => _buildEquationConnectionPage(),
     };
   }
 
@@ -5079,19 +5481,11 @@ class _MultiplicationDivisionLearnState
         _LearnTextBlock(
           lines: const [
             SupportLine(
-              japanese: 'わり算の答えは、かけ算を使って見つけられます。',
-              ruby: 'わり{算|ざん}の{答え|こたえ}は、かけ{算|ざん}を{使|つか}って{見|み}つけられます。',
+              japanese: '12このクッキーを、3人に同じ数ずつ分けてみよう。',
+              ruby: '12このクッキーを、3{人|にん}に{同|おな}じ{数|かず}ずつ{分|わ}けてみよう。',
               native: {
                 AppLanguage.portuguese:
-                    'A resposta da divisão pode ser encontrada usando a multiplicação.',
-              },
-            ),
-            SupportLine(
-              japanese: '同じ図を、わり算とかけ算の2つの式で見てみよう。',
-              ruby: '{同|おな}じ{図|ず}を、わり{算|ざん}とかけ{算|ざん}の2つの{式|しき}で{見て|みて}みよう。',
-              native: {
-                AppLanguage.portuguese:
-                    'Vamos olhar o mesmo desenho com duas contas: divisão e multiplicação.',
+                    'Vamos dividir 12 biscoitos igualmente entre 3 pessoas.',
               },
             ),
           ],
@@ -5099,89 +5493,7 @@ class _MultiplicationDivisionLearnState
           showNative: _showNative,
         ),
         const SizedBox(height: 18),
-        const _CookieShareDiagram(total: 12, groups: 3, each: 4),
-      ],
-    );
-  }
-
-  Widget _buildDivisionReviewPage() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _LearnTextBlock(
-          lines: const [
-            SupportLine(
-              japanese: 'クッキーが12こあります。',
-              ruby: 'クッキーが12こあります。',
-              native: {AppLanguage.portuguese: 'Há 12 biscoitos.'},
-            ),
-            SupportLine(
-              japanese: '3人に同じ数ずつ分けると、1人分は何こになるかな？',
-              ruby:
-                  '3{人|にん}に{同|おな}じ{数|かず}ずつ{分|わ}けると、{1人|ひとり}{分|ぶん}は{何こ|なんこ}になるかな？',
-              native: {
-                AppLanguage.portuguese:
-                    'Se dividirmos igualmente entre 3 pessoas, quantos biscoitos cada pessoa recebe?',
-              },
-            ),
-          ],
-          language: widget.selectedLanguage,
-          showNative: _showNative,
-        ),
-        const SizedBox(height: 18),
-        const _CookieShareDiagram(total: 12, groups: 3, each: 4),
-        const SizedBox(height: 18),
-        const _LargeEquation(
-          parts: [
-            _EquationPart('12', Color(0xFF2563EB), 'ぜんぶの数'),
-            _EquationPart('÷', Color(0xFF111827), ''),
-            _EquationPart('3', Color(0xFFF97316), '人数'),
-            _EquationPart('=', Color(0xFF111827), ''),
-            _EquationPart('4', Color(0xFF059669), '1人分'),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMultiplicationViewPage() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _LearnTextBlock(
-          lines: const [
-            SupportLine(
-              japanese: 'こんどは、分けたあとの図を見てみよう。',
-              ruby: 'こんどは、{分|わ}けたあとの{図|ず}を{見|み}てみよう。',
-              native: {
-                AppLanguage.portuguese:
-                    'Agora vamos olhar o desenho depois de dividir.',
-              },
-            ),
-            SupportLine(
-              japanese: '4こずつが3人分あるので、ぜんぶで12こです。',
-              ruby: '4こずつが3{人|にん}{分|ぶん}あるので、{全部|ぜんぶ}で12こです。',
-              native: {
-                AppLanguage.portuguese:
-                    'Há 3 grupos de 4, então são 12 biscoitos no total.',
-              },
-            ),
-          ],
-          language: widget.selectedLanguage,
-          showNative: _showNative,
-        ),
-        const SizedBox(height: 18),
-        const _CookieShareDiagram(total: 12, groups: 3, each: 4),
-        const SizedBox(height: 18),
-        const _LargeEquation(
-          parts: [
-            _EquationPart('3', Color(0xFFF97316), '人数'),
-            _EquationPart('×', Color(0xFF111827), ''),
-            _EquationPart('4', Color(0xFF059669), '1人分'),
-            _EquationPart('=', Color(0xFF111827), ''),
-            _EquationPart('12', Color(0xFF2563EB), 'ぜんぶの数'),
-          ],
-        ),
+        _InteractiveCookieShare(language: widget.selectedLanguage),
       ],
     );
   }
@@ -5214,93 +5526,11 @@ class _MultiplicationDivisionLearnState
           showNative: _showNative,
         ),
         const SizedBox(height: 18),
-        const _EquationPairPanel(),
+        _EquationPairPanel(language: widget.selectedLanguage),
       ],
     );
   }
 
-  Widget _buildBoxPracticePage() {
-    final choices = const [
-      ('3 × 3 = 9', false),
-      ('3 × 4 = 12', false),
-      ('3 × 5 = 15', true),
-      ('3 × 6 = 18', false),
-    ];
-    final isCorrect = _selectedProduct == 2;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _LearnTextBlock(
-          lines: const [
-            SupportLine(
-              japanese: '3に何をかけると、15になるかな？',
-              ruby: '3に{何|なに}をかけると、15になるかな？',
-              native: {
-                AppLanguage.portuguese: 'Que número multiplicado por 3 dá 15?',
-              },
-            ),
-          ],
-          language: widget.selectedLanguage,
-          showNative: _showNative,
-        ),
-        const SizedBox(height: 18),
-        _BoxEquationPair(answer: isCorrect ? '5' : '□'),
-        const SizedBox(height: 18),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            for (var i = 0; i < choices.length; i++)
-              _MultiplicationChoiceCard(
-                label: choices[i].$1,
-                selected: _selectedProduct == i,
-                correct: _selectedProduct == i && choices[i].$2,
-                onTap: () {
-                  setState(() {
-                    _selectedProduct = i;
-                  });
-                },
-              ),
-          ],
-        ),
-        if (_selectedProduct != null) ...[
-          const SizedBox(height: 16),
-          _ResultMessage(
-            success: isCorrect,
-            text: isCorrect
-                ? '3 × 5 = 15だから、15 ÷ 3 = 5です。'
-                : '15になるかけ算を探してみよう。',
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildSummaryPage() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const _EquationPairPanel(),
-        const SizedBox(height: 18),
-        _LearnTextBlock(
-          lines: const [
-            SupportLine(
-              japanese: 'わられる数になるかけ算を探すと、わり算の答えが分かります。',
-              ruby:
-                  'わられる{数|かず}になるかけ{算|ざん}を{探|さが}すと、わり{算|ざん}の{答え|こたえ}が{分|わ}かります。',
-              native: {
-                AppLanguage.portuguese:
-                    'Procure a multiplicação que dá o número dividido; assim você encontra a resposta da divisão.',
-              },
-            ),
-          ],
-          language: widget.selectedLanguage,
-          showNative: _showNative,
-        ),
-      ],
-    );
-  }
 }
 
 class _RemainderDivisionLearn extends StatefulWidget {
@@ -5317,7 +5547,7 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
   int _page = 0;
   bool _showNative = false;
 
-  static const _lastPage = 4;
+  static const _lastPage = 3;
 
   void _previous() {
     if (_page == 0) return;
@@ -5359,8 +5589,7 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
       0 => 'あまりのあるわり算',
       1 => '式で書いてみよう',
       2 => '九九でもたしかめられるね',
-      3 => 'あまりは、わる数より小さい',
-      _ => 'まとめ',
+      _ => 'あまりは、わる数より小さい',
     };
   }
 
@@ -5382,41 +5611,11 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
           },
         ),
       ],
-      1 => const [
-        SupportLine(
-          japanese: 'このことを、7 ÷ 3 = 2 あまり 1 と書きます。',
-          ruby: 'このことを、7 ÷ 3 = 2 あまり 1 と{書|か}きます。',
-          native: {
-            AppLanguage.portuguese: 'Escrevemos assim: 7 ÷ 3 = 2, resto 1.',
-          },
-        ),
-        SupportLine(
-          japanese: '「2」は1人分、「1」はあまりです。',
-          ruby: '「2」は{1人|ひとり}{分|ぶん}、「1」はあまりです。',
-          native: {
-            AppLanguage.portuguese:
-                'O 2 é a quantidade para cada pessoa. O 1 é o resto.',
-          },
-        ),
-      ],
-      2 => const [
-        SupportLine(
-          japanese: '3人に2こずつあるので、3 × 2 = 6 です。',
-          ruby: '3{人|にん}に2こずつあるので、3 × 2 = 6 です。',
-          native: {
-            AppLanguage.portuguese:
-                'Como há 2 para cada uma das 3 pessoas, 3 × 2 = 6.',
-          },
-        ),
-        SupportLine(
-          japanese: '6こ使って、1こ残るので、3 × 2 + 1 = 7 です。',
-          ruby: '6こ{使|つか}って、1こ{残|のこ}るので、3 × 2 + 1 = 7 です。',
-          native: {
-            AppLanguage.portuguese: 'Usamos 6 e sobra 1, então 3 × 2 + 1 = 7.',
-          },
-        ),
-      ],
-      3 => const [
+      // 図から数を選ぶ前に答えを見せない。
+      1 => const [],
+      // 九九を選ぶ前に、答えとなる段やあまりを見せない。
+      2 => const [],
+      _ => const [
         SupportLine(
           japanese: '3人で分けると、あまりは0、1、2のどれかです。',
           ruby: '3{人|にん}で{分|わ}けると、あまりは0、1、2のどれかです。',
@@ -5431,23 +5630,6 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
           native: {
             AppLanguage.portuguese:
                 'Se sobrassem 3, daria para formar mais uma parte.',
-          },
-        ),
-      ],
-      _ => const [
-        SupportLine(
-          japanese: 'あまりのあるわり算は、九九を使って考えられます。',
-          ruby: 'あまりのあるわり{算|ざん}は、九九を{使|つか}って{考|かんが}えられます。',
-          native: {
-            AppLanguage.portuguese:
-                'A divisão com resto pode ser pensada usando a tabuada.',
-          },
-        ),
-        SupportLine(
-          japanese: 'あまりは、いつもわる数より小さくなります。',
-          ruby: 'あまりは、いつもわる{数|かず}より{小|ちい}さくなります。',
-          native: {
-            AppLanguage.portuguese: 'O resto é sempre menor que o divisor.',
           },
         ),
       ],
@@ -5466,17 +5648,10 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
         ),
         const SizedBox(height: 18),
         switch (_page) {
-          0 => const _RemainderShareDiagram(
-            total: 7,
-            groups: 3,
-            each: 2,
-            remainder: 1,
-            itemEmoji: '🍓',
-          ),
-          1 => const _RemainderEquationPanel(),
-          2 => const _RemainderMultiplicationPanel(),
-          3 => const _RemainderGrowthPanel(),
-          _ => const _RemainderSummaryPanel(),
+          0 => _InteractiveRemainderShare(language: widget.selectedLanguage),
+          1 => _RemainderEquationBuilder(language: widget.selectedLanguage),
+          2 => _RemainderTimesTableFinder(language: widget.selectedLanguage),
+          _ => _RemainderGrowthExplorer(language: widget.selectedLanguage),
         },
       ],
     );
@@ -5496,7 +5671,7 @@ class _RemainderContextLearnState extends State<_RemainderContextLearn> {
   int _page = 0;
   bool _showNative = false;
 
-  static const _lastPage = 3;
+  static const _lastPage = 2;
 
   void _previous() {
     if (_page == 0) return;
@@ -5536,8 +5711,7 @@ class _RemainderContextLearnState extends State<_RemainderContextLearn> {
   String get _pageTitle {
     return switch (_page) {
       0 => 'あまりが出たら、場面を見よう',
-      1 => '9人なら、長いすは何台？',
-      2 => 'もう1台いるね',
+      1 => 'もう1台いるね',
       _ => 'まとめ',
     };
   }
@@ -5561,32 +5735,12 @@ class _RemainderContextLearnState extends State<_RemainderContextLearn> {
       ],
       1 => const [
         SupportLine(
-          japanese: '9 ÷ 4 = 2 あまり 1 です。',
-          ruby: '9 ÷ 4 = 2 あまり 1 です。',
-          native: {AppLanguage.portuguese: '9 ÷ 4 = 2, resto 1.'},
-        ),
-        SupportLine(
-          japanese: '2台では8人までなので、1人がすわれません。',
-          ruby: '2{台|だい}では8{人|にん}までなので、1{人|ひとり}がすわれません。',
-          native: {
-            AppLanguage.portuguese:
-                'Com 2 bancos cabem 8 pessoas, então 1 pessoa fica sem sentar.',
-          },
-        ),
-      ],
-      2 => const [
-        SupportLine(
           japanese: 'あまった1人もすわるので、もう1台いります。',
           ruby: 'あまった1{人|ひとり}もすわるので、もう1{台|だい}いります。',
           native: {
             AppLanguage.portuguese:
                 'A pessoa que sobrou também precisa se sentar, então precisamos de mais 1 banco.',
           },
-        ),
-        SupportLine(
-          japanese: '答えは3台です。',
-          ruby: '{答え|こたえ}は3{台|だい}です。',
-          native: {AppLanguage.portuguese: 'A resposta é 3 bancos.'},
         ),
       ],
       _ => const [
@@ -5622,15 +5776,2265 @@ class _RemainderContextLearnState extends State<_RemainderContextLearn> {
         ),
         const SizedBox(height: 18),
         switch (_page) {
-          0 => const _BenchRemainderDiagram(benchCount: 2, showWaiting: true),
-          1 => const _BenchRemainderDiagram(benchCount: 2, showWaiting: true),
-          2 => const _BenchRemainderDiagram(benchCount: 3, showWaiting: false),
-          _ => const _RemainderContextSummaryPanel(),
+          0 => _BenchRemainderDiagram(
+            benchCount: 2,
+            showWaiting: true,
+            selectedLanguage: widget.selectedLanguage,
+          ),
+          1 => _BenchRemainderDiagram(
+            benchCount: 3,
+            showWaiting: false,
+            selectedLanguage: widget.selectedLanguage,
+          ),
+          _ => _RemainderContextSummaryPanel(
+            selectedLanguage: widget.selectedLanguage,
+          ),
         },
       ],
     );
   }
 }
+
+class _WeightGramKgLearn extends StatefulWidget {
+  final AppLanguage selectedLanguage;
+
+  const _WeightGramKgLearn({required this.selectedLanguage});
+
+  @override
+  State<_WeightGramKgLearn> createState() => _WeightGramKgLearnState();
+}
+
+class _WeightGramKgLearnState extends State<_WeightGramKgLearn> {
+  int _page = 0;
+  bool _showNative = false;
+  bool _showComparisonInstructionNative = false;
+  bool _showComparisonResultNative = false;
+  bool _showScaleInstructionNative = false;
+  bool _showScaleResultNative = false;
+  bool _showThousandInstructionNative = false;
+  bool _showThousandResultNative = false;
+  bool _appleOnBalance = false;
+  bool _pencilOnBalance = false;
+  bool _appleOnScale = false;
+  int _weightCount = 0;
+
+  static const _lastPage = 3;
+
+  List<SupportLine> get _pageLines {
+    return switch (_page) {
+      0 => const [
+        SupportLine(
+          japanese: 'りんごとえんぴつ、どちらが重いかな。',
+          ruby: 'りんごとえんぴつ、どちらが{重|おも}いかな。',
+          native: {
+            AppLanguage.portuguese:
+                'A maçã e o lápis: qual você acha que é mais pesado?',
+          },
+        ),
+      ],
+      1 => const [
+        SupportLine(
+          japanese: 'りんごの重さをはかってみよう。',
+          ruby: 'りんごの{重|おも}さをはかってみよう。',
+          native: {
+            AppLanguage.portuguese: 'Vamos medir o peso da maçã.',
+          },
+        ),
+      ],
+      2 => const [
+        SupportLine(
+          japanese: '100gのおもりを10こ使うと、何gになるかな。',
+          ruby: '100gのおもりを10こ{使|つか}うと、{何|なん}gになるかな。',
+          native: {
+            AppLanguage.portuguese:
+                'Se usarmos 10 pesos de 100 g, quantos gramas teremos?',
+            AppLanguage.tagalog:
+                'Kung gagamit tayo ng 10 pabigat na 100 g, ilang g ito?',
+            AppLanguage.vietnamese:
+                'Nếu dùng 10 quả cân 100 g thì được bao nhiêu g?',
+          },
+        ),
+      ],
+      _ => const [
+        SupportLine(
+          japanese: '少し重いものは、kgとgを合わせて表すことがあります。',
+          ruby:
+              '{少|すこ}し{重|おも}いものは、kgとgを{合|あ}わせて{表|あらわ}すことがあります。',
+          native: {
+            AppLanguage.portuguese:
+                'Para coisas um pouco pesadas, podemos usar kg e g juntos.',
+          },
+        ),
+      ],
+    };
+  }
+
+  void _speak() {
+    LearningAudio.speakJapanese(
+      context,
+      label: '重さ',
+      text: _pageLines.map((line) => line.japanese).join(' '),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _RemainderLearnShell(
+      icon: Icons.monitor_weight_rounded,
+      title: '重さをはかってみよう',
+      selectedLanguage: widget.selectedLanguage,
+      showNative: _showNative,
+      onToggleNative: () => setState(() => _showNative = !_showNative),
+      onAudio: _speak,
+      page: _page,
+      lastPage: _lastPage,
+      onPrevious: () => setState(() => _page = math.max(0, _page - 1)),
+      onNext: () => setState(() => _page = math.min(_lastPage, _page + 1)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _SupportedTextLines(
+            lines: _pageLines,
+            language: widget.selectedLanguage,
+            showNative: _showNative,
+            vocabularyEntries: _weightVocabularyEntries,
+          ),
+          const SizedBox(height: 18),
+          switch (_page) {
+            0 => _WeightComparePanel(
+              selectedLanguage: widget.selectedLanguage,
+              appleOnBalance: _appleOnBalance,
+              pencilOnBalance: _pencilOnBalance,
+              showInstructionNative: _showComparisonInstructionNative,
+              onToggleInstructionNative: () => setState(
+                () => _showComparisonInstructionNative =
+                    !_showComparisonInstructionNative,
+              ),
+              showResultNative: _showComparisonResultNative,
+              onToggleResultNative: () => setState(
+                () => _showComparisonResultNative = !_showComparisonResultNative,
+              ),
+              onPlaceApple: () => setState(() => _appleOnBalance = true),
+              onPlacePencil: () => setState(() => _pencilOnBalance = true),
+              onReset: () => setState(() {
+                _appleOnBalance = false;
+                _pencilOnBalance = false;
+              }),
+            ),
+            1 => _WeightScaleDragPanel(
+              selectedLanguage: widget.selectedLanguage,
+              appleOnScale: _appleOnScale,
+              showInstructionNative: _showScaleInstructionNative,
+              onToggleInstructionNative: () => setState(
+                () => _showScaleInstructionNative = !_showScaleInstructionNative,
+              ),
+              showResultNative: _showScaleResultNative,
+              onToggleResultNative: () => setState(
+                () => _showScaleResultNative = !_showScaleResultNative,
+              ),
+              onAccept: () => setState(() => _appleOnScale = true),
+              onReset: () => setState(() => _appleOnScale = false),
+            ),
+            2 => _WeightThousandPanel(
+              selectedLanguage: widget.selectedLanguage,
+              count: _weightCount,
+              showInstructionNative: _showThousandInstructionNative,
+              onToggleInstructionNative: () => setState(
+                () => _showThousandInstructionNative =
+                    !_showThousandInstructionNative,
+              ),
+              showResultNative: _showThousandResultNative,
+              onToggleResultNative: () => setState(
+                () => _showThousandResultNative = !_showThousandResultNative,
+              ),
+              onAdd: () => setState(() {
+                if (_weightCount < 10) _weightCount++;
+              }),
+              onReset: () => setState(() => _weightCount = 0),
+            ),
+            _ => const _WeightKgGramPanel(),
+          },
+        ],
+      ),
+    );
+  }
+}
+
+enum _WeightObjectKind { apple, pencil }
+
+class _WeightComparePanel extends StatelessWidget {
+  final AppLanguage selectedLanguage;
+  final bool appleOnBalance;
+  final bool pencilOnBalance;
+  final bool showInstructionNative;
+  final VoidCallback onToggleInstructionNative;
+  final bool showResultNative;
+  final VoidCallback onToggleResultNative;
+  final VoidCallback onPlaceApple;
+  final VoidCallback onPlacePencil;
+  final VoidCallback onReset;
+
+  const _WeightComparePanel({
+    required this.selectedLanguage,
+    required this.appleOnBalance,
+    required this.pencilOnBalance,
+    required this.showInstructionNative,
+    required this.onToggleInstructionNative,
+    required this.showResultNative,
+    required this.onToggleResultNative,
+    required this.onPlaceApple,
+    required this.onPlacePencil,
+    required this.onReset,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final compared = appleOnBalance && pencilOnBalance;
+    return Column(
+      children: [
+        _SupportedInstruction(
+          line: const SupportLine(
+            japanese: 'りんごとえんぴつを天びんにのせてみよう。',
+            ruby: 'りんごとえんぴつを{天びん|てんびん}にのせてみよう。',
+            native: {
+              AppLanguage.portuguese:
+                  'Vamos colocar a maçã e o lápis na balança de dois pratos.',
+              AppLanguage.tagalog:
+                  'Ilagay natin ang mansanas at lapis sa timbangan.',
+              AppLanguage.vietnamese:
+                  'Hãy đặt quả táo và bút chì lên cân đĩa.',
+            },
+          ),
+          language: selectedLanguage,
+          showNative: showInstructionNative,
+          onToggleNative: onToggleInstructionNative,
+          vocabularyEntries: _weightVocabularyEntries,
+        ),
+        const SizedBox(height: 14),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth >= 620;
+            final cards = [
+              _WeightObjectButton(
+                label: 'りんご',
+                kind: _WeightObjectKind.apple,
+                selected: appleOnBalance,
+                onTap: onPlaceApple,
+              ),
+              _WeightObjectButton(
+                label: 'えんぴつ',
+                kind: _WeightObjectKind.pencil,
+                selected: pencilOnBalance,
+                onTap: onPlacePencil,
+              ),
+            ];
+            if (!isWide) {
+              return Column(
+                children: [
+                  cards[0],
+                  const SizedBox(height: 12),
+                  cards[1],
+                ],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(child: cards[0]),
+                const SizedBox(width: 14),
+                Expanded(child: cards[1]),
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: 18),
+        DragTarget<_WeightObjectKind>(
+          onAcceptWithDetails: (details) {
+            if (details.data == _WeightObjectKind.apple) {
+              onPlaceApple();
+            } else {
+              onPlacePencil();
+            }
+          },
+          builder: (context, candidates, _) {
+            final isHovering = candidates.isNotEmpty;
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 160),
+              height: 210,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: isHovering
+                    ? const Color(0xFFF8FAFC)
+                    : const Color(0xFFFFFFFF),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: CustomPaint(
+                painter: _BalancePainter(
+                  appleOnBalance: appleOnBalance,
+                  pencilOnBalance: pencilOnBalance,
+                ),
+              ),
+            );
+          },
+        ),
+        if (compared) ...[
+          const SizedBox(height: 12),
+          _WeightSupportedResultBox(
+            title: 'りんごの方が重い',
+            nativeTitle: const {
+              AppLanguage.portuguese: 'A maçã é mais pesada.',
+              AppLanguage.tagalog: 'Mas mabigat ang mansanas.',
+              AppLanguage.vietnamese: 'Quả táo nặng hơn.',
+            },
+            explanation: const SupportLine(
+              japanese:
+                  '天びんを見ると、りんごの方がえんぴつよりも下がっています。下がった方が重いので、りんごの方が重いと分かります。ものには重さがあります。',
+              ruby:
+                  '{天びん|てんびん}を{見|み}ると、りんごの{方|ほう}がえんぴつよりも{下|さ}がっています。{下|さ}がった{方|ほう}が{重|おも}いので、りんごの{方|ほう}が{重|おも}いと{分|わ}かります。ものには{重|おも}さがあります。',
+              native: {
+                AppLanguage.portuguese:
+                    'Na balança, o lado da maçã ficou mais baixo. O lado que desce é o mais pesado. Por isso, a maçã é mais pesada que o lápis. Os objetos têm peso.',
+                AppLanguage.tagalog:
+                    'Sa timbangan, mas mababa ang panig ng mansanas. Mas mabigat ang panig na bumababa. Kaya mas mabigat ang mansanas kaysa lapis. May bigat ang mga bagay.',
+                AppLanguage.vietnamese:
+                    'Trên cân đĩa, phía quả táo thấp hơn. Bên hạ xuống là bên nặng hơn. Vì vậy quả táo nặng hơn bút chì. Mọi vật đều có khối lượng.',
+              },
+            ),
+            selectedLanguage: selectedLanguage,
+            showNative: showResultNative,
+            onToggleNative: onToggleResultNative,
+            vocabularyEntries: _weightVocabularyEntries,
+            audioLabel: '重さの説明を聞く',
+          ),
+        ],
+        const SizedBox(height: 10),
+        OutlinedButton.icon(
+          onPressed: onReset,
+          icon: const Icon(Icons.refresh_rounded),
+          label: const Text('もう一度'),
+        ),
+      ],
+    );
+  }
+}
+
+class _WeightObjectButton extends StatelessWidget {
+  final String label;
+  final _WeightObjectKind kind;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _WeightObjectButton({
+    required this.label,
+    required this.kind,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final objectVisual = _WeightObjectVisual(kind: kind, size: 58);
+    final draggableObject = selected
+        ? objectVisual
+        : Draggable<_WeightObjectKind>(
+            data: kind,
+            dragAnchorStrategy: childDragAnchorStrategy,
+            feedback: Material(
+              color: Colors.transparent,
+              child: _WeightObjectVisual(kind: kind, size: 58),
+            ),
+            childWhenDragging: Opacity(opacity: 0.35, child: objectVisual),
+            child: objectVisual,
+          );
+    final content = InkWell(
+      onTap: selected ? null : onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Opacity(
+        opacity: selected ? 0.45 : 1,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 118),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              draggableObject,
+              const SizedBox(width: 16),
+              Text(
+                selected ? '$labelをのせました' : label,
+                style: const TextStyle(
+                  fontFamily: AppFonts.display,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    return content;
+  }
+}
+
+class _WeightObjectVisual extends StatelessWidget {
+  final _WeightObjectKind kind;
+  final double size;
+
+  const _WeightObjectVisual({
+    required this.kind,
+    this.size = 48,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox.square(
+      dimension: size,
+      child: CustomPaint(painter: _WeightObjectPainter(kind: kind)),
+    );
+  }
+}
+
+class _WeightObjectPainter extends CustomPainter {
+  final _WeightObjectKind kind;
+
+  const _WeightObjectPainter({required this.kind});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    switch (kind) {
+      case _WeightObjectKind.apple:
+        _drawApple(canvas, size);
+      case _WeightObjectKind.pencil:
+        _drawPencil(canvas, size);
+    }
+  }
+
+  void _drawApple(Canvas canvas, Size size) {
+    final s = size.shortestSide;
+    final center = Offset(size.width * 0.5, size.height * 0.58);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: center.translate(0, s * 0.05),
+        width: s * 0.72,
+        height: s * 0.24,
+      ),
+      Paint()
+        ..color = const Color(0x240F172A)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.8),
+    );
+
+    final body = Path()
+      ..moveTo(size.width * 0.5, size.height * 0.26)
+      ..cubicTo(
+        size.width * 0.42,
+        size.height * 0.21,
+        size.width * 0.32,
+        size.height * 0.2,
+        size.width * 0.24,
+        size.height * 0.3,
+      )
+      ..cubicTo(
+        size.width * 0.08,
+        size.height * 0.49,
+        size.width * 0.18,
+        size.height * 0.84,
+        size.width * 0.43,
+        size.height * 0.89,
+      )
+      ..cubicTo(
+        size.width * 0.48,
+        size.height * 0.9,
+        size.width * 0.52,
+        size.height * 0.9,
+        size.width * 0.57,
+        size.height * 0.89,
+      )
+      ..cubicTo(
+        size.width * 0.82,
+        size.height * 0.84,
+        size.width * 0.92,
+        size.height * 0.49,
+        size.width * 0.76,
+        size.height * 0.3,
+      )
+      ..cubicTo(
+        size.width * 0.68,
+        size.height * 0.2,
+        size.width * 0.58,
+        size.height * 0.21,
+        size.width * 0.5,
+        size.height * 0.26,
+      )
+      ..close();
+    canvas.drawPath(
+      body,
+      Paint()
+        ..shader = RadialGradient(
+          center: const Alignment(-0.32, -0.28),
+          radius: 0.95,
+          colors: const [
+            Color(0xFFFF8A65),
+            Color(0xFFE9432F),
+            Color(0xFFB42318),
+          ],
+          stops: [0, 0.64, 1],
+        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height)),
+    );
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * 0.5, size.height * 0.27),
+        width: s * 0.22,
+        height: s * 0.1,
+      ),
+      Paint()..color = const Color(0x220F172A),
+    );
+    canvas.drawPath(
+      body,
+      Paint()
+        ..color = const Color(0x66FFFFFF)
+        ..strokeWidth = 1
+        ..style = PaintingStyle.stroke,
+    );
+    final stem = Paint()
+      ..color = const Color(0xFF854D0E)
+      ..strokeWidth = s * 0.07
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(
+      Offset(size.width * 0.51, size.height * 0.25),
+      Offset(size.width * 0.58, size.height * 0.08),
+      stem,
+    );
+    final leaf = Path()
+      ..moveTo(size.width * 0.58, size.height * 0.16)
+      ..cubicTo(
+        size.width * 0.7,
+        size.height * 0.02,
+        size.width * 0.84,
+        size.height * 0.12,
+        size.width * 0.72,
+        size.height * 0.25,
+      )
+      ..cubicTo(
+        size.width * 0.65,
+        size.height * 0.27,
+        size.width * 0.6,
+        size.height * 0.22,
+        size.width * 0.58,
+        size.height * 0.16,
+      );
+    canvas.drawPath(leaf, Paint()..color = const Color(0xFF15803D));
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * 0.35, size.height * 0.44),
+        width: s * 0.12,
+        height: s * 0.2,
+      ),
+      Paint()..color = Colors.white.withValues(alpha: 0.4),
+    );
+  }
+
+  void _drawPencil(Canvas canvas, Size size) {
+    final s = size.shortestSide;
+    canvas.save();
+    canvas.translate(size.width * 0.5, size.height * 0.5);
+    canvas.rotate(-0.45);
+    final rect = Rect.fromCenter(
+      center: Offset.zero,
+      width: s * 0.85,
+      height: s * 0.22,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect, Radius.circular(s * 0.04)),
+      Paint()..color = const Color(0xFFFBBF24),
+    );
+    canvas.drawRect(
+      Rect.fromLTWH(rect.left, rect.top, s * 0.16, rect.height),
+      Paint()..color = const Color(0xFFFCA5A5),
+    );
+    final tipPath = Path()
+      ..moveTo(rect.right, rect.top)
+      ..lineTo(rect.right + s * 0.18, 0)
+      ..lineTo(rect.right, rect.bottom)
+      ..close();
+    canvas.drawPath(tipPath, Paint()..color = const Color(0xFFFDE68A));
+    final leadPath = Path()
+      ..moveTo(rect.right + s * 0.18, 0)
+      ..lineTo(rect.right + s * 0.08, -s * 0.05)
+      ..lineTo(rect.right + s * 0.08, s * 0.05)
+      ..close();
+    canvas.drawPath(leadPath, Paint()..color = const Color(0xFF111827));
+    final linePaint = Paint()
+      ..color = const Color(0xFFB45309)
+      ..strokeWidth = s * 0.025;
+    canvas.drawLine(
+      Offset(rect.left + s * 0.2, rect.top),
+      Offset(rect.left + s * 0.2, rect.bottom),
+      linePaint,
+    );
+    canvas.drawLine(
+      Offset(rect.left + s * 0.28, rect.top),
+      Offset(rect.left + s * 0.28, rect.bottom),
+      linePaint,
+    );
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _WeightObjectPainter oldDelegate) {
+    return kind != oldDelegate.kind;
+  }
+}
+
+class _WeightScaleDragPanel extends StatelessWidget {
+  final AppLanguage selectedLanguage;
+  final bool appleOnScale;
+  final bool showInstructionNative;
+  final VoidCallback onToggleInstructionNative;
+  final bool showResultNative;
+  final VoidCallback onToggleResultNative;
+  final VoidCallback onAccept;
+  final VoidCallback onReset;
+
+  const _WeightScaleDragPanel({
+    required this.selectedLanguage,
+    required this.appleOnScale,
+    required this.showInstructionNative,
+    required this.onToggleInstructionNative,
+    required this.showResultNative,
+    required this.onToggleResultNative,
+    required this.onAccept,
+    required this.onReset,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _SupportedInstruction(
+          line: const SupportLine(
+            japanese: 'りんごをはかりの上にのせてみよう。',
+            ruby: 'りんごをはかりの{上|うえ}にのせてみよう。',
+            native: {
+              AppLanguage.portuguese: 'Vamos colocar a maçã em cima da balança.',
+              AppLanguage.tagalog: 'Ilagay natin ang mansanas sa ibabaw ng timbangan.',
+              AppLanguage.vietnamese: 'Hãy đặt quả táo lên trên cái cân.',
+            },
+          ),
+          language: selectedLanguage,
+          showNative: showInstructionNative,
+          onToggleNative: onToggleInstructionNative,
+          vocabularyEntries: _weightVocabularyEntries,
+        ),
+        const SizedBox(height: 14),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth >= 640;
+            final apple = appleOnScale
+                ? const SizedBox(height: 96)
+                : Draggable<String>(
+                    data: 'apple',
+                    feedback: const Material(
+                      color: Colors.transparent,
+                      child: _WeightObjectVisual(
+                        kind: _WeightObjectKind.apple,
+                        size: 64,
+                      ),
+                    ),
+                    childWhenDragging: const Opacity(
+                      opacity: 0.25,
+                      child: _WeightObjectVisual(
+                        kind: _WeightObjectKind.apple,
+                        size: 58,
+                      ),
+                    ),
+                    child: const _WeightObjectVisual(
+                      kind: _WeightObjectKind.apple,
+                      size: 58,
+                    ),
+                  );
+            final scale = DragTarget<String>(
+              onAcceptWithDetails: (_) => onAccept(),
+              builder: (context, _, __) => _AnalogScale(
+                grams: appleOnScale ? 300 : 0,
+                child: appleOnScale
+                    ? const _WeightObjectVisual(
+                        kind: _WeightObjectKind.apple,
+                        size: 48,
+                      )
+                    : const Text('ここに乗せる', style: TextStyle(fontSize: 15)),
+              ),
+            );
+            if (!isWide) {
+              return Column(
+                children: [
+                  Center(child: apple),
+                  const SizedBox(height: 12),
+                  scale,
+                ],
+              );
+            }
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(width: 160, child: Center(child: apple)),
+                const SizedBox(width: 28),
+                Expanded(child: Center(child: scale)),
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: 14),
+        if (appleOnScale)
+          _WeightSupportedResultBox(
+            title: 'りんごの重さは300gです',
+            nativeTitle: const {
+              AppLanguage.portuguese: 'A maçã pesa 300 g.',
+              AppLanguage.tagalog: 'Ang mansanas ay 300 g.',
+              AppLanguage.vietnamese: 'Quả táo nặng 300 g.',
+            },
+            explanation: const SupportLine(
+              japanese:
+                  '針が300gを指しています。重さを数字で表すときは、グラムを使います。グラムはgと書きます。',
+              ruby:
+                  '{針|はり}が300gを{指|さ}しています。{重|おも}さを{数字|すうじ}で{表|あらわ}すときは、グラムを{使|つか}います。グラムはgと{書|か}きます。',
+              native: {
+                AppLanguage.portuguese:
+                    'O ponteiro aponta para 300 g. Para escrever o peso com números, usamos gramas. Grama se escreve g.',
+                AppLanguage.tagalog:
+                    'Ang karayom ay nakaturo sa 300 g. Ginagamit ang gramo para isulat ang bigat sa numero. Isinusulat ang gramo bilang g.',
+                AppLanguage.vietnamese:
+                    'Kim chỉ 300 g. Khi biểu thị khối lượng bằng số, ta dùng gam. Gam viết là g.',
+              },
+            ),
+            selectedLanguage: selectedLanguage,
+            showNative: showResultNative,
+            onToggleNative: onToggleResultNative,
+            vocabularyEntries: _weightVocabularyEntries,
+            audioLabel: 'グラムの説明を聞く',
+          ),
+        const SizedBox(height: 10),
+        OutlinedButton.icon(
+          onPressed: onReset,
+          icon: const Icon(Icons.refresh_rounded),
+          label: const Text('もう一度'),
+        ),
+      ],
+    );
+  }
+}
+
+class _WeightThousandPanel extends StatelessWidget {
+  final AppLanguage selectedLanguage;
+  final int count;
+  final bool showInstructionNative;
+  final VoidCallback onToggleInstructionNative;
+  final bool showResultNative;
+  final VoidCallback onToggleResultNative;
+  final VoidCallback onAdd;
+  final VoidCallback onReset;
+
+  const _WeightThousandPanel({
+    required this.selectedLanguage,
+    required this.count,
+    required this.showInstructionNative,
+    required this.onToggleInstructionNative,
+    required this.showResultNative,
+    required this.onToggleResultNative,
+    required this.onAdd,
+    required this.onReset,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final grams = count * 100;
+    return Column(
+      children: [
+        _SupportedInstruction(
+          line: const SupportLine(
+            japanese: '100gのおもりを1こずつはかりにのせてみよう。',
+            ruby: '100gのおもりを1こずつはかりにのせてみよう。',
+            native: {
+              AppLanguage.portuguese:
+                  'Vamos colocar os pesos de 100 g, um de cada vez, na balança.',
+              AppLanguage.tagalog:
+                  'Ilagay natin ang mga pabigat na 100 g sa timbangan, isa-isa.',
+              AppLanguage.vietnamese:
+                  'Hãy đặt từng quả cân 100 g lên cân.',
+            },
+          ),
+          language: selectedLanguage,
+          showNative: showInstructionNative,
+          onToggleNative: onToggleInstructionNative,
+          vocabularyEntries: _weightVocabularyEntries,
+        ),
+        const SizedBox(height: 14),
+        _AnalogScale(
+          grams: grams,
+          child: _WeightBlockTray(count: count),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          alignment: WrapAlignment.center,
+          children: [
+            FilledButton.icon(
+              onPressed: count >= 10 ? null : onAdd,
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('100gを乗せる'),
+            ),
+            OutlinedButton.icon(
+              onPressed: onReset,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('もどす'),
+            ),
+          ],
+        ),
+        if (count >= 10) ...[
+          const SizedBox(height: 14),
+          _WeightSupportedResultBox(
+            title: '1000g = 1kg',
+            // The equation is shared across languages, so only the sentence
+            // below needs a translated version.
+            nativeTitle: const {},
+            explanation: const SupportLine(
+              japanese: '1000gになりました。1000gを1キログラムといいます。',
+              ruby:
+                  '1000gになりました。1000gを1キログラムといいます。',
+              native: {
+                AppLanguage.portuguese:
+                    'Chegamos a 1000 g. Chamamos 1000 g de 1 quilograma.',
+                AppLanguage.tagalog:
+                    'Naging 1000 g na. Ang 1000 g ay tinatawag na 1 kilogramo.',
+                AppLanguage.vietnamese:
+                    'Đã được 1000 g. 1000 g được gọi là 1 ki-lô-gam.',
+              },
+            ),
+            selectedLanguage: selectedLanguage,
+            showNative: showResultNative,
+            onToggleNative: onToggleResultNative,
+            vocabularyEntries: _weightVocabularyEntries,
+            audioLabel: 'キログラムの説明を聞く',
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _WeightKgGramPanel extends StatelessWidget {
+  const _WeightKgGramPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: const [
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 14,
+            runSpacing: 14,
+            children: [
+              _WeightConversionRow(
+                label: 'りんごと本',
+                left: '1300g',
+                right: '1kg300g',
+              ),
+              _WeightConversionRow(
+                label: 'ランドセル',
+                left: '1700g',
+                right: '1kg700g',
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WeightConversionRow extends StatelessWidget {
+  final String label;
+  final String left;
+  final String right;
+
+  const _WeightConversionRow({
+    required this.label,
+    required this.left,
+    required this.right,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 260,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w800,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 10,
+            children: [
+              Text(
+                left,
+                style: const TextStyle(
+                  fontFamily: AppFonts.display,
+                  fontSize: 23,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const Icon(Icons.arrow_forward_rounded, color: Color(0xFF64748B)),
+              Text(
+                right,
+                style: const TextStyle(
+                  fontFamily: AppFonts.display,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF2563EB),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WeightTonLearn extends StatefulWidget {
+  final AppLanguage selectedLanguage;
+
+  const _WeightTonLearn({required this.selectedLanguage});
+
+  @override
+  State<_WeightTonLearn> createState() => _WeightTonLearnState();
+}
+
+class _WeightTonLearnState extends State<_WeightTonLearn> {
+  int _page = 0;
+  int _loads = 0;
+  bool _showNative = false;
+
+  static const _lastPage = 1;
+
+  List<SupportLine> get _pageLines {
+    return switch (_page) {
+      0 => const [
+        SupportLine(
+          japanese: 'とても重いものは、トンで表すことがあります。',
+          ruby:
+              'とても{重|おも}いものは、トンで{表|あらわ}すことがあります。',
+          native: {
+            AppLanguage.portuguese:
+                'Coisas muito pesadas podem ser mostradas em toneladas.',
+          },
+        ),
+      ],
+      1 => const [
+        SupportLine(
+          japanese: '100kgの荷物をトラックに積んで、1000kgを作りましょう。',
+          ruby:
+              '100kgの{荷物|にもつ}をトラックに{積|つ}んで、1000kgを{作|つく}りましょう。',
+          native: {
+            AppLanguage.portuguese:
+                'Coloque cargas de 100 kg no caminhão para formar 1000 kg.',
+          },
+        ),
+      ],
+      _ => const [
+        SupportLine(
+          japanese: '100kgの荷物をトラックに積んで、1000kgを作りましょう。',
+          ruby:
+              '100kgの{荷物|にもつ}をトラックに{積|つ}んで、1000kgを{作|つく}りましょう。',
+          native: {
+            AppLanguage.portuguese:
+                'Coloque cargas de 100 kg no caminhão para formar 1000 kg.',
+          },
+        ),
+      ],
+    };
+  }
+
+  void _speak() {
+    LearningAudio.speakJapanese(
+      context,
+      label: 'トン',
+      text: _pageLines.map((line) => line.japanese).join(' '),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _RemainderLearnShell(
+      icon: Icons.local_shipping_rounded,
+      title: 'トンを使ってみよう',
+      selectedLanguage: widget.selectedLanguage,
+      showNative: _showNative,
+      onToggleNative: () => setState(() => _showNative = !_showNative),
+      onAudio: _speak,
+      page: _page,
+      lastPage: _lastPage,
+      onPrevious: () => setState(() => _page = math.max(0, _page - 1)),
+      onNext: () => setState(() => _page = math.min(_lastPage, _page + 1)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _SupportedTextLines(
+            lines: _pageLines,
+            language: widget.selectedLanguage,
+            showNative: _showNative,
+            vocabularyEntries: _weightVocabularyEntries,
+          ),
+          const SizedBox(height: 18),
+          switch (_page) {
+            0 => const _TonIntroPanel(),
+            1 => _TonLoadPanel(
+              loads: _loads,
+              onAdd: () => setState(() {
+                if (_loads < 10) _loads++;
+              }),
+              onReset: () => setState(() => _loads = 0),
+            ),
+            _ => _TonLoadPanel(
+              loads: _loads,
+              onAdd: () => setState(() {
+                if (_loads < 10) _loads++;
+              }),
+              onReset: () => setState(() => _loads = 0),
+            ),
+          },
+        ],
+      ),
+    );
+  }
+}
+
+class _TonIntroPanel extends StatelessWidget {
+  const _TonIntroPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _HeavyObjectRow();
+  }
+}
+
+class _HeavyObjectRow extends StatelessWidget {
+  const _HeavyObjectRow();
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 620;
+        final cards = const [
+          _HeavyObjectCard(kind: _HeavyObjectKind.car, label: '自動車'),
+          _HeavyObjectCard(kind: _HeavyObjectKind.truck, label: 'トラック'),
+          _HeavyObjectCard(kind: _HeavyObjectKind.elephant, label: 'ゾウ'),
+        ];
+        if (!isWide) {
+          return const Column(
+            children: [
+              _HeavyObjectCard(kind: _HeavyObjectKind.car, label: '自動車'),
+              SizedBox(height: 10),
+              _HeavyObjectCard(kind: _HeavyObjectKind.truck, label: 'トラック'),
+              SizedBox(height: 10),
+              _HeavyObjectCard(kind: _HeavyObjectKind.elephant, label: 'ゾウ'),
+            ],
+          );
+        }
+        return Row(
+          children: [
+            for (var i = 0; i < cards.length; i++) ...[
+              Expanded(child: cards[i]),
+              if (i != cards.length - 1) const SizedBox(width: 12),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+enum _HeavyObjectKind { car, truck, elephant }
+
+class _HeavyObjectCard extends StatelessWidget {
+  final _HeavyObjectKind kind;
+  final String label;
+
+  const _HeavyObjectCard({required this.kind, required this.label});
+
+  String get _approxWeight {
+    return switch (kind) {
+      _HeavyObjectKind.car => 'およそ 1t',
+      _HeavyObjectKind.truck => 'およそ 4t',
+      _HeavyObjectKind.elephant => 'およそ 5t',
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 174),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 150,
+            height: 82,
+            child: CustomPaint(painter: _HeavyObjectPainter(kind: kind)),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            _approxWeight,
+            style: const TextStyle(
+              fontSize: 15,
+              height: 1.2,
+              color: Color(0xFF2563EB),
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeavyObjectPainter extends CustomPainter {
+  final _HeavyObjectKind kind;
+
+  const _HeavyObjectPainter({required this.kind});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    switch (kind) {
+      case _HeavyObjectKind.car:
+        _drawCar(canvas, size);
+      case _HeavyObjectKind.truck:
+        _drawTruck(canvas, size);
+      case _HeavyObjectKind.elephant:
+        _drawElephant(canvas, size);
+    }
+  }
+
+  void _drawCar(Canvas canvas, Size size) {
+    final body = Paint()..color = const Color(0xFF2563EB);
+    final bodyShade = Paint()..color = const Color(0xFF1D4ED8);
+    final dark = Paint()..color = const Color(0xFF1E293B);
+    final outline = Paint()
+      ..color = const Color(0xFF1E40AF)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.2;
+    final window = Paint()..color = const Color(0xFFEFF6FF);
+    final car = Path()
+      ..moveTo(size.width * 0.12, size.height * 0.58)
+      ..cubicTo(size.width * 0.14, size.height * 0.43, size.width * 0.2,
+          size.height * 0.38, size.width * 0.29, size.height * 0.38)
+      ..lineTo(size.width * 0.38, size.height * 0.22)
+      ..lineTo(size.width * 0.6, size.height * 0.22)
+      ..lineTo(size.width * 0.74, size.height * 0.38)
+      ..cubicTo(size.width * 0.84, size.height * 0.39, size.width * 0.9,
+          size.height * 0.45, size.width * 0.91, size.height * 0.57)
+      ..lineTo(size.width * 0.88, size.height * 0.65)
+      ..lineTo(size.width * 0.14, size.height * 0.65)
+      ..close();
+    canvas.drawPath(car, body);
+    canvas.drawPath(car, outline);
+    final sideShade = RRect.fromRectAndRadius(
+      Rect.fromLTWH(size.width * 0.16, size.height * 0.52, size.width * 0.58,
+          size.height * 0.08),
+      const Radius.circular(6),
+    );
+    canvas.drawRRect(sideShade, bodyShade);
+    final frontWindow = Path()
+      ..moveTo(size.width * 0.43, size.height * 0.27)
+      ..lineTo(size.width * 0.56, size.height * 0.27)
+      ..lineTo(size.width * 0.65, size.height * 0.38)
+      ..lineTo(size.width * 0.4, size.height * 0.38)
+      ..close();
+    canvas.drawPath(frontWindow, window);
+    final rearWindow = Path()
+      ..moveTo(size.width * 0.31, size.height * 0.38)
+      ..lineTo(size.width * 0.39, size.height * 0.27)
+      ..lineTo(size.width * 0.42, size.height * 0.38)
+      ..close();
+    canvas.drawPath(rearWindow, window);
+    canvas.drawCircle(Offset(size.width * 0.84, size.height * 0.54), 3.8,
+        Paint()..color = const Color(0xFFFDE68A));
+    canvas.drawCircle(Offset(size.width * 0.17, size.height * 0.55), 3.2,
+        Paint()..color = const Color(0xFFFCA5A5));
+    _drawWheel(canvas, Offset(size.width * 0.3, size.height * 0.68), dark);
+    _drawWheel(canvas, Offset(size.width * 0.7, size.height * 0.68), dark);
+  }
+
+  void _drawTruck(Canvas canvas, Size size) {
+    final cargo = Paint()..color = const Color(0xFFCBD5E1);
+    final cargoShade = Paint()..color = const Color(0xFF94A3B8);
+    final cab = Paint()..color = const Color(0xFF2563EB);
+    final cabShade = Paint()..color = const Color(0xFF1D4ED8);
+    final dark = Paint()..color = const Color(0xFF1E293B);
+    final outline = Paint()
+      ..color = const Color(0xFF475569)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.2;
+    final window = Paint()..color = const Color(0xFFE0F2FE);
+    final cargoRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(size.width * 0.08, size.height * 0.24, size.width * 0.52,
+          size.height * 0.38),
+      const Radius.circular(7),
+    );
+    canvas.drawRRect(cargoRect, cargo);
+    canvas.drawRRect(cargoRect, outline);
+    canvas.drawLine(
+      Offset(size.width * 0.12, size.height * 0.33),
+      Offset(size.width * 0.52, size.height * 0.33),
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.62)
+        ..strokeWidth = 2.2
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.drawRect(
+      Rect.fromLTWH(size.width * 0.1, size.height * 0.53, size.width * 0.48,
+          size.height * 0.09),
+      cargoShade,
+    );
+    final cabPath = Path()
+      ..moveTo(size.width * 0.61, size.height * 0.62)
+      ..lineTo(size.width * 0.61, size.height * 0.37)
+      ..quadraticBezierTo(size.width * 0.64, size.height * 0.28,
+          size.width * 0.72, size.height * 0.28)
+      ..lineTo(size.width * 0.82, size.height * 0.28)
+      ..quadraticBezierTo(size.width * 0.87, size.height * 0.37,
+          size.width * 0.89, size.height * 0.48)
+      ..lineTo(size.width * 0.89, size.height * 0.62)
+      ..close();
+    canvas.drawPath(cabPath, cab);
+    canvas.drawPath(cabPath, outline);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(size.width * 0.69, size.height * 0.34,
+            size.width * 0.12, size.height * 0.1),
+        const Radius.circular(3),
+      ),
+      window,
+    );
+    canvas.drawRect(
+      Rect.fromLTWH(size.width * 0.62, size.height * 0.54, size.width * 0.24,
+          size.height * 0.08),
+      cabShade,
+    );
+    canvas.drawLine(
+      Offset(size.width * 0.08, size.height * 0.65),
+      Offset(size.width * 0.9, size.height * 0.65),
+      Paint()
+        ..color = const Color(0xFF475569)
+        ..strokeWidth = 3
+        ..strokeCap = StrokeCap.round,
+    );
+    _drawWheel(canvas, Offset(size.width * 0.26, size.height * 0.7), dark);
+    _drawWheel(canvas, Offset(size.width * 0.7, size.height * 0.7), dark);
+    _drawWheel(canvas, Offset(size.width * 0.82, size.height * 0.7), dark);
+  }
+
+  void _drawElephant(Canvas canvas, Size size) {
+    final animal = Paint()..color = const Color(0xFF9CA3AF);
+    final dark = Paint()..color = const Color(0xFF4B5563);
+    final light = Paint()..color = const Color(0xFFD1D5DB);
+    final outline = Paint()
+      ..color = const Color(0xFF6B7280)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    final body = Rect.fromLTWH(size.width * 0.16, size.height * 0.28,
+        size.width * 0.52, size.height * 0.34);
+    canvas.drawOval(body, animal);
+    canvas.drawOval(body, outline);
+    final headCenter = Offset(size.width * 0.7, size.height * 0.4);
+    canvas.drawCircle(headCenter, size.height * 0.16, animal);
+    canvas.drawCircle(headCenter, size.height * 0.16, outline);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * 0.62, size.height * 0.38),
+        width: size.width * 0.16,
+        height: size.height * 0.22,
+      ),
+      animal,
+    );
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * 0.62, size.height * 0.38),
+        width: size.width * 0.16,
+        height: size.height * 0.22,
+      ),
+      outline,
+    );
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * 0.77, size.height * 0.39),
+        width: size.width * 0.12,
+        height: size.height * 0.2,
+      ),
+      animal,
+    );
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * 0.77, size.height * 0.39),
+        width: size.width * 0.12,
+        height: size.height * 0.2,
+      ),
+      outline,
+    );
+    final trunk = Path()
+      ..moveTo(size.width * 0.78, size.height * 0.48)
+      ..cubicTo(size.width * 0.86, size.height * 0.55, size.width * 0.87,
+          size.height * 0.68, size.width * 0.8, size.height * 0.72);
+    canvas.drawPath(
+      trunk,
+      Paint()
+        ..color = const Color(0xFF9CA3AF)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 8
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.drawPath(
+      trunk,
+      Paint()
+        ..color = const Color(0xFF6B7280)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2
+        ..strokeCap = StrokeCap.round,
+    );
+    for (final x in [0.25, 0.4, 0.56]) {
+      final leg = RRect.fromRectAndRadius(
+        Rect.fromLTWH(size.width * x, size.height * 0.53, size.width * 0.08,
+            size.height * 0.22),
+        const Radius.circular(5),
+      );
+      canvas.drawRRect(leg, animal);
+      canvas.drawRRect(leg, outline);
+    }
+    canvas.drawPath(
+      Path()
+        ..moveTo(size.width * 0.2, size.height * 0.38)
+        ..quadraticBezierTo(size.width * 0.1, size.height * 0.34,
+            size.width * 0.09, size.height * 0.45),
+      Paint()
+        ..color = const Color(0xFF6B7280)
+        ..strokeWidth = 2.2
+        ..strokeCap = StrokeCap.round
+        ..style = PaintingStyle.stroke,
+    );
+    canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(size.width * 0.46, size.height * 0.36),
+          width: size.width * 0.18,
+          height: size.height * 0.15,
+        ),
+        light);
+    canvas.drawCircle(
+      Offset(size.width * 0.74, size.height * 0.37),
+      2.2,
+      dark,
+    );
+  }
+
+  void _drawWheel(Canvas canvas, Offset center, Paint paint) {
+    canvas.drawCircle(center, 8, paint);
+    canvas.drawCircle(center, 3.5, Paint()..color = Colors.white);
+  }
+
+  @override
+  bool shouldRepaint(covariant _HeavyObjectPainter oldDelegate) {
+    return kind != oldDelegate.kind;
+  }
+}
+
+class _TonLoadPanel extends StatelessWidget {
+  final int loads;
+  final VoidCallback onAdd;
+  final VoidCallback onReset;
+
+  const _TonLoadPanel({
+    required this.loads,
+    required this.onAdd,
+    required this.onReset,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final kg = loads * 100;
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            children: [
+              _TonTruckLoadVisual(loads: loads),
+              const SizedBox(height: 16),
+              Text(
+                loads >= 10 ? '1000kg = 1t' : '${kg}kg',
+                style: const TextStyle(
+                  fontFamily: AppFonts.display,
+                  fontSize: 34,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF2563EB),
+                ),
+              ),
+              if (loads >= 10) ...[
+                const SizedBox(height: 8),
+                const Text(
+                  '1tは1000kgです。',
+                  style: TextStyle(
+                    fontSize: 18,
+                    height: 1.45,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF334155),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          alignment: WrapAlignment.center,
+          children: [
+            FilledButton.icon(
+              onPressed: loads >= 10 ? null : onAdd,
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('100kgを積む'),
+            ),
+            OutlinedButton.icon(
+              onPressed: onReset,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('もどす'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _TonTruckLoadVisual extends StatelessWidget {
+  final int loads;
+
+  const _TonTruckLoadVisual({required this.loads});
+
+  @override
+  Widget build(BuildContext context) {
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: SizedBox(
+        width: 440,
+        height: 218,
+        child: Stack(
+          children: [
+            const Positioned.fill(
+              child: CustomPaint(painter: _TonTruckPainter()),
+            ),
+            Positioned(
+              left: 72,
+              top: 54,
+              width: 230,
+              height: 88,
+              child: _TonLoadTray(loads: loads),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TonLoadTray extends StatelessWidget {
+  final int loads;
+
+  const _TonLoadTray({required this.loads});
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.count(
+      crossAxisCount: 5,
+      mainAxisSpacing: 7,
+      crossAxisSpacing: 7,
+      physics: const NeverScrollableScrollPhysics(),
+      childAspectRatio: 1.25,
+      children: [
+        for (var i = 0; i < 10; i++)
+          Opacity(
+            opacity: i < loads ? 1 : 0,
+            child: const _TonLoadBox(),
+          ),
+      ],
+    );
+  }
+}
+
+class _TonLoadBox extends StatelessWidget {
+  const _TonLoadBox();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: const Color(0xFFFDE68A),
+        borderRadius: BorderRadius.circular(7),
+        border: Border.all(color: const Color(0xFFEAB308)),
+      ),
+      child: const Text(
+        '100',
+        style: TextStyle(
+          fontSize: 13,
+          height: 1,
+          fontWeight: FontWeight.w800,
+          color: Color(0xFF713F12),
+        ),
+      ),
+    );
+  }
+}
+
+class _TonTruckPainter extends CustomPainter {
+  const _TonTruckPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final outline = Paint()
+      ..color = const Color(0xFF475569)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3;
+    final dark = Paint()..color = const Color(0xFF1F2937);
+    final cargo = Paint()..color = const Color(0xFFE2E8F0);
+    final cargoShade = Paint()..color = const Color(0xFFCBD5E1);
+    final cab = Paint()..color = const Color(0xFF2563EB);
+    final cabShade = Paint()..color = const Color(0xFF1D4ED8);
+    final window = Paint()..color = const Color(0xFFE0F2FE);
+
+    final bed = RRect.fromRectAndRadius(
+      Rect.fromLTWH(42, 42, 286, 118),
+      const Radius.circular(14),
+    );
+    canvas.drawRRect(bed, cargo);
+    canvas.drawRRect(bed, outline);
+
+    canvas.drawRect(Rect.fromLTWH(48, 130, 278, 30), cargoShade);
+    canvas.drawLine(
+      const Offset(58, 62),
+      const Offset(312, 62),
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.7)
+        ..strokeWidth = 2.5
+        ..strokeCap = StrokeCap.round,
+    );
+
+    final cabPath = Path()
+      ..moveTo(326, 160)
+      ..lineTo(326, 86)
+      ..quadraticBezierTo(334, 62, 360, 62)
+      ..lineTo(386, 62)
+      ..quadraticBezierTo(410, 86, 416, 122)
+      ..lineTo(416, 160)
+      ..close();
+    canvas.drawPath(cabPath, cab);
+    canvas.drawPath(cabPath, outline);
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        const Rect.fromLTWH(354, 78, 36, 25),
+        const Radius.circular(5),
+      ),
+      window,
+    );
+    canvas.drawRect(const Rect.fromLTWH(330, 132, 78, 28), cabShade);
+    canvas.drawCircle(const Offset(409, 128), 4.5,
+        Paint()..color = const Color(0xFFFDE68A));
+
+    canvas.drawLine(
+      const Offset(34, 166),
+      const Offset(422, 166),
+      Paint()
+        ..color = const Color(0xFF475569)
+        ..strokeWidth = 5
+        ..strokeCap = StrokeCap.round,
+    );
+    _drawWheel(canvas, const Offset(108, 178), dark);
+    _drawWheel(canvas, const Offset(286, 178), dark);
+    _drawWheel(canvas, const Offset(372, 178), dark);
+  }
+
+  void _drawWheel(Canvas canvas, Offset center, Paint paint) {
+    canvas.drawCircle(center, 18, paint);
+    canvas.drawCircle(center, 8, Paint()..color = Colors.white);
+    canvas.drawCircle(center, 4, Paint()..color = const Color(0xFF94A3B8));
+  }
+
+  @override
+  bool shouldRepaint(covariant _TonTruckPainter oldDelegate) => false;
+}
+
+class _AnalogScale extends StatelessWidget {
+  final int grams;
+  final Widget child;
+
+  const _AnalogScale({required this.grams, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 360,
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        children: [
+          SizedBox(
+            width: 300,
+            height: 210,
+            child: CustomPaint(painter: _ScalePainter(grams: grams)),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: 264,
+            height: 92,
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: child,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WeightBlockTray extends StatelessWidget {
+  final int count;
+
+  const _WeightBlockTray({required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 230,
+      height: 72,
+      child: GridView.count(
+        crossAxisCount: 5,
+        mainAxisSpacing: 6,
+        crossAxisSpacing: 6,
+        physics: const NeverScrollableScrollPhysics(),
+        childAspectRatio: 1.34,
+        children: [
+          for (var i = 0; i < 10; i++)
+            Opacity(
+              opacity: i < count ? 1 : 0,
+              child: const _SmallWeightBlock(),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SmallWeightBlock extends StatelessWidget {
+  const _SmallWeightBlock();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 42,
+      height: 32,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: const Color(0xFFE0F2FE),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: const Text(
+        '100g',
+        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+      ),
+    );
+  }
+}
+
+class _SoftResultBox extends StatelessWidget {
+  final String text;
+  final String emphasized;
+  final String? highlightedTerm;
+
+  const _SoftResultBox({
+    required this.text,
+    required this.emphasized,
+    this.highlightedTerm,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFECFDF5),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            emphasized,
+            style: const TextStyle(
+              fontFamily: AppFonts.display,
+              fontSize: 30,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF059669),
+            ),
+          ),
+          const SizedBox(height: 8),
+          _HighlightedBodyText(text: text, highlightedTerm: highlightedTerm),
+        ],
+      ),
+    );
+  }
+}
+
+class _WeightSupportedResultBox extends StatelessWidget {
+  final String title;
+  final Map<AppLanguage, String> nativeTitle;
+  final SupportLine explanation;
+  final AppLanguage selectedLanguage;
+  final bool showNative;
+  final VoidCallback onToggleNative;
+  final List<VocabularyEntry> vocabularyEntries;
+  final String audioLabel;
+
+  const _WeightSupportedResultBox({
+    required this.title,
+    required this.nativeTitle,
+    required this.explanation,
+    required this.selectedLanguage,
+    required this.showNative,
+    required this.onToggleNative,
+    required this.vocabularyEntries,
+    required this.audioLabel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final translatedTitle = nativeTitle[selectedLanguage] ?? '';
+    final canShowNative =
+        selectedLanguage != AppLanguage.japanese && translatedTitle.isNotEmpty;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFECFDF5),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(top: 3),
+                child: Icon(
+                  Icons.check_circle_rounded,
+                  color: Color(0xFF16A34A),
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontFamily: AppFonts.display,
+                        fontSize: 28,
+                        height: 1.25,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF059669),
+                      ),
+                    ),
+                    if (showNative && canShowNative) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        translatedTitle,
+                        style: const TextStyle(
+                          fontFamily: AppFonts.interface,
+                          fontSize: 15,
+                          height: 1.4,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF047857),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              _IconSupportActions(
+                language: selectedLanguage,
+                showNative: showNative,
+                translateLabel:
+                    showNative ? '日本語で見る' : '${selectedLanguage.label}で見る',
+                audioLabel: audioLabel,
+                onToggleNative: onToggleNative,
+                onAudio: () => LearningAudio.speakJapanese(
+                  context,
+                  label: '重さの説明',
+                  text: '$title ${explanation.japanese}',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          RubyText(
+            text: explanation.rubyText,
+            vocabularyEntries: vocabularyEntries,
+            language: selectedLanguage,
+            style: const TextStyle(
+              fontFamily: AppFonts.interface,
+              fontSize: 17,
+              height: 1.55,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF111827),
+            ),
+          ),
+          if (showNative &&
+              selectedLanguage != AppLanguage.japanese &&
+              explanation.nativeFor(selectedLanguage).isNotEmpty) ...[
+            const SizedBox(height: 7),
+            Text(
+              explanation.nativeFor(selectedLanguage),
+              style: const TextStyle(
+                fontFamily: AppFonts.interface,
+                fontSize: 15,
+                height: 1.45,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF475569),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _HighlightedBodyText extends StatelessWidget {
+  final String text;
+  final String? highlightedTerm;
+
+  const _HighlightedBodyText({
+    required this.text,
+    required this.highlightedTerm,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const baseStyle = TextStyle(
+      fontSize: 17,
+      height: 1.55,
+      fontWeight: FontWeight.w700,
+      color: Color(0xFF111827),
+    );
+    final term = highlightedTerm;
+    if (term == null || term.isEmpty || !text.contains(term)) {
+      return Text(text, style: baseStyle);
+    }
+    final parts = text.split(term);
+    return RichText(
+      text: TextSpan(
+        style: baseStyle,
+        children: [
+          for (var i = 0; i < parts.length; i++) ...[
+            TextSpan(text: parts[i]),
+            if (i != parts.length - 1)
+              TextSpan(
+                text: term,
+                style: const TextStyle(
+                  color: Color(0xFF059669),
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _BalancePainter extends CustomPainter {
+  final bool appleOnBalance;
+  final bool pencilOnBalance;
+
+  const _BalancePainter({
+    required this.appleOnBalance,
+    required this.pencilOnBalance,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height * 0.34);
+    final tilt = switch ((appleOnBalance, pencilOnBalance)) {
+      (true, true) => -0.08,
+      (true, false) => -0.16,
+      (false, true) => 0.08,
+      _ => 0.0,
+    };
+    final paint = Paint()
+      ..color = const Color(0xFF64748B)
+      ..strokeWidth = 4
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    final fillPaint = Paint()
+      ..color = const Color(0xFFF8FAFC)
+      ..style = PaintingStyle.fill;
+    final footPaint = Paint()
+      ..color = const Color(0xFF475569)
+      ..strokeWidth = 5
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawLine(center, center.translate(0, 94), paint);
+    canvas.drawLine(
+      center.translate(-50, 94),
+      center.translate(50, 94),
+      footPaint,
+    );
+    canvas.drawCircle(center, 8, Paint()..color = const Color(0xFF475569));
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(tilt);
+    canvas.drawLine(const Offset(-130, 0), const Offset(130, 0), paint);
+    _drawChain(canvas, const Offset(-104, 0), const Offset(-104, 64));
+    _drawChain(canvas, const Offset(104, 0), const Offset(104, 64));
+    _drawPan(
+      canvas,
+      const Offset(-104, 72),
+      fillPaint,
+      appleOnBalance ? _WeightObjectKind.apple : null,
+    );
+    _drawPan(
+      canvas,
+      const Offset(104, 72),
+      fillPaint,
+      pencilOnBalance ? _WeightObjectKind.pencil : null,
+    );
+    canvas.restore();
+
+  }
+
+  void _drawChain(Canvas canvas, Offset start, Offset end) {
+    final chainPaint = Paint()
+      ..color = const Color(0xFF94A3B8)
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(start, end, chainPaint);
+  }
+
+  void _drawPan(
+    Canvas canvas,
+    Offset center,
+    Paint fillPaint,
+    _WeightObjectKind? object,
+  ) {
+    final panPaint = Paint()
+      ..color = const Color(0xFFCBD5E1)
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+    canvas.drawOval(
+      Rect.fromCenter(center: center, width: 108, height: 30),
+      fillPaint,
+    );
+    canvas.drawOval(
+      Rect.fromCenter(center: center, width: 108, height: 30),
+      panPaint,
+    );
+    if (object == null) return;
+    canvas.save();
+    canvas.translate(center.dx - 24, center.dy - 48);
+    _WeightObjectPainter(kind: object).paint(canvas, const Size(48, 48));
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _BalancePainter oldDelegate) {
+    return appleOnBalance != oldDelegate.appleOnBalance ||
+        pencilOnBalance != oldDelegate.pencilOnBalance;
+  }
+}
+
+class _ScalePainter extends CustomPainter {
+  final int grams;
+
+  const _ScalePainter({required this.grams});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final bodyRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(20, 8, size.width - 40, size.height - 18),
+      const Radius.circular(30),
+    );
+    final bodyPaint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Colors.white, Color(0xFFEFF6FF)],
+      ).createShader(bodyRect.outerRect);
+    canvas.drawRRect(bodyRect, bodyPaint);
+    canvas.drawRRect(
+      bodyRect,
+      Paint()
+        ..color = const Color(0xFFCBD5E1)
+        ..strokeWidth = 3
+        ..style = PaintingStyle.stroke,
+    );
+
+    final dialCenter = Offset(size.width / 2, size.height * 0.42);
+    final dialRadius = math.min(size.width, size.height) * 0.34;
+    canvas.drawCircle(dialCenter, dialRadius, Paint()..color = Colors.white);
+    canvas.drawCircle(
+      dialCenter,
+      dialRadius,
+      Paint()
+        ..color = const Color(0xFFCBD5E1)
+        ..strokeWidth = 2.5
+        ..style = PaintingStyle.stroke,
+    );
+
+    final arcRect = Rect.fromCircle(center: dialCenter, radius: dialRadius - 18);
+    canvas.drawArc(
+      arcRect,
+      math.pi * 1.12,
+      math.pi * 0.76,
+      false,
+      Paint()
+        ..color = const Color(0xFFE2E8F0)
+        ..strokeWidth = 8
+        ..strokeCap = StrokeCap.round
+        ..style = PaintingStyle.stroke,
+    );
+
+    for (var i = 0; i <= 20; i++) {
+      final angle = math.pi * 1.12 + math.pi * 0.76 * i / 20;
+      final isMajor = i % 10 == 0;
+      final isMedium = i % 5 == 0;
+      final outer = dialCenter +
+          Offset(math.cos(angle), math.sin(angle)) * (dialRadius - 12);
+      final inner = dialCenter +
+          Offset(math.cos(angle), math.sin(angle)) *
+              (dialRadius - (isMajor ? 32 : isMedium ? 26 : 20));
+      canvas.drawLine(
+        inner,
+        outer,
+        Paint()
+          ..color = const Color(0xFF64748B)
+          ..strokeWidth = isMajor ? 3 : 1.6
+          ..strokeCap = StrokeCap.round,
+      );
+      if (isMajor) {
+        final value = i == 0 ? '0' : i == 10 ? '500' : '1kg';
+        _paintText(
+          canvas,
+          value,
+          dialCenter +
+              Offset(math.cos(angle), math.sin(angle)) * (dialRadius - 46),
+          13,
+          const Color(0xFF334155),
+        );
+      }
+    }
+
+    final clamped = grams.clamp(0, 1000);
+    final angle = math.pi * 1.12 + math.pi * 0.76 * clamped / 1000;
+    final needleEnd = dialCenter +
+        Offset(math.cos(angle), math.sin(angle)) * (dialRadius - 34);
+    canvas.drawLine(
+      dialCenter,
+      needleEnd,
+      Paint()
+        ..color = const Color(0xFFEF4444)
+        ..strokeWidth = 4
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.drawCircle(dialCenter, 7, Paint()..color = const Color(0xFFEF4444));
+    _paintText(
+      canvas,
+      '${grams}g',
+      Offset(size.width / 2, size.height * 0.54),
+      24,
+      const Color(0xFF111827),
+      weight: FontWeight.w800,
+    );
+
+    final trayRect = RRect.fromRectAndRadius(
+      Rect.fromCenter(
+        center: Offset(size.width / 2, size.height * 0.82),
+        width: size.width * 0.58,
+        height: 24,
+      ),
+      const Radius.circular(12),
+    );
+    canvas.drawRRect(trayRect, Paint()..color = const Color(0xFFE2E8F0));
+    canvas.drawRRect(
+      trayRect,
+      Paint()
+        ..color = const Color(0xFFCBD5E1)
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke,
+    );
+  }
+
+  void _paintText(
+    Canvas canvas,
+    String text,
+    Offset center,
+    double size,
+    Color color, {
+    FontWeight weight = FontWeight.w700,
+  }) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          fontFamily: AppFonts.interface,
+          fontSize: size,
+          fontWeight: weight,
+          color: color,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    painter.paint(
+      canvas,
+      center.translate(-painter.width / 2, -painter.height / 2),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _ScalePainter oldDelegate) {
+    return grams != oldDelegate.grams;
+  }
+}
+
+const _weightVocabularyEntries = [
+  VocabularyEntry(
+    term: '重い',
+    reading: 'おもい',
+    simpleJapanese: '持ったときに、力がたくさんいる感じです。',
+    translations: {AppLanguage.portuguese: 'pesado'},
+    exampleSentence: 'りんごはえんぴつより重いです。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '軽い',
+    reading: 'かるい',
+    simpleJapanese: '持ったときに、力があまりいらない感じです。',
+    translations: {AppLanguage.portuguese: 'leve'},
+    exampleSentence: 'えんぴつは軽いです。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '重さ',
+    reading: 'おもさ',
+    simpleJapanese: 'ものがどれくらい重いかです。',
+    translations: {AppLanguage.portuguese: 'peso'},
+    exampleSentence: '重さをはかります。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: 'はかり',
+    reading: 'はかり',
+    simpleJapanese: '重さを調べる道具です。',
+    translations: {AppLanguage.portuguese: 'balança'},
+    exampleSentence: 'りんごをはかりに乗せます。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '目盛り',
+    reading: 'めもり',
+    simpleJapanese: '量を読むための小さなしるしです。',
+    translations: {AppLanguage.portuguese: 'marcação / escala'},
+    exampleSentence: '目盛りを見ます。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: 'グラム',
+    reading: 'ぐらむ',
+    simpleJapanese: '重さの単位です。gと書きます。',
+    translations: {AppLanguage.portuguese: 'grama'},
+    exampleSentence: '300gです。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: 'キログラム',
+    reading: 'きろぐらむ',
+    simpleJapanese: '重さの単位です。1kgは1000gです。',
+    translations: {AppLanguage.portuguese: 'quilograma'},
+    exampleSentence: '1kgは1000gです。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: 'トン',
+    reading: 'とん',
+    simpleJapanese: 'とても重いものに使う単位です。tと書きます。',
+    translations: {AppLanguage.portuguese: 'tonelada'},
+    exampleSentence: '1000kgは1tです。',
+    category: 'math_language',
+  ),
+];
 
 class _RemainderLearnShell extends StatelessWidget {
   final IconData icon;
@@ -5807,104 +8211,158 @@ const _remainderContextVocabulary = [
   ),
 ];
 
-class _RemainderShareDiagram extends StatelessWidget {
-  final int total;
-  final int groups;
-  final int each;
-  final int remainder;
-  final String itemEmoji;
+class _InteractiveRemainderShare extends StatefulWidget {
+  final AppLanguage language;
 
-  const _RemainderShareDiagram({
-    required this.total,
-    required this.groups,
-    required this.each,
-    required this.remainder,
-    required this.itemEmoji,
-  });
+  const _InteractiveRemainderShare({required this.language});
+
+  @override
+  State<_InteractiveRemainderShare> createState() =>
+      _InteractiveRemainderShareState();
+}
+
+class _InteractiveRemainderShareState extends State<_InteractiveRemainderShare> {
+  final List<int> _groupCounts = List<int>.filled(3, 0);
+  bool _showInstructionNative = false;
+  bool _showResultNative = false;
+
+  int get _placedCount => _groupCounts.fold(0, (sum, count) => sum + count);
+  int get _remainingCount => 7 - _placedCount;
+  bool get _isComplete => _groupCounts.every((count) => count == 2);
+
+  void _placeStrawberry(int index) {
+    if (_groupCounts[index] >= 2 || _isComplete) return;
+    setState(() => _groupCounts[index]++);
+  }
+
+  void _reset() {
+    setState(() {
+      for (var i = 0; i < _groupCounts.length; i++) {
+        _groupCounts[i] = 0;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _RemainderItemRow(
-            label: '全部で$totalこ',
-            count: total,
-            itemEmoji: itemEmoji,
+    const instruction = SupportLine(
+      japanese: 'いちごを、3人に2こずつ分けてみよう。',
+      ruby: 'いちごを、3{人|にん}に2こずつ{分|わ}けてみよう。',
+      native: {
+        AppLanguage.portuguese:
+            'Vamos dividir os morangos: 2 para cada uma das 3 pessoas.',
+      },
+    );
+
+    return Column(
+      children: [
+        _SupportedInstruction(
+          line: instruction,
+          language: widget.language,
+          showNative: _showInstructionNative,
+          onToggleNative: () => setState(
+            () => _showInstructionNative = !_showInstructionNative,
           ),
-          const SizedBox(height: 14),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            alignment: WrapAlignment.center,
-            children: [
-              for (var i = 0; i < groups; i++)
-                _RemainderGroupBox(
-                  label: '${i + 1}人目',
-                  count: each,
-                  itemEmoji: itemEmoji,
-                ),
-              _RemainderGroupBox(
-                label: 'あまり',
-                count: remainder,
-                itemEmoji: itemEmoji,
-                isRemainder: true,
-              ),
-            ],
+          vocabularyEntries: _remainderLearnVocabulary,
+        ),
+        const SizedBox(height: 14),
+        _RemainderStrawberrySource(remainingCount: _remainingCount),
+        const SizedBox(height: 14),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final compact = constraints.maxWidth < 620;
+            return Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                for (var i = 0; i < _groupCounts.length; i++)
+                  SizedBox(
+                    width: compact ? 142 : 176,
+                    child: _RemainderDropTarget(
+                      index: i + 1,
+                      count: _groupCounts[i],
+                      acceptsStrawberry:
+                          _groupCounts[i] < 2 && !_isComplete,
+                      onAccept: () => _placeStrawberry(i),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton.icon(
+            onPressed: _placedCount == 0 ? null : _reset,
+            icon: const Icon(Icons.refresh_rounded, size: 18),
+            label: const Text('もう一度'),
+          ),
+        ),
+        if (_isComplete) ...[
+          const SizedBox(height: 10),
+          _RemainderShareResult(
+            language: widget.language,
+            showNative: _showResultNative,
+            onToggleNative: () => setState(
+              () => _showResultNative = !_showResultNative,
+            ),
           ),
         ],
-      ),
+      ],
     );
   }
 }
 
-class _RemainderItemRow extends StatelessWidget {
-  final String label;
-  final int count;
-  final String itemEmoji;
+class _RemainderStrawberrySource extends StatelessWidget {
+  final int remainingCount;
 
-  const _RemainderItemRow({
-    required this.label,
-    required this.count,
-    required this.itemEmoji,
-  });
+  const _RemainderStrawberrySource({required this.remainingCount});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      constraints: const BoxConstraints(minHeight: 102),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: const Color(0xFFD7DEE8)),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFF374151),
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              remainingCount == 1 ? 'のこったいちご 1こ' : 'いちご ${remainingCount}こ',
+              style: const TextStyle(
+                fontFamily: AppFonts.interface,
+                color: Color(0xFF374151),
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
           const SizedBox(height: 8),
           Wrap(
-            spacing: 7,
-            runSpacing: 7,
+            alignment: WrapAlignment.center,
+            spacing: 10,
+            runSpacing: 8,
             children: [
-              for (var i = 0; i < count; i++)
-                _RemainderItemDot(itemEmoji: itemEmoji),
+              for (var i = 0; i < remainingCount; i++)
+                Draggable<int>(
+                  data: i,
+                  feedback: const Material(
+                    color: Colors.transparent,
+                    child: _CounterDot(size: 42),
+                  ),
+                  childWhenDragging: const Opacity(
+                    opacity: 0.2,
+                    child: _CounterDot(size: 42),
+                  ),
+                  child: const _CounterDot(size: 42),
+                ),
             ],
           ),
         ],
@@ -5913,33 +8371,754 @@ class _RemainderItemRow extends StatelessWidget {
   }
 }
 
-class _RemainderGroupBox extends StatelessWidget {
+/// A single, neutral plate surface shared by the division activities.
+/// Keeping the food directly on the plate makes the destination clear without
+/// turning each person's area into a large coloured number box.
+class _SharingPlate extends StatelessWidget {
+  final List<Widget> children;
+  final double itemExtent;
+  final bool active;
+  final Color? rimColor;
+
+  const _SharingPlate({
+    required this.children,
+    required this.itemExtent,
+    this.active = false,
+    this.rimColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            Positioned.fill(
+              top: 8,
+              bottom: 2,
+              child: CustomPaint(
+                painter: rimColor == null
+                    ? _PlatePainter(active: active)
+                    : _SharingPlatePainter(rimColor: rimColor!),
+              ),
+            ),
+            Positioned(
+              top: 0,
+              child: SizedBox(
+                width: itemExtent * 2 + 8,
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 8,
+                  runSpacing: 2,
+                  children: children,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _SharingPlatePainter extends CustomPainter {
+  final Color rimColor;
+
+  const _SharingPlatePainter({required this.rimColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height * 0.58);
+    final outerRect = Rect.fromCenter(
+      center: center,
+      width: size.width * 0.86,
+      height: size.height * 0.58,
+    );
+    final innerRect = Rect.fromCenter(
+      center: center,
+      width: size.width * 0.61,
+      height: size.height * 0.32,
+    );
+    canvas.drawOval(outerRect, Paint()..color = const Color(0xFFF8FAFC));
+    canvas.drawOval(
+      outerRect,
+      Paint()
+        ..color = rimColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+    canvas.drawOval(
+      innerRect,
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _SharingPlatePainter oldDelegate) {
+    return oldDelegate.rimColor != rimColor;
+  }
+}
+
+class _RemainderDropTarget extends StatelessWidget {
+  final int index;
+  final int count;
+  final bool acceptsStrawberry;
+  final VoidCallback onAccept;
+
+  const _RemainderDropTarget({
+    required this.index,
+    required this.count,
+    required this.acceptsStrawberry,
+    required this.onAccept,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DragTarget<int>(
+      onWillAccept: (_) => acceptsStrawberry,
+      onAccept: (_) => onAccept(),
+      builder: (context, candidateData, _) {
+        final active = candidateData.isNotEmpty && acceptsStrawberry;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          height: 154,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: active ? const Color(0xFFEFF6FF) : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: active ? const Color(0xFF60A5FA) : const Color(0xFFD1D5DB),
+              width: active ? 2 : 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.person_rounded,
+                    color: Color(0xFF64748B),
+                    size: 18,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '$index人目',
+                    style: const TextStyle(
+                      fontFamily: AppFonts.interface,
+                      color: Color(0xFF334155),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Expanded(
+                child: _SharingPlate(
+                  active: active,
+                  itemExtent: 40,
+                  children: [
+                    for (var i = 0; i < count; i++)
+                      const _CounterDot(size: 40),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 2),
+              _PlateProgressLabel(count: count, total: 2),
+              const SizedBox(height: 2),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _PlateProgressLabel extends StatelessWidget {
+  final int count;
+  final int total;
+
+  const _PlateProgressLabel({required this.count, required this.total});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(
+        '$count / $total',
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          fontFamily: AppFonts.interface,
+          color: Color(0xFF1F2937),
+          fontSize: 17,
+          height: 1.1,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _RemainderShareResult extends StatelessWidget {
+  final AppLanguage language;
+  final bool showNative;
+  final VoidCallback onToggleNative;
+
+  const _RemainderShareResult({
+    required this.language,
+    required this.showNative,
+    required this.onToggleNative,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const line = SupportLine(
+      japanese: '3人に2こずつ分けると、1こ残りました。この1こを「あまり」といいます。',
+      ruby: '3{人|にん}に2こずつ{分|わ}けると、1こ{残|のこ}りました。この1こを「あまり」といいます。',
+      native: {
+        AppLanguage.portuguese:
+            'Ao dividir 2 para cada uma das 3 pessoas, sobrou 1. Esse 1 é o resto.',
+      },
+    );
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFECFDF5),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(top: 2),
+                child: Icon(
+                  Icons.check_circle_rounded,
+                  size: 24,
+                  color: Color(0xFF059669),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  '同じ数ずつ分けられたね！',
+                  style: TextStyle(
+                    fontFamily: AppFonts.interface,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF047857),
+                  ),
+                ),
+              ),
+              _IconSupportActions(
+                language: language,
+                showNative: showNative,
+                translateLabel: showNative ? '日本語で見る' : '${language.label}で見る',
+                audioLabel: 'あまりの説明の音声',
+                onToggleNative: onToggleNative,
+                onAudio: () => LearningAudio.speakJapanese(
+                  context,
+                  label: 'あまりの説明',
+                  text: line.japanese,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _LargeEquation(
+            parts: const [
+              _EquationPart('7', Color(0xFF2563EB), 'ぜんぶの数'),
+              _EquationPart('÷', Color(0xFF111827), ''),
+              _EquationPart('3', Color(0xFFF97316), '人数'),
+              _EquationPart('=', Color(0xFF111827), ''),
+              _EquationPart('2', Color(0xFF059669), '1人分'),
+              _EquationPart('あまり', Color(0xFF111827), ''),
+              _EquationPart('1', Color(0xFFB45309), 'あまり'),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _SupportedTextLines(
+            lines: const [line],
+            language: language,
+            showNative: showNative,
+            vocabularyEntries: _remainderLearnVocabulary,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RemainderEquationBuilder extends StatefulWidget {
+  final AppLanguage language;
+
+  const _RemainderEquationBuilder({required this.language});
+
+  @override
+  State<_RemainderEquationBuilder> createState() =>
+      _RemainderEquationBuilderState();
+}
+
+class _RemainderEquationBuilderState extends State<_RemainderEquationBuilder> {
+  int? _each;
+  int? _remainder;
+  bool _showInstructionNative = false;
+  bool _showResultNative = false;
+
+  bool get _complete => _each == 2 && _remainder == 1;
+
+  @override
+  Widget build(BuildContext context) {
+    const instruction = SupportLine(
+      japanese: 'お皿のいちごを見て、式の□に入る数を選ぼう。',
+      ruby: '{皿|さら}のいちごを{見|み}て、{式|しき}の□に{入|はい}る{数|かず}を{選|えら}ぼう。',
+      native: {
+        AppLanguage.portuguese:
+            'Observe os morangos nos pratos e escolha os números para os quadrados.',
+      },
+    );
+    return Column(
+      children: [
+        _SupportedInstruction(
+          line: instruction,
+          language: widget.language,
+          showNative: _showInstructionNative,
+          onToggleNative: () => setState(
+            () => _showInstructionNative = !_showInstructionNative,
+          ),
+          vocabularyEntries: _remainderLearnVocabulary,
+        ),
+        const SizedBox(height: 16),
+        _RemainderMiniDiagram(each: 2, remainder: 1),
+        const SizedBox(height: 16),
+        _LargeEquation(
+          parts: [
+            const _EquationPart('7', Color(0xFF2563EB), 'ぜんぶの数'),
+            const _EquationPart('÷', Color(0xFF111827), ''),
+            const _EquationPart('3', Color(0xFFF97316), '人数'),
+            const _EquationPart('=', Color(0xFF111827), ''),
+            _EquationPart(
+              _each?.toString() ?? '□',
+              const Color(0xFF059669),
+              '1人分',
+              boxed: true,
+            ),
+            const _EquationPart('あまり', Color(0xFF111827), ''),
+            _EquationPart(
+              _remainder?.toString() ?? '□',
+              const Color(0xFFB45309),
+              'あまり',
+              boxed: true,
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _RemainderValueRow(
+          label: '1人分',
+          color: const Color(0xFF059669),
+          values: const [1, 2, 3],
+          selected: _each,
+          onSelected: (value) => setState(() => _each = value),
+        ),
+        const SizedBox(height: 10),
+        _RemainderValueRow(
+          label: 'あまり',
+          color: const Color(0xFFB45309),
+          values: const [0, 1, 2],
+          selected: _remainder,
+          onSelected: (value) => setState(() => _remainder = value),
+        ),
+        if ((_each != null || _remainder != null) && !_complete) ...[
+          const SizedBox(height: 12),
+          const Text(
+            'お皿の中と、残っているいちごをもう一度見てみよう。',
+            style: TextStyle(
+              fontFamily: AppFonts.interface,
+              color: Color(0xFF64748B),
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+        if (_complete) ...[
+          const SizedBox(height: 16),
+          _RemainderGreenExplanation(
+            language: widget.language,
+            showNative: _showResultNative,
+            onToggleNative: () => setState(
+              () => _showResultNative = !_showResultNative,
+            ),
+            japanese: '1人分は2こ、残ったのは1こ。だから、7 ÷ 3 = 2 あまり 1 と書きます。',
+            ruby: '{1人|ひとり}{分|ぶん}は2こ、{残|のこ}ったのは1こ。だから、7 ÷ 3 = 2 あまり 1 と{書|か}きます。',
+            portuguese: 'Cada pessoa recebe 2 e sobra 1. Por isso escrevemos 7 ÷ 3 = 2, resto 1.',
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _RemainderValueButton extends StatelessWidget {
+  final int value;
+  final Color color;
+  final bool selected;
+  final VoidCallback onPressed;
+
+  const _RemainderValueButton({
+    required this.value,
+    required this.color,
+    required this.selected,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 62,
+      height: 52,
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          fixedSize: const Size(62, 52),
+          padding: EdgeInsets.zero,
+          backgroundColor: selected ? color.withValues(alpha: 0.10) : Colors.white,
+          side: BorderSide(
+            color: selected ? color : const Color(0xFFD7DEE8),
+            width: selected ? 2 : 1,
+          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        child: Text(
+          '$value',
+          style: TextStyle(
+            fontFamily: AppFonts.display,
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+            color: selected ? color : const Color(0xFF111827),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RemainderValueRow extends StatelessWidget {
+  final String label;
+  final Color color;
+  final List<int> values;
+  final int? selected;
+  final ValueChanged<int> onSelected;
+
+  const _RemainderValueRow({
+    required this.label,
+    required this.color,
+    required this.values,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 10,
+      runSpacing: 8,
+      children: [
+        SizedBox(
+          width: 64,
+          child: Text(
+            label,
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              fontFamily: AppFonts.interface,
+              color: color,
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        for (final value in values)
+          _RemainderValueButton(
+            value: value,
+            color: color,
+            selected: selected == value,
+            onPressed: () => onSelected(value),
+          ),
+      ],
+    );
+  }
+}
+
+class _RemainderTimesTableFinder extends StatefulWidget {
+  final AppLanguage language;
+
+  const _RemainderTimesTableFinder({required this.language});
+
+  @override
+  State<_RemainderTimesTableFinder> createState() =>
+      _RemainderTimesTableFinderState();
+}
+
+class _RemainderTimesTableFinderState extends State<_RemainderTimesTableFinder> {
+  int? _selected;
+  bool _showInstructionNative = false;
+  bool _showResultNative = false;
+
+  @override
+  Widget build(BuildContext context) {
+    const instruction = SupportLine(
+      japanese: '7をこえない、いちばん大きい3のだんを選ぼう。',
+      ruby: '7をこえない、いちばん{大|おお}きい3のだんを{選|えら}ぼう。',
+      native: {
+        AppLanguage.portuguese:
+            'Escolha a maior conta da tabuada do 3 que não passa de 7.',
+      },
+    );
+    final correct = _selected == 2;
+    return Column(
+      children: [
+        _SupportedInstruction(
+          line: instruction,
+          language: widget.language,
+          showNative: _showInstructionNative,
+          onToggleNative: () => setState(
+            () => _showInstructionNative = !_showInstructionNative,
+          ),
+          vocabularyEntries: _remainderLearnVocabulary,
+        ),
+        const SizedBox(height: 16),
+        const Text(
+          '3 × □ + 1 = 7',
+          style: TextStyle(
+            fontFamily: AppFonts.display,
+            color: Color(0xFF111827),
+            fontSize: 30,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          alignment: WrapAlignment.center,
+          children: [
+            for (final item in const [(1, 3), (2, 6), (3, 9)])
+              _TimesTableChoice(
+                factor: item.$1,
+                result: item.$2,
+                selected: _selected == item.$1,
+                onPressed: () => setState(() => _selected = item.$1),
+              ),
+          ],
+        ),
+        if (_selected != null && !correct) ...[
+          const SizedBox(height: 14),
+          const Text(
+            '7より大きくならないか、たしかめてみよう。',
+            style: TextStyle(
+              fontFamily: AppFonts.interface,
+              color: Color(0xFF64748B),
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+        if (correct) ...[
+          const SizedBox(height: 16),
+          _RemainderGreenExplanation(
+            language: widget.language,
+            showNative: _showResultNative,
+            onToggleNative: () => setState(
+              () => _showResultNative = !_showResultNative,
+            ),
+            japanese: '3 × 2 = 6です。7から6を使うと、1こ残ります。だから、7 ÷ 3 = 2 あまり 1です。',
+            ruby: '3 × 2 = 6です。7から6を{使|つか}うと、1こ{残|のこ}ります。だから、7 ÷ 3 = 2 あまり 1です。',
+            portuguese: '3 × 2 = 6. Ao usar 6 dos 7, sobra 1. Por isso, 7 ÷ 3 = 2, resto 1.',
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _TimesTableChoice extends StatelessWidget {
+  final int factor;
+  final int result;
+  final bool selected;
+  final VoidCallback onPressed;
+
+  const _TimesTableChoice({
+    required this.factor,
+    required this.result,
+    required this.selected,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size(152, 78),
+        backgroundColor: selected ? const Color(0xFFEFF6FF) : Colors.white,
+        side: BorderSide(
+          color: selected ? const Color(0xFF60A5FA) : const Color(0xFFD7DEE8),
+          width: selected ? 2 : 1,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      child: Text(
+        '3 × $factor = $result',
+        style: const TextStyle(
+          fontFamily: AppFonts.display,
+          color: Color(0xFF111827),
+          fontSize: 21,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _RemainderGrowthExplorer extends StatefulWidget {
+  final AppLanguage language;
+
+  const _RemainderGrowthExplorer({required this.language});
+
+  @override
+  State<_RemainderGrowthExplorer> createState() =>
+      _RemainderGrowthExplorerState();
+}
+
+class _RemainderGrowthExplorerState extends State<_RemainderGrowthExplorer> {
+  int _total = 6;
+  bool _showInstructionNative = false;
+  bool _showResultNative = false;
+
+  int get _each => _total ~/ 3;
+  int get _remainder => _total % 3;
+
+  @override
+  Widget build(BuildContext context) {
+    const instruction = SupportLine(
+      japanese: 'いちごを1こずつ増やして、あまりがどうなるか見てみよう。',
+      ruby: 'いちごを1こずつ{増|ふ}やして、あまりがどうなるか{見|み}てみよう。',
+      native: {
+        AppLanguage.portuguese:
+            'Acrescente um morango de cada vez e veja o que acontece com o resto.',
+      },
+    );
+    final reachedNine = _total == 9;
+    return Column(
+      children: [
+        _SupportedInstruction(
+          line: instruction,
+          language: widget.language,
+          showNative: _showInstructionNative,
+          onToggleNative: () => setState(
+            () => _showInstructionNative = !_showInstructionNative,
+          ),
+          vocabularyEntries: _remainderLearnVocabulary,
+        ),
+        const SizedBox(height: 16),
+        _RemainderMiniDiagram(each: _each, remainder: _remainder),
+        const SizedBox(height: 12),
+        Text(
+          '$_total ÷ 3 = $_each あまり $_remainder',
+          style: const TextStyle(
+            fontFamily: AppFonts.display,
+            color: Color(0xFF111827),
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 14),
+        FilledButton.icon(
+          onPressed: reachedNine ? null : () => setState(() => _total++),
+          icon: const Icon(Icons.add_rounded),
+          label: const Text('いちごを1こ増やす'),
+          style: FilledButton.styleFrom(
+            backgroundColor: const Color(0xFF2563EB),
+            foregroundColor: Colors.white,
+            minimumSize: const Size(210, 48),
+          ),
+        ),
+        if (reachedNine) ...[
+          const SizedBox(height: 16),
+          _RemainderGreenExplanation(
+            language: widget.language,
+            showNative: _showResultNative,
+            onToggleNative: () => setState(
+              () => _showResultNative = !_showResultNative,
+            ),
+            japanese: 'あまりが3こになる前に、3人にもう1こずつ分けられました。あまりは、わる数の3より小さくなります。',
+            ruby: 'あまりが3こになる{前|まえ}に、3{人|にん}にもう1こずつ{分|わ}けられました。あまりは、わる{数|かず}の3より{小|ちい}さくなります。',
+            portuguese: 'Antes de o resto chegar a 3, conseguimos dar mais 1 para cada uma das 3 pessoas. O resto é menor que 3.',
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _RemainderMiniDiagram extends StatelessWidget {
+  final int each;
+  final int remainder;
+
+  const _RemainderMiniDiagram({required this.each, required this.remainder});
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        for (var i = 0; i < 3; i++)
+          _RemainderVisualGroup(label: '${i + 1}人目', count: each),
+        if (remainder > 0)
+          _RemainderVisualGroup(
+            label: 'あまり',
+            count: remainder,
+            isRemainder: true,
+          ),
+      ],
+    );
+  }
+}
+
+class _RemainderVisualGroup extends StatelessWidget {
   final String label;
   final int count;
-  final String itemEmoji;
   final bool isRemainder;
 
-  const _RemainderGroupBox({
+  const _RemainderVisualGroup({
     required this.label,
     required this.count,
-    required this.itemEmoji,
     this.isRemainder = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final color = isRemainder ? const Color(0xFFFDE68A) : const Color(0xFFD1D5DB);
+    final background = isRemainder ? const Color(0xFFFFFBEB) : Colors.white;
+    final textColor = isRemainder ? const Color(0xFF92400E) : const Color(0xFF065F46);
     return Container(
-      width: 150,
-      constraints: const BoxConstraints(minHeight: 108),
+      width: 142,
+      constraints: const BoxConstraints(minHeight: 126),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isRemainder ? const Color(0xFFFFFBEB) : const Color(0xFFECFDF5),
+        color: background,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isRemainder
-              ? const Color(0xFFFDE68A)
-              : const Color(0xFFA7F3D0),
-        ),
+        border: Border.all(color: color),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -5947,160 +9126,98 @@ class _RemainderGroupBox extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: isRemainder
-                  ? const Color(0xFF92400E)
-                  : const Color(0xFF065F46),
+              fontFamily: AppFonts.interface,
               fontSize: 14,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w800,
+              color: textColor,
             ),
           ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 7,
-            runSpacing: 7,
-            children: [
-              for (var i = 0; i < count; i++)
-                _RemainderItemDot(itemEmoji: itemEmoji),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RemainderItemDot extends StatelessWidget {
-  final String itemEmoji;
-
-  const _RemainderItemDot({required this.itemEmoji});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 30,
-      height: 30,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Text(itemEmoji, style: const TextStyle(fontSize: 18)),
-    );
-  }
-}
-
-class _RemainderEquationPanel extends StatelessWidget {
-  const _RemainderEquationPanel();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _LargeEquation(
-          parts: [
-            _EquationPart('7', Color(0xFF2563EB), '全部の数'),
-            _EquationPart('÷', Color(0xFF111827), ''),
-            _EquationPart('3', Color(0xFFF97316), 'わる数'),
-            _EquationPart('=', Color(0xFF111827), ''),
-            _EquationPart('2', Color(0xFF059669), '1人分'),
-            _EquationPart('あまり', Color(0xFF111827), ''),
-            _EquationPart('1', Color(0xFFB45309), 'あまり'),
-          ],
-        ),
-        SizedBox(height: 18),
-        _RemainderShareDiagram(
-          total: 7,
-          groups: 3,
-          each: 2,
-          remainder: 1,
-          itemEmoji: '🍓',
-        ),
-      ],
-    );
-  }
-}
-
-class _RemainderMultiplicationPanel extends StatelessWidget {
-  const _RemainderMultiplicationPanel();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: const Color(0xFFECFDF5),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFA7F3D0)),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _LargeEquation(
-            parts: [
-              _EquationPart('3', Color(0xFFF97316), '1つ分'),
-              _EquationPart('×', Color(0xFF111827), ''),
-              _EquationPart('2', Color(0xFF059669), 'いくつ分'),
-              _EquationPart('+', Color(0xFF111827), ''),
-              _EquationPart('1', Color(0xFFB45309), 'あまり'),
-              _EquationPart('=', Color(0xFF111827), ''),
-              _EquationPart('7', Color(0xFF2563EB), '全部の数'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RemainderGrowthPanel extends StatelessWidget {
-  const _RemainderGrowthPanel();
-
-  @override
-  Widget build(BuildContext context) {
-    const rows = [
-      ('6 ÷ 3', '2 あまり 0'),
-      ('7 ÷ 3', '2 あまり 1'),
-      ('8 ÷ 3', '2 あまり 2'),
-      ('9 ÷ 3', '3 あまり 0'),
-    ];
-    return Column(
-      children: [
-        for (final row in rows)
-          Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
-            ),
-            child: Row(
+          const SizedBox(height: 4),
+          SizedBox(
+            height: 74,
+            child: _SharingPlate(
+              itemExtent: 31,
+              rimColor: isRemainder
+                  ? const Color(0xFFFCD34D)
+                  : const Color(0xFFCBD5E1),
               children: [
-                Text(
-                  row.$1,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                const Text('=', style: TextStyle(fontSize: 20)),
-                const SizedBox(width: 16),
-                Text(
-                  row.$2,
-                  style: const TextStyle(
-                    color: Color(0xFF065F46),
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
+                for (var i = 0; i < count; i++) const _CounterDot(size: 31),
               ],
             ),
           ),
-      ],
+        ],
+      ),
+    );
+  }
+}
+
+class _RemainderGreenExplanation extends StatelessWidget {
+  final AppLanguage language;
+  final bool showNative;
+  final VoidCallback onToggleNative;
+  final String japanese;
+  final String ruby;
+  final String portuguese;
+
+  const _RemainderGreenExplanation({
+    required this.language,
+    required this.showNative,
+    required this.onToggleNative,
+    required this.japanese,
+    required this.ruby,
+    required this.portuguese,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final line = SupportLine(
+      japanese: japanese,
+      ruby: ruby,
+      native: {AppLanguage.portuguese: portuguese},
+    );
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFECFDF5),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            // Ruby sits above the main glyphs, so align this with the text itself.
+            padding: EdgeInsets.only(top: 8),
+            child: Icon(
+              Icons.check_circle_rounded,
+              color: Color(0xFF059669),
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _SupportedTextLines(
+              lines: [line],
+              language: language,
+              showNative: showNative,
+              vocabularyEntries: _remainderLearnVocabulary,
+            ),
+          ),
+          const SizedBox(width: 8),
+          _IconSupportActions(
+            language: language,
+            showNative: showNative,
+            translateLabel: showNative ? '日本語で見る' : '${language.label}で見る',
+            audioLabel: '説明の音声',
+            onToggleNative: onToggleNative,
+            onAudio: () => LearningAudio.speakJapanese(
+              context,
+              label: 'あまりの説明',
+              text: japanese,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -6149,141 +9266,1003 @@ class _RemainderSummaryPanel extends StatelessWidget {
 class _BenchRemainderDiagram extends StatelessWidget {
   final int benchCount;
   final bool showWaiting;
+  final AppLanguage selectedLanguage;
 
   const _BenchRemainderDiagram({
     required this.benchCount,
     required this.showWaiting,
+    required this.selectedLanguage,
   });
 
   @override
   Widget build(BuildContext context) {
-    final seated = benchCount == 2 ? 8 : 9;
-    final waiting = showWaiting ? 1 : 0;
+    return _BenchSeatingActivity(
+      key: ValueKey('bench-seating-$benchCount-$showWaiting'),
+      benchCount: benchCount,
+      selectedLanguage: selectedLanguage,
+    );
+  }
+}
+
+class _BenchSeatingActivity extends StatefulWidget {
+  final int benchCount;
+  final AppLanguage selectedLanguage;
+
+  const _BenchSeatingActivity({
+    super.key,
+    required this.benchCount,
+    required this.selectedLanguage,
+  });
+
+  @override
+  State<_BenchSeatingActivity> createState() => _BenchSeatingActivityState();
+}
+
+class _BenchSeatingActivityState extends State<_BenchSeatingActivity> {
+  static const int _personCount = 9;
+  late List<int?> _seats;
+  bool _showInstructionNative = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _seats = List<int?>.filled(_personCount, null);
+  }
+
+  int get _capacity => widget.benchCount * 4;
+
+  bool get _hasUnseatedRemainder =>
+      widget.benchCount == 2 && _seatedCount == _capacity;
+
+  bool get _isComplete =>
+      widget.benchCount == 3 && _seatedCount == _personCount;
+
+  int get _seatedCount => _seats.whereType<int>().length;
+
+  List<int> _peopleForBench(int benchIndex) {
+    return [
+      for (var i = 0; i < _seats.length; i++)
+        if (_seats[i] == benchIndex) i,
+    ];
+  }
+
+  List<int> get _unseatedPeople {
+    return [
+      for (var i = 0; i < _seats.length; i++)
+        if (_seats[i] == null) i,
+    ];
+  }
+
+  bool _canSitOnBench(int benchIndex) {
+    return _peopleForBench(benchIndex).length < 4;
+  }
+
+  void _seatPerson(int personIndex, int benchIndex) {
+    if (!_canSitOnBench(benchIndex)) return;
+    setState(() => _seats[personIndex] = benchIndex);
+  }
+
+  void _reset() {
+    setState(() => _seats = List<int?>.filled(_personCount, null));
+  }
+
+  String get _instructionTranslation {
+    final isFirstTry = widget.benchCount == 2;
+    return switch (widget.selectedLanguage) {
+      AppLanguage.portuguese => isFirstTry
+          ? 'Primeiro, vamos sentar em 2 bancos!'
+          : 'Agora, vamos sentar em 3 bancos!',
+      AppLanguage.tagalog => isFirstTry
+          ? 'Subukan muna nating umupo sa 2 bangko!'
+          : 'Ngayon, subukan nating umupo sa 3 bangko!',
+      AppLanguage.vietnamese => isFirstTry
+          ? 'Truoc het, hay ngoi tren 2 chiec ghe bang!'
+          : 'Bay gio, hay ngoi tren 3 chiec ghe bang!',
+      AppLanguage.japanese => '',
+    };
+  }
+
+  Widget _buildInstruction(BuildContext context) {
+    final isFirstTry = widget.benchCount == 2;
+    final instruction = isFirstTry ? 'まずは2台にすわらせてみよう！' : '3台にすわらせてみよう！';
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFBFDBFE)),
       ),
-      child: Wrap(
-        spacing: 12,
-        runSpacing: 12,
-        alignment: WrapAlignment.center,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          for (var i = 0; i < benchCount; i++)
-            _BenchBox(index: i + 1, people: i == 2 ? 1 : 4),
-          if (waiting > 0) const _WaitingPersonBox(),
-          if (seated < 9)
-            const SizedBox.shrink()
-          else
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: const Color(0xFFECFDF5),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: const Text(
-                '9人みんなすわれます',
-                style: TextStyle(
-                  color: Color(0xFF065F46),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  instruction,
+                  style: const TextStyle(
+                    fontFamily: AppFonts.interface,
+                    color: Color(0xFF1E3A8A),
+                    fontSize: 18,
+                    height: 1.35,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-              ),
+                if (_showInstructionNative &&
+                    _instructionTranslation.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    _instructionTranslation,
+                    style: const TextStyle(
+                      fontFamily: AppFonts.interface,
+                      color: Color(0xFF475569),
+                      fontSize: 14,
+                      height: 1.4,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+              ],
             ),
+          ),
+          const SizedBox(width: 12),
+          _IconSupportActions(
+            language: widget.selectedLanguage,
+            showNative: _showInstructionNative,
+            translateLabel: widget.selectedLanguage.label,
+            audioLabel: '操作の音声',
+            onToggleNative: () {
+              setState(() => _showInstructionNative = !_showInstructionNative);
+            },
+            onAudio: () => LearningAudio.speakJapanese(
+              context,
+              label: '操作の案内',
+              text: instruction,
+            ),
+          ),
         ],
       ),
     );
   }
-}
-
-class _BenchBox extends StatelessWidget {
-  final int index;
-  final int people;
-
-  const _BenchBox({required this.index, required this.people});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 170,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFECFDF5),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFA7F3D0)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '$index台目',
-            style: const TextStyle(
-              color: Color(0xFF065F46),
-              fontWeight: FontWeight.w900,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildInstruction(context),
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
           ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              for (var i = 0; i < people; i++)
-                const Icon(
-                  Icons.person_rounded,
-                  size: 24,
-                  color: Color(0xFF4B5563),
-                ),
+              _PersonPool(
+                people: _unseatedPeople,
+                showSadRemainder: _hasUnseatedRemainder,
+              ),
+              const SizedBox(height: 18),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final availableWidth = constraints.maxWidth;
+                  final benchWidth = availableWidth < 620
+                      ? availableWidth
+                      : availableWidth < 920
+                          ? (availableWidth - 12) / 2
+                          : 280.0;
+                  return Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      for (var i = 0; i < widget.benchCount; i++)
+                        SizedBox(
+                          width: benchWidth,
+                          child: _BenchDropBox(
+                            index: i + 1,
+                            people: _peopleForBench(i),
+                            onAccept: (personIndex) => _seatPerson(personIndex, i),
+                            canAccept: _canSitOnBench(i),
+                            allSeated: _isComplete,
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
             ],
           ),
-          const SizedBox(height: 8),
-          Container(
-            height: 12,
-            decoration: BoxDecoration(
-              color: const Color(0xFFD1FAE5),
-              borderRadius: BorderRadius.circular(999),
-            ),
+        ),
+        const SizedBox(height: 12),
+        Align(
+          alignment: Alignment.centerRight,
+          child: OutlinedButton.icon(
+            onPressed: _reset,
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('もう一度'),
+          ),
+        ),
+        if (_hasUnseatedRemainder || _isComplete) ...[
+          const SizedBox(height: 12),
+          _BenchResultMessage(
+            isComplete: _isComplete,
+            language: widget.selectedLanguage,
           ),
         ],
-      ),
+      ],
     );
   }
 }
 
-class _WaitingPersonBox extends StatelessWidget {
-  const _WaitingPersonBox();
+class _PersonPool extends StatelessWidget {
+  final List<int> people;
+  final bool showSadRemainder;
+
+  const _PersonPool({
+    required this.people,
+    required this.showSadRemainder,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 150,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFFBEB),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFFDE68A)),
+    if (people.isEmpty) {
+      return const SizedBox(height: 72);
+    }
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      alignment: WrapAlignment.center,
+      children: [
+        for (final person in people)
+          _DraggablePerson(
+            personIndex: person,
+            isSad: showSadRemainder && people.length == 1,
+          ),
+      ],
+    );
+  }
+}
+
+class _DraggablePerson extends StatelessWidget {
+  final int personIndex;
+  final bool isSad;
+
+  const _DraggablePerson({
+    required this.personIndex,
+    required this.isSad,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final child = _IllustratedPerson(
+      personIndex: personIndex,
+      mood: isSad ? _PersonMood.sad : _PersonMood.neutral,
+      size: 68,
+    );
+    return Draggable<int>(
+      data: personIndex,
+      feedback: Material(
+        color: Colors.transparent,
+        child: Transform.scale(scale: 1.08, child: child),
       ),
-      child: const Column(
-        children: [
-          Text(
-            'まだすわれない人',
-            style: TextStyle(
-              color: Color(0xFF92400E),
-              fontWeight: FontWeight.w900,
+      childWhenDragging: Opacity(opacity: 0.25, child: child),
+      child: child,
+    );
+  }
+}
+
+class _BenchDropBox extends StatelessWidget {
+  final int index;
+  final List<int> people;
+  final ValueChanged<int> onAccept;
+  final bool canAccept;
+  final bool allSeated;
+
+  const _BenchDropBox({
+    required this.index,
+    required this.people,
+    required this.onAccept,
+    required this.canAccept,
+    required this.allSeated,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DragTarget<int>(
+      onWillAcceptWithDetails: (_) => canAccept,
+      onAcceptWithDetails: (details) => onAccept(details.data),
+      builder: (context, candidates, rejected) {
+        final isActive = candidates.isNotEmpty && canAccept;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          height: 220,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isActive ? const Color(0xFFEFF6FF) : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isActive ? const Color(0xFF93C5FD) : const Color(0xFFE5E7EB),
             ),
           ),
-          SizedBox(height: 10),
-          Icon(Icons.person_rounded, size: 30, color: Color(0xFF92400E)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '$index台目',
+                style: const TextStyle(
+                  color: Color(0xFF065F46),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const Spacer(),
+              SizedBox(
+                height: 144,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.bottomCenter,
+                  children: [
+                    const Positioned(
+                      bottom: 4,
+                      left: 2,
+                      right: 2,
+                      child: _LongBenchIllustration(),
+                    ),
+                    Positioned(
+                      bottom: 70,
+                      left: 4,
+                      right: 4,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          for (var slot = 0; slot < 4; slot++)
+                            if (slot < people.length)
+                              _IllustratedPerson(
+                                personIndex: people[slot],
+                                mood: allSeated
+                                    ? _PersonMood.happy
+                                    : _PersonMood.neutral,
+                                size: 44,
+                              )
+                            else
+                              const SizedBox(width: 44, height: 44),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _LongBenchIllustration extends StatelessWidget {
+  const _LongBenchIllustration();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 72,
+      child: CustomPaint(
+        painter: _LongBenchPainter(),
+        child: const SizedBox.expand(),
+      ),
+    );
+  }
+}
+
+class _LongBenchPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final seat = RRect.fromRectAndRadius(
+      Rect.fromLTWH(
+        size.width * 0.03,
+        size.height * 0.30,
+        size.width * 0.94,
+        size.height * 0.20,
+      ),
+      Radius.circular(size.height * 0.08),
+    );
+    final back = RRect.fromRectAndRadius(
+      Rect.fromLTWH(
+        size.width * 0.07,
+        size.height * 0.12,
+        size.width * 0.86,
+        size.height * 0.17,
+      ),
+      Radius.circular(size.height * 0.07),
+    );
+    final legPaint = Paint()
+      ..color = const Color(0xFF8B5E34)
+      ..strokeWidth = math.max(4, size.height * 0.07)
+      ..strokeCap = StrokeCap.round;
+    final backPaint = Paint()..color = const Color(0xFFD6A25E);
+    final seatPaint = Paint()..color = const Color(0xFFB7793D);
+    final highlightPaint = Paint()
+      ..color = Colors.white.withOpacity(0.28)
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawRRect(back, backPaint);
+    canvas.drawRRect(seat, seatPaint);
+    canvas.drawLine(
+      Offset(size.width * 0.18, size.height * 0.52),
+      Offset(size.width * 0.14, size.height * 0.92),
+      legPaint,
+    );
+    canvas.drawLine(
+      Offset(size.width * 0.82, size.height * 0.52),
+      Offset(size.width * 0.86, size.height * 0.92),
+      legPaint,
+    );
+    canvas.drawLine(
+      Offset(size.width * 0.14, size.height * 0.9),
+      Offset(size.width * 0.30, size.height * 0.9),
+      legPaint,
+    );
+    canvas.drawLine(
+      Offset(size.width * 0.70, size.height * 0.9),
+      Offset(size.width * 0.86, size.height * 0.9),
+      legPaint,
+    );
+    canvas.drawLine(
+      Offset(size.width * 0.12, size.height * 0.38),
+      Offset(size.width * 0.88, size.height * 0.38),
+      highlightPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+enum _PersonMood { neutral, happy, sad }
+
+class _IllustratedPerson extends StatelessWidget {
+  final int personIndex;
+  final _PersonMood mood;
+  final double size;
+
+  const _IllustratedPerson({
+    required this.personIndex,
+    required this.mood,
+    required this.size,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _PersonPainter(
+          palette: _PersonPalette.forIndex(personIndex),
+          mood: mood,
+        ),
+      ),
+    );
+  }
+}
+
+class _PersonPalette {
+  final Color skin;
+  final Color hair;
+  final Color shirt;
+  final int hairStyle;
+
+  const _PersonPalette({
+    required this.skin,
+    required this.hair,
+    required this.shirt,
+    required this.hairStyle,
+  });
+
+  static _PersonPalette forIndex(int index) {
+    const palettes = [
+      _PersonPalette(
+        skin: Color(0xFFE8B58D),
+        hair: Color(0xFF3A2417),
+        shirt: Color(0xFF2563EB),
+        hairStyle: 0,
+      ),
+      _PersonPalette(
+        skin: Color(0xFF8D5A3B),
+        hair: Color(0xFF171717),
+        shirt: Color(0xFF059669),
+        hairStyle: 3,
+      ),
+      _PersonPalette(
+        skin: Color(0xFFF2C9A5),
+        hair: Color(0xFF6B3F22),
+        shirt: Color(0xFFE11D48),
+        hairStyle: 4,
+      ),
+      _PersonPalette(
+        skin: Color(0xFFB77955),
+        hair: Color(0xFF211812),
+        shirt: Color(0xFFF59E0B),
+        hairStyle: 1,
+      ),
+      _PersonPalette(
+        skin: Color(0xFFF3D7BE),
+        hair: Color(0xFFB45309),
+        shirt: Color(0xFF7C3AED),
+        hairStyle: 2,
+      ),
+      _PersonPalette(
+        skin: Color(0xFFD39B74),
+        hair: Color(0xFF1F2937),
+        shirt: Color(0xFF0891B2),
+        hairStyle: 5,
+      ),
+      _PersonPalette(
+        skin: Color(0xFF6F4632),
+        hair: Color(0xFF111827),
+        shirt: Color(0xFFDC2626),
+        hairStyle: 3,
+      ),
+      _PersonPalette(
+        skin: Color(0xFFF0BE96),
+        hair: Color(0xFF4B5563),
+        shirt: Color(0xFF65A30D),
+        hairStyle: 0,
+      ),
+      _PersonPalette(
+        skin: Color(0xFFC9825A),
+        hair: Color(0xFF2F1F16),
+        shirt: Color(0xFF0F766E),
+        hairStyle: 5,
+      ),
+    ];
+    return palettes[index % palettes.length];
+  }
+}
+
+class _PersonPainter extends CustomPainter {
+  final _PersonPalette palette;
+  final _PersonMood mood;
+
+  const _PersonPainter({required this.palette, required this.mood});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final cx = w / 2;
+    final skinPaint = Paint()..color = palette.skin;
+    final hairPaint = Paint()..color = palette.hair;
+    final shirtPaint = Paint()..color = palette.shirt;
+    final shadowPaint = Paint()..color = const Color(0xFF0F172A).withOpacity(0.10);
+    final cheekPaint = Paint()..color = const Color(0xFFEF7C8E).withOpacity(0.34);
+    final neckPaint = Paint()..color = Color.lerp(palette.skin, const Color(0xFF8B4513), 0.10)!;
+    final linePaint = Paint()
+      ..color = const Color(0xFF111827)
+      ..strokeWidth = math.max(1.5, w * 0.032)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    final softLinePaint = Paint()
+      ..color = const Color(0xFF334155)
+      ..strokeWidth = math.max(1.1, w * 0.02)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(cx, h * 0.94),
+        width: w * 0.62,
+        height: h * 0.10,
+      ),
+      shadowPaint,
+    );
+
+    final bodyPath = Path()
+      ..moveTo(cx - w * 0.27, h * 0.67)
+      ..quadraticBezierTo(cx - w * 0.36, h * 0.82, cx - w * 0.26, h * 0.96)
+      ..lineTo(cx + w * 0.26, h * 0.96)
+      ..quadraticBezierTo(cx + w * 0.36, h * 0.82, cx + w * 0.27, h * 0.67)
+      ..quadraticBezierTo(cx, h * 0.58, cx - w * 0.27, h * 0.67)
+      ..close();
+    final leftArmPath = Path()
+      ..moveTo(cx - w * 0.23, h * 0.70)
+      ..cubicTo(cx - w * 0.32, h * 0.72, cx - w * 0.42, h * 0.78,
+          cx - w * 0.49, h * 0.88)
+      ..cubicTo(cx - w * 0.45, h * 0.94, cx - w * 0.38, h * 0.94,
+          cx - w * 0.34, h * 0.88)
+      ..cubicTo(cx - w * 0.30, h * 0.80, cx - w * 0.22, h * 0.76,
+          cx - w * 0.13, h * 0.72)
+      ..close();
+    final rightArmPath = Path()
+      ..moveTo(cx + w * 0.23, h * 0.70)
+      ..cubicTo(cx + w * 0.32, h * 0.72, cx + w * 0.42, h * 0.78,
+          cx + w * 0.49, h * 0.88)
+      ..cubicTo(cx + w * 0.45, h * 0.94, cx + w * 0.38, h * 0.94,
+          cx + w * 0.34, h * 0.88)
+      ..cubicTo(cx + w * 0.30, h * 0.80, cx + w * 0.22, h * 0.76,
+          cx + w * 0.13, h * 0.72)
+      ..close();
+    canvas.drawPath(leftArmPath, shirtPaint);
+    canvas.drawPath(rightArmPath, shirtPaint);
+    canvas.drawPath(bodyPath, shirtPaint);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(cx - w * 0.44, h * 0.89),
+        width: w * 0.10,
+        height: h * 0.08,
+      ),
+      skinPaint,
+    );
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(cx + w * 0.44, h * 0.89),
+        width: w * 0.10,
+        height: h * 0.08,
+      ),
+      skinPaint,
+    );
+
+    final neck = RRect.fromRectAndRadius(
+      Rect.fromCenter(
+        center: Offset(cx, h * 0.63),
+        width: w * 0.17,
+        height: h * 0.15,
+      ),
+      Radius.circular(w * 0.05),
+    );
+    canvas.drawRRect(neck, neckPaint);
+
+    final backHairPath = Path();
+    if (palette.hairStyle == 2) {
+      backHairPath
+        ..moveTo(cx - w * 0.31, h * 0.66)
+        ..lineTo(cx - w * 0.31, h * 0.30)
+        ..cubicTo(cx - w * 0.29, h * 0.10, cx - w * 0.12, h * 0.06,
+            cx, h * 0.07)
+        ..cubicTo(cx + w * 0.16, h * 0.06, cx + w * 0.31, h * 0.16,
+            cx + w * 0.31, h * 0.31)
+        ..lineTo(cx + w * 0.31, h * 0.66)
+        ..quadraticBezierTo(cx + w * 0.25, h * 0.74, cx + w * 0.17, h * 0.73)
+        ..lineTo(cx - w * 0.17, h * 0.73)
+        ..quadraticBezierTo(cx - w * 0.25, h * 0.74, cx - w * 0.31, h * 0.66)
+        ..close();
+      canvas.drawPath(backHairPath, hairPaint);
+    } else if (palette.hairStyle == 3) {
+      backHairPath
+        ..moveTo(cx - w * 0.34, h * 0.49)
+        ..cubicTo(cx - w * 0.45, h * 0.40, cx - w * 0.42, h * 0.22,
+            cx - w * 0.28, h * 0.19)
+        ..cubicTo(cx - w * 0.26, h * 0.06, cx - w * 0.08, h * 0.03,
+            cx + w * 0.01, h * 0.10)
+        ..cubicTo(cx + w * 0.13, h * 0.03, cx + w * 0.31, h * 0.10,
+            cx + w * 0.30, h * 0.22)
+        ..cubicTo(cx + w * 0.43, h * 0.28, cx + w * 0.43, h * 0.44,
+            cx + w * 0.33, h * 0.51)
+        ..lineTo(cx + w * 0.25, h * 0.64)
+        ..lineTo(cx - w * 0.25, h * 0.64)
+        ..close();
+      canvas.drawPath(backHairPath, hairPaint);
+    } else if (palette.hairStyle == 5) {
+      // A single, continuous long-hair silhouette reads more naturally at
+      // this small scale than separate lock strokes.
+      backHairPath
+        ..moveTo(cx - w * 0.30, h * 0.69)
+        ..lineTo(cx - w * 0.30, h * 0.30)
+        ..cubicTo(cx - w * 0.28, h * 0.12, cx - w * 0.11, h * 0.07,
+            cx, h * 0.08)
+        ..cubicTo(cx + w * 0.15, h * 0.07, cx + w * 0.30, h * 0.16,
+            cx + w * 0.30, h * 0.31)
+        ..lineTo(cx + w * 0.30, h * 0.69)
+        ..quadraticBezierTo(cx + w * 0.22, h * 0.73, cx + w * 0.15, h * 0.70)
+        ..lineTo(cx - w * 0.15, h * 0.70)
+        ..quadraticBezierTo(cx - w * 0.22, h * 0.73, cx - w * 0.30, h * 0.69)
+        ..close();
+      canvas.drawPath(backHairPath, hairPaint);
+    }
+
+    final faceRect = Rect.fromCenter(
+      center: Offset(cx, h * 0.39),
+      width: w * 0.48,
+      height: h * 0.52,
+    );
+    canvas.drawOval(faceRect, skinPaint);
+
+    final hairPath = Path();
+    final leftTemple = cx - w * 0.24;
+    final rightTemple = cx + w * 0.24;
+    final faceTop = faceRect.top;
+    final hairLine = h * 0.34;
+    if (palette.hairStyle == 0) {
+      hairPath
+        ..moveTo(leftTemple, h * 0.36)
+        ..cubicTo(leftTemple, faceTop + h * 0.04, cx - w * 0.10,
+            faceTop - h * 0.02, cx + w * 0.05, faceTop + h * 0.01)
+        ..cubicTo(rightTemple, faceTop + h * 0.04, rightTemple, h * 0.23,
+            rightTemple, h * 0.39)
+        ..cubicTo(cx + w * 0.10, hairLine, cx - w * 0.08, h * 0.31,
+            leftTemple, h * 0.36)
+        ..close();
+    } else if (palette.hairStyle == 1) {
+      hairPath
+        ..moveTo(leftTemple - w * 0.02, h * 0.36)
+        ..cubicTo(leftTemple, faceTop + h * 0.03, cx - w * 0.08,
+            faceTop - h * 0.02, cx, faceTop + h * 0.02)
+        ..cubicTo(cx + w * 0.12, faceTop - h * 0.01, rightTemple,
+            faceTop + h * 0.04, rightTemple + w * 0.02, h * 0.37)
+        ..cubicTo(cx + w * 0.11, h * 0.32, cx - w * 0.10, h * 0.32,
+            leftTemple - w * 0.02, h * 0.36)
+        ..close();
+    } else if (palette.hairStyle == 2) {
+      hairPath
+        ..moveTo(leftTemple - w * 0.04, h * 0.40)
+        ..cubicTo(leftTemple - w * 0.02, h * 0.24, cx - w * 0.15,
+            faceTop - h * 0.03, cx + w * 0.03, faceTop - h * 0.04)
+        ..cubicTo(cx + w * 0.18, faceTop - h * 0.03, rightTemple + w * 0.04,
+            h * 0.22, rightTemple + w * 0.04, h * 0.40)
+        ..cubicTo(cx + w * 0.14, h * 0.34, cx - w * 0.11, h * 0.33,
+            leftTemple - w * 0.04, h * 0.40)
+        ..close();
+    } else if (palette.hairStyle == 3) {
+      hairPath
+        ..moveTo(leftTemple - w * 0.05, h * 0.41)
+        ..cubicTo(leftTemple - w * 0.02, h * 0.22, cx - w * 0.16,
+            faceTop - h * 0.04, cx, faceTop - h * 0.05)
+        ..cubicTo(cx + w * 0.19, faceTop - h * 0.04, rightTemple + w * 0.07,
+            h * 0.22, rightTemple + w * 0.05, h * 0.42)
+        ..cubicTo(cx + w * 0.11, h * 0.35, cx - w * 0.11, h * 0.35,
+            leftTemple - w * 0.05, h * 0.41)
+        ..close();
+    } else if (palette.hairStyle == 4) {
+      hairPath
+        ..moveTo(leftTemple - w * 0.03, h * 0.39)
+        ..cubicTo(leftTemple - w * 0.01, h * 0.20, cx - w * 0.16,
+            faceTop - h * 0.03, cx + w * 0.02, faceTop - h * 0.04)
+        ..cubicTo(cx + w * 0.17, faceTop - h * 0.03, rightTemple + w * 0.07,
+            h * 0.22, rightTemple + w * 0.04, h * 0.39)
+        ..cubicTo(cx + w * 0.12, h * 0.33, cx - w * 0.06, h * 0.34,
+            leftTemple - w * 0.03, h * 0.39)
+        ..close();
+    } else if (palette.hairStyle == 5) {
+      hairPath
+        ..moveTo(leftTemple - w * 0.04, h * 0.40)
+        ..cubicTo(leftTemple - w * 0.01, h * 0.23, cx - w * 0.10,
+            faceTop - h * 0.04, cx, faceTop - h * 0.04)
+        ..cubicTo(cx + w * 0.11, faceTop - h * 0.04, rightTemple + w * 0.04,
+            h * 0.23, rightTemple + w * 0.04, h * 0.40)
+        ..cubicTo(cx + w * 0.12, h * 0.34, cx - w * 0.12, h * 0.34,
+            leftTemple - w * 0.04, h * 0.40)
+        ..close();
+    } else {
+      hairPath
+        ..moveTo(leftTemple - w * 0.04, h * 0.40)
+        ..cubicTo(leftTemple - w * 0.02, h * 0.20, cx - w * 0.15,
+            faceTop - h * 0.03, cx + w * 0.04, faceTop - h * 0.04)
+        ..cubicTo(cx + w * 0.19, faceTop - h * 0.03, rightTemple + w * 0.07,
+            h * 0.22, rightTemple + w * 0.05, h * 0.40)
+        ..cubicTo(cx + w * 0.10, h * 0.34, cx - w * 0.09, h * 0.33,
+            leftTemple - w * 0.04, h * 0.40)
+        ..close();
+    }
+    canvas.drawPath(hairPath, hairPaint);
+    if (palette.hairStyle == 1) {
+      canvas.drawLine(
+        Offset(cx, h * 0.15),
+        Offset(cx, h * 0.31),
+        Paint()
+          ..color = const Color(0x66FFFFFF)
+          ..strokeWidth = math.max(1, w * 0.018)
+          ..strokeCap = StrokeCap.round,
+      );
+    }
+
+    final eyePaint = Paint()..color = const Color(0xFF111827);
+    canvas.drawCircle(Offset(cx - w * 0.09, h * 0.42), w * 0.023, eyePaint);
+    canvas.drawCircle(Offset(cx + w * 0.09, h * 0.42), w * 0.023, eyePaint);
+    canvas.drawCircle(Offset(cx - w * 0.16, h * 0.48), w * 0.035, cheekPaint);
+    canvas.drawCircle(Offset(cx + w * 0.16, h * 0.48), w * 0.035, cheekPaint);
+
+    canvas.drawPath(
+      Path()
+        ..moveTo(cx - w * 0.16, h * 0.36)
+        ..quadraticBezierTo(cx - w * 0.08, h * 0.32, cx - w * 0.02, h * 0.35),
+      softLinePaint,
+    );
+    canvas.drawPath(
+      Path()
+        ..moveTo(cx + w * 0.02, h * 0.35)
+        ..quadraticBezierTo(cx + w * 0.10, h * 0.32, cx + w * 0.17, h * 0.36),
+      softLinePaint,
+    );
+
+    final mouthPath = Path();
+    if (mood == _PersonMood.happy) {
+      mouthPath.moveTo(cx - w * 0.10, h * 0.53);
+      mouthPath.quadraticBezierTo(cx, h * 0.62, cx + w * 0.10, h * 0.53);
+    } else if (mood == _PersonMood.sad) {
+      mouthPath.moveTo(cx - w * 0.10, h * 0.58);
+      mouthPath.quadraticBezierTo(cx, h * 0.49, cx + w * 0.10, h * 0.58);
+      final tearPaint = Paint()..color = const Color(0xFF60A5FA);
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(cx + w * 0.16, h * 0.50),
+          width: w * 0.045,
+          height: h * 0.075,
+        ),
+        tearPaint,
+      );
+    } else {
+      mouthPath.moveTo(cx - w * 0.08, h * 0.54);
+      mouthPath.quadraticBezierTo(cx, h * 0.57, cx + w * 0.08, h * 0.54);
+    }
+    canvas.drawPath(mouthPath, linePaint);
+
+    canvas.drawPath(
+      Path()
+        ..moveTo(cx - w * 0.14, h * 0.78)
+        ..quadraticBezierTo(cx, h * 0.84, cx + w * 0.14, h * 0.78),
+      Paint()
+        ..color = Colors.white.withOpacity(0.30)
+        ..strokeWidth = math.max(1.1, w * 0.025)
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _PersonPainter oldDelegate) {
+    return oldDelegate.palette != palette || oldDelegate.mood != mood;
+  }
+}
+
+class _BenchResultMessage extends StatefulWidget {
+  final bool isComplete;
+  final AppLanguage language;
+
+  const _BenchResultMessage({
+    required this.isComplete,
+    required this.language,
+  });
+
+  @override
+  State<_BenchResultMessage> createState() => _BenchResultMessageState();
+}
+
+class _BenchResultMessageState extends State<_BenchResultMessage> {
+  bool _showNative = false;
+
+  String get _japaneseText {
+    return widget.isComplete
+        ? '3台にすると、9人みんなすわれます。'
+        : '2台では8人までなので、1人がまだすわれません。';
+  }
+
+  String get _nativeText {
+    return switch (widget.language) {
+      AppLanguage.portuguese => widget.isComplete
+          ? 'Com 3 bancos, as 9 pessoas conseguem se sentar.'
+          : 'Com 2 bancos, cabem 8 pessoas. Ainda falta 1 pessoa sentar.',
+      AppLanguage.tagalog => widget.isComplete
+          ? 'Sa 3 bangko, makakaupo ang lahat ng 9 na tao.'
+          : 'Hanggang 8 tao ang makakaupo sa 2 bangko. May 1 tao pang hindi makaupo.',
+      AppLanguage.vietnamese => widget.isComplete
+          ? 'Voi 3 ghe bang, ca 9 nguoi deu ngoi duoc.'
+          : 'Hai ghe bang chi du cho 8 nguoi. Con 1 nguoi chua ngoi duoc.',
+      AppLanguage.japanese => '',
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final style = TextStyle(
+      fontFamily: AppFonts.interface,
+      color: widget.isComplete
+          ? const Color(0xFF047857)
+          : const Color(0xFF92400E),
+      fontSize: 21,
+      height: 1.45,
+      fontWeight: FontWeight.w800,
+    );
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      decoration: BoxDecoration(
+        color: widget.isComplete
+            ? const Color(0xFFECFDF5)
+            : const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (widget.isComplete) ...[
+            const Padding(
+              padding: EdgeInsets.only(top: 2),
+              child: Icon(
+                Icons.check_circle_rounded,
+                color: Color(0xFF059669),
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 10),
+          ],
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(_japaneseText, style: style),
+                if (_showNative && _nativeText.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    _nativeText,
+                    style: const TextStyle(
+                      fontFamily: AppFonts.interface,
+                      color: Color(0xFF64748B),
+                      fontSize: 15,
+                      height: 1.4,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          _IconSupportActions(
+            language: widget.language,
+            showNative: _showNative,
+            translateLabel: widget.language.label,
+            audioLabel: '結果の音声',
+            onToggleNative: () => setState(() => _showNative = !_showNative),
+            onAudio: () => LearningAudio.speakJapanese(
+              context,
+              label: '結果の説明',
+              text: _japaneseText,
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-class _RemainderContextSummaryPanel extends StatelessWidget {
-  const _RemainderContextSummaryPanel();
+class _RemainderContextSummaryPanel extends StatefulWidget {
+  final AppLanguage selectedLanguage;
+
+  const _RemainderContextSummaryPanel({required this.selectedLanguage});
+
+  @override
+  State<_RemainderContextSummaryPanel> createState() =>
+      _RemainderContextSummaryPanelState();
+}
+
+class _RemainderContextSummaryPanelState
+    extends State<_RemainderContextSummaryPanel> {
+  bool _showNative = false;
+
+  static const _conclusionLine = SupportLine(
+    japanese: '2台では1人すわれないので、答えは3台です。',
+    ruby: '2{台|だい}では1{人|ひとり}すわれないので、{答|こた}えは3{台|だい}です。',
+    native: {
+      AppLanguage.portuguese:
+          'Com 2 bancos, 1 pessoa ainda não consegue sentar. Por isso, a resposta é 3 bancos.',
+      AppLanguage.tagalog:
+          'Sa 2 bangko, may 1 tao pang hindi makaupo. Kaya 3 bangko ang sagot.',
+      AppLanguage.vietnamese:
+          'Voi 2 ghe bang, van con 1 nguoi chua ngoi duoc. Vi vay, dap an la 3 ghe bang.',
+    },
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -6295,27 +10274,67 @@ class _RemainderContextSummaryPanel extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFA7F3D0)),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '9 ÷ 4 = 2 あまり 1',
-            style: TextStyle(
-              fontFamily: AppFonts.display,
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Expanded(
+                child: Text(
+                  '9 ÷ 4 = 2 あまり 1',
+                  style: TextStyle(
+                    fontFamily: AppFonts.display,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              _IconSupportActions(
+                language: widget.selectedLanguage,
+                showNative: _showNative,
+                translateLabel: _showNative
+                    ? '日本語で見る'
+                    : '${widget.selectedLanguage.label}で見る',
+                audioLabel: 'まとめの音声',
+                onToggleNative: () {
+                  setState(() => _showNative = !_showNative);
+                },
+                onAudio: () => LearningAudio.speakJapanese(
+                  context,
+                  label: 'まとめの説明',
+                  text: _conclusionLine.japanese,
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 12),
-          Text(
-            '2台では1人すわれないので、答えは3台です。',
-            style: TextStyle(
+          const SizedBox(height: 12),
+          RubyText(
+            text: _conclusionLine.rubyText,
+            vocabularyEntries: _remainderContextVocabulary,
+            language: widget.selectedLanguage,
+            style: const TextStyle(
               color: Color(0xFF065F46),
               fontSize: 18,
               height: 1.5,
               fontWeight: FontWeight.w800,
             ),
           ),
+          if (_showNative &&
+              widget.selectedLanguage != AppLanguage.japanese &&
+              _conclusionLine.nativeFor(widget.selectedLanguage).isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              _conclusionLine.nativeFor(widget.selectedLanguage),
+              style: const TextStyle(
+                fontFamily: AppFonts.interface,
+                color: Color(0xFF047857),
+                fontSize: 15,
+                height: 1.4,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -6394,6 +10413,422 @@ const _divisionMultiplicationVocabulary = [
     category: 'math_language',
   ),
 ];
+
+class _InteractiveCookieShare extends StatefulWidget {
+  final AppLanguage language;
+
+  const _InteractiveCookieShare({required this.language});
+
+  @override
+  State<_InteractiveCookieShare> createState() =>
+      _InteractiveCookieShareState();
+}
+
+class _InteractiveCookieShareState extends State<_InteractiveCookieShare> {
+  final List<int> _groupCounts = List<int>.filled(3, 0);
+  bool _showMultiplication = false;
+  bool _showInstructionNative = false;
+  bool _showResultNative = false;
+
+  int get _placedCount => _groupCounts.fold(0, (sum, count) => sum + count);
+  int get _remainingCount => 12 - _placedCount;
+  bool get _isComplete =>
+      _remainingCount == 0 && _groupCounts.every((count) => count == 4);
+
+  void _placeCookie(int groupIndex) {
+    if (_groupCounts[groupIndex] >= 4 || _remainingCount == 0) return;
+    setState(() => _groupCounts[groupIndex]++);
+  }
+
+  void _reset() {
+    setState(() {
+      for (var i = 0; i < _groupCounts.length; i++) {
+        _groupCounts[i] = 0;
+      }
+      _showMultiplication = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const instruction = SupportLine(
+      japanese: 'クッキーを、1人分ずつ4こになるように運ぼう。',
+      ruby: 'クッキーを、{1人|ひとり}{分|ぶん}ずつ4こになるように{運|はこ}ぼう。',
+      native: {
+        AppLanguage.portuguese:
+            'Leve os biscoitos para que cada pessoa fique com 4.',
+      },
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SupportedInstruction(
+          line: instruction,
+          language: widget.language,
+          showNative: _showInstructionNative,
+          onToggleNative: () {
+            setState(() => _showInstructionNative = !_showInstructionNative);
+          },
+          vocabularyEntries: _divisionMultiplicationVocabulary,
+        ),
+        const SizedBox(height: 14),
+        Column(
+          children: [
+              _InteractiveCookieSource(remainingCount: _remainingCount),
+              const SizedBox(height: 14),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final compact = constraints.maxWidth < 680;
+                  return Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      for (var i = 0; i < _groupCounts.length; i++)
+                        SizedBox(
+                          width: compact ? 148 : 180,
+                          child: _InteractiveCookieTarget(
+                            index: i + 1,
+                            count: _groupCounts[i],
+                            acceptsCookie:
+                                _groupCounts[i] < 4 && _remainingCount > 0,
+                            onAccept: () => _placeCookie(i),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: _placedCount == 0 ? null : _reset,
+                  icon: const Icon(Icons.refresh_rounded, size: 18),
+                  label: const Text('もう一度'),
+                ),
+              ),
+          ],
+        ),
+        if (_isComplete) ...[
+          const SizedBox(height: 14),
+          _InteractiveCookieResult(
+            language: widget.language,
+            showNative: _showResultNative,
+            showMultiplication: _showMultiplication,
+            onToggleNative: () {
+              setState(() => _showResultNative = !_showResultNative);
+            },
+            onSelectMultiplication: (selected) {
+              setState(() => _showMultiplication = selected);
+            },
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _InteractiveCookieResult extends StatelessWidget {
+  final AppLanguage language;
+  final bool showNative;
+  final bool showMultiplication;
+  final VoidCallback onToggleNative;
+  final ValueChanged<bool> onSelectMultiplication;
+
+  const _InteractiveCookieResult({
+    required this.language,
+    required this.showNative,
+    required this.showMultiplication,
+    required this.onToggleNative,
+    required this.onSelectMultiplication,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final explanation = showMultiplication
+        ? const SupportLine(
+            japanese: '4こずつが3人分あるから、3 × 4 = 12。',
+            ruby: '4こずつが3{人|にん}{分|ぶん}あるから、3 × 4 = 12。',
+            native: {
+              AppLanguage.portuguese:
+                  'Há 3 pessoas com 4 biscoitos cada uma, por isso 3 × 4 = 12.',
+            },
+          )
+        : const SupportLine(
+            japanese: '12こを3人で分けたから、12 ÷ 3 = 4。',
+            ruby: '12こを3{人|にん}で{分|わ}けたから、12 ÷ 3 = 4。',
+            native: {
+              AppLanguage.portuguese:
+                  'Dividimos 12 biscoitos entre 3 pessoas, por isso 12 ÷ 3 = 4.',
+            },
+          );
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFECFDF5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(top: 2),
+                child: Icon(
+                  Icons.check_circle_rounded,
+                  color: Color(0xFF059669),
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  '3人に4こずつ分けられたね。',
+                  style: TextStyle(
+                    fontFamily: AppFonts.interface,
+                    fontSize: 18,
+                    height: 1.4,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF047857),
+                  ),
+                ),
+              ),
+              _IconSupportActions(
+                language: language,
+                showNative: showNative,
+                translateLabel: showNative ? '日本語で見る' : '${language.label}で見る',
+                audioLabel: '説明の音声',
+                onToggleNative: onToggleNative,
+                onAudio: () => LearningAudio.speakJapanese(
+                  context,
+                  label: '分け方の説明',
+                  text: '3人に4こずつ分けられたね。${explanation.japanese}',
+                ),
+              ),
+            ],
+          ),
+          if (showNative && language != AppLanguage.japanese) ...[
+            const SizedBox(height: 4),
+            Padding(
+              padding: const EdgeInsets.only(left: 32),
+              child: Text(
+                language == AppLanguage.portuguese
+                    ? 'Conseguimos dividir 4 biscoitos para cada pessoa.'
+                    : '',
+                style: const TextStyle(
+                  fontFamily: AppFonts.interface,
+                  fontSize: 14,
+                  height: 1.35,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF047857),
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              ChoiceChip(
+                label: const Text('わり算で見る'),
+                selected: !showMultiplication,
+                onSelected: (_) => onSelectMultiplication(false),
+                showCheckmark: true,
+                checkmarkColor: const Color(0xFF047857),
+                backgroundColor: const Color(0xFFF0FDF4),
+                selectedColor: const Color(0xFFD1FAE5),
+                side: const BorderSide(color: Color(0xFFA7F3D0)),
+                labelStyle: const TextStyle(
+                  fontFamily: AppFonts.interface,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF047857),
+                ),
+              ),
+              ChoiceChip(
+                label: const Text('かけ算で見る'),
+                selected: showMultiplication,
+                onSelected: (_) => onSelectMultiplication(true),
+                showCheckmark: true,
+                checkmarkColor: const Color(0xFF1D4ED8),
+                backgroundColor: const Color(0xFFEFF6FF),
+                selectedColor: const Color(0xFFDBEAFE),
+                side: const BorderSide(color: Color(0xFFBFDBFE)),
+                labelStyle: const TextStyle(
+                  fontFamily: AppFonts.interface,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1D4ED8),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _LargeEquation(
+            parts: showMultiplication
+                ? const [
+                    _EquationPart('3', Color(0xFFF97316), '人数'),
+                    _EquationPart('×', Color(0xFF111827), ''),
+                    _EquationPart('4', Color(0xFF059669), '1人分'),
+                    _EquationPart('=', Color(0xFF111827), ''),
+                    _EquationPart('12', Color(0xFF2563EB), 'ぜんぶの数'),
+                  ]
+                : const [
+                    _EquationPart('12', Color(0xFF2563EB), 'ぜんぶの数'),
+                    _EquationPart('÷', Color(0xFF111827), ''),
+                    _EquationPart('3', Color(0xFFF97316), '人数'),
+                    _EquationPart('=', Color(0xFF111827), ''),
+                    _EquationPart('4', Color(0xFF059669), '1人分'),
+                  ],
+          ),
+          const SizedBox(height: 10),
+          _SupportedTextLines(
+            lines: [explanation],
+            language: language,
+            showNative: showNative,
+            vocabularyEntries: _divisionMultiplicationVocabulary,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InteractiveCookieSource extends StatelessWidget {
+  final int remainingCount;
+
+  const _InteractiveCookieSource({required this.remainingCount});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      constraints: const BoxConstraints(minHeight: 82),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: remainingCount == 0
+          ? const Center(
+              child: Text(
+                'ぜんぶ分けられたね！',
+                style: TextStyle(
+                  fontFamily: AppFonts.interface,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF059669),
+                ),
+              ),
+            )
+          : Center(
+              child: Wrap(
+                spacing: 9,
+                runSpacing: 9,
+                alignment: WrapAlignment.center,
+                children: [
+                  for (var i = 0; i < remainingCount; i++)
+                    Draggable<int>(
+                      data: i,
+                      feedback: const Material(
+                        color: Colors.transparent,
+                        child: _CookieDot(size: 36),
+                      ),
+                      childWhenDragging: const Opacity(
+                        opacity: 0.25,
+                        child: _CookieDot(size: 36),
+                      ),
+                      child: const _CookieDot(size: 36),
+                    ),
+                ],
+              ),
+            ),
+    );
+  }
+}
+
+class _InteractiveCookieTarget extends StatelessWidget {
+  final int index;
+  final int count;
+  final bool acceptsCookie;
+  final VoidCallback onAccept;
+
+  const _InteractiveCookieTarget({
+    required this.index,
+    required this.count,
+    required this.acceptsCookie,
+    required this.onAccept,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DragTarget<int>(
+      onWillAccept: (_) => acceptsCookie,
+      onAccept: (_) => onAccept(),
+      builder: (context, candidateData, _) {
+        final isTargeted = candidateData.isNotEmpty && acceptsCookie;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          constraints: const BoxConstraints.tightFor(height: 154),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isTargeted ? const Color(0xFFEFF6FF) : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isTargeted
+                  ? const Color(0xFF60A5FA)
+                  : const Color(0xFFD1D5DB),
+              width: isTargeted ? 2 : 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.person_rounded,
+                    color: Color(0xFF64748B),
+                    size: 18,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '$index人目',
+                    style: const TextStyle(
+                      fontFamily: AppFonts.interface,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF334155),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Expanded(
+                child: _SharingPlate(
+                  active: isTargeted,
+                  itemExtent: 32,
+                  children: [
+                    for (var i = 0; i < count; i++) const _CookieDot(size: 32),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 2),
+              _PlateProgressLabel(count: count, total: 4),
+              const SizedBox(height: 2),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
 
 class _CookieShareDiagram extends StatelessWidget {
   final int total;
@@ -6479,27 +10914,41 @@ class _CookiePersonBox extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 112),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFECFDF5),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFA7F3D0)),
+        border: Border.all(color: const Color(0xFFD1D5DB)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            '$index人目',
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF065F46),
-            ),
+          Row(
+            children: [
+              const Icon(
+                Icons.person_rounded,
+                color: Color(0xFF64748B),
+                size: 17,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '$index人目',
+                style: const TextStyle(
+                  fontFamily: AppFonts.interface,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF334155),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 7,
-            runSpacing: 7,
-            children: [for (var i = 0; i < count; i++) const _CookieDot()],
+          const SizedBox(height: 3),
+          SizedBox(
+            height: 66,
+            child: _SharingPlate(
+              itemExtent: 28,
+              children: [
+                for (var i = 0; i < count; i++) const _CookieDot(size: 28),
+              ],
+            ),
           ),
         ],
       ),
@@ -6508,36 +10957,102 @@ class _CookiePersonBox extends StatelessWidget {
 }
 
 class _CookieDot extends StatelessWidget {
-  const _CookieDot();
+  final double size;
+
+  const _CookieDot({this.size = 30});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 30,
-      height: 30,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: const Text('🍪', style: TextStyle(fontSize: 18)),
+    return SizedBox(
+      width: size,
+      height: size,
+      child: const CustomPaint(painter: _CookieDotPainter()),
     );
   }
+}
+
+class _CookieDotPainter extends CustomPainter {
+  const _CookieDotPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.shortestSide * 0.36;
+    canvas.drawCircle(
+      center.translate(0, 1.2),
+      radius,
+      Paint()
+        ..color = const Color(0x220F172A)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.5),
+    );
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..shader = RadialGradient(
+          center: const Alignment(-0.3, -0.35),
+          colors: const [
+            Color(0xFFFFE8A3),
+            Color(0xFFF59E0B),
+            Color(0xFFB45309),
+          ],
+          stops: [0, 0.7, 1],
+        ).createShader(Rect.fromCircle(center: center, radius: radius)),
+    );
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = const Color(0x70FFFFFF)
+        ..strokeWidth = 1
+        ..style = PaintingStyle.stroke,
+    );
+    final chipPaint = Paint()..color = const Color(0xFF7C2D12);
+    for (final p in const [
+      Offset(0.35, 0.35),
+      Offset(0.58, 0.33),
+      Offset(0.7, 0.53),
+      Offset(0.47, 0.62),
+      Offset(0.31, 0.68),
+    ]) {
+      canvas.drawCircle(
+        Offset(size.width * p.dx, size.height * p.dy),
+        radius * 0.13,
+        chipPaint,
+      );
+    }
+    canvas.drawCircle(
+      center.translate(-radius * 0.34, -radius * 0.32),
+      radius * 0.16,
+      Paint()..color = const Color(0x66FFFFFF),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _CookieDotPainter oldDelegate) => false;
 }
 
 class _EquationPart {
   final String text;
   final Color color;
   final String label;
+  final String? nativeLabel;
+  final bool boxed;
 
-  const _EquationPart(this.text, this.color, this.label);
+  const _EquationPart(
+    this.text,
+    this.color,
+    this.label, {
+    this.nativeLabel,
+    this.boxed = false,
+  });
 }
 
 class _LargeEquation extends StatelessWidget {
   final List<_EquationPart> parts;
+  final bool showNative;
 
-  const _LargeEquation({required this.parts});
+  const _LargeEquation({required this.parts, this.showNative = false});
 
   @override
   Widget build(BuildContext context) {
@@ -6550,16 +11065,28 @@ class _LargeEquation extends StatelessWidget {
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                part.text,
-                style: TextStyle(
-                  fontFamily: AppFonts.display,
-                  fontSize: part.label.isEmpty ? 28 : 34,
-                  height: 1,
-                  fontWeight: FontWeight.w700,
-                  color: part.color,
+              if (part.boxed)
+                Text(
+                  part.text,
+                  style: TextStyle(
+                    fontFamily: AppFonts.display,
+                    fontSize: 36,
+                    height: 1,
+                    fontWeight: FontWeight.w700,
+                    color: part.color,
+                  ),
+                )
+              else
+                Text(
+                  part.text,
+                  style: TextStyle(
+                    fontFamily: AppFonts.display,
+                    fontSize: part.label.isEmpty ? 28 : 34,
+                    height: 1,
+                    fontWeight: FontWeight.w700,
+                    color: part.color,
+                  ),
                 ),
-              ),
               if (part.label.isNotEmpty) ...[
                 const SizedBox(height: 6),
                 Container(
@@ -6579,6 +11106,19 @@ class _LargeEquation extends StatelessWidget {
                     color: part.color,
                   ),
                 ),
+                if (showNative && part.nativeLabel != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    part.nativeLabel!,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 10,
+                      height: 1.25,
+                      fontWeight: FontWeight.w600,
+                      color: part.color.withValues(alpha: 0.86),
+                    ),
+                  ),
+                ],
               ],
             ],
           ),
@@ -6587,180 +11127,102 @@ class _LargeEquation extends StatelessWidget {
   }
 }
 
-class _EquationPairPanel extends StatelessWidget {
-  const _EquationPairPanel();
+class _EquationPairPanel extends StatefulWidget {
+  final AppLanguage language;
+
+  const _EquationPairPanel({required this.language});
+
+  @override
+  State<_EquationPairPanel> createState() => _EquationPairPanelState();
+}
+
+class _EquationPairPanelState extends State<_EquationPairPanel> {
+  bool _showNative = false;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.fromLTRB(18, 12, 18, 14),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _LargeEquation(
-            parts: [
-              _EquationPart('12', Color(0xFF2563EB), 'ぜんぶの数'),
-              _EquationPart('÷', Color(0xFF111827), ''),
-              _EquationPart('3', Color(0xFFF97316), '人数'),
-              _EquationPart('=', Color(0xFF111827), ''),
-              _EquationPart('4', Color(0xFF059669), '1人分'),
-            ],
-          ),
-          SizedBox(height: 20),
-          _LargeEquation(
-            parts: [
-              _EquationPart('3', Color(0xFFF97316), '人数'),
-              _EquationPart('×', Color(0xFF111827), ''),
-              _EquationPart('4', Color(0xFF059669), '1人分'),
-              _EquationPart('=', Color(0xFF111827), ''),
-              _EquationPart('12', Color(0xFF2563EB), 'ぜんぶの数'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BoxEquationPair extends StatelessWidget {
-  final String answer;
-
-  const _BoxEquationPair({required this.answer});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _BoxEquationText(text: '15 ÷ 3 = $answer'),
-          const SizedBox(height: 12),
-          _BoxEquationText(text: '3 × $answer = 15'),
-        ],
-      ),
-    );
-  }
-}
-
-class _BoxEquationText extends StatelessWidget {
-  final String text;
-
-  const _BoxEquationText({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        fontFamily: AppFonts.display,
-        fontSize: 28,
-        height: 1.25,
-        fontWeight: FontWeight.w700,
-        color: Color(0xFF111827),
-      ),
-    );
-  }
-}
-
-class _MultiplicationChoiceCard extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final bool correct;
-  final VoidCallback onTap;
-
-  const _MultiplicationChoiceCard({
-    required this.label,
-    required this.selected,
-    required this.correct,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final color = correct
-        ? const Color(0xFFDCFCE7)
-        : selected
-        ? const Color(0xFFFFF7ED)
-        : Colors.white;
-    return SizedBox(
-      width: 190,
-      height: 76,
-      child: Material(
-        color: color,
-        borderRadius: BorderRadius.circular(14),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
-          child: Container(
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
-            ),
-            child: Text(
-              label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontFamily: AppFonts.display,
-                fontSize: 22,
-                height: 1.15,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF111827),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ResultMessage extends StatelessWidget {
-  final bool success;
-  final String text;
-
-  const _ResultMessage({required this.success, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-      decoration: BoxDecoration(
-        color: success ? const Color(0xFFECFDF5) : const Color(0xFFFFFBEB),
-        borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            success ? Icons.check_circle_rounded : Icons.lightbulb_rounded,
-            color: success ? const Color(0xFF059669) : const Color(0xFFD97706),
-          ),
-          const SizedBox(width: 10),
           Expanded(
-            child: Text(
-              text,
-              style: TextStyle(
-                fontSize: 16,
-                height: 1.45,
-                fontWeight: FontWeight.w800,
-                color: success
-                    ? const Color(0xFF065F46)
-                    : const Color(0xFF92400E),
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _LargeEquation(
+                  showNative: _showNative,
+                  parts: const [
+                    _EquationPart(
+                      '12',
+                      Color(0xFF2563EB),
+                      'ぜんぶの数',
+                      nativeLabel: 'total',
+                    ),
+                    _EquationPart('÷', Color(0xFF111827), ''),
+                    _EquationPart(
+                      '3',
+                      Color(0xFFF97316),
+                      '人数',
+                      nativeLabel: 'pessoas',
+                    ),
+                    _EquationPart('=', Color(0xFF111827), ''),
+                    _EquationPart(
+                      '4',
+                      Color(0xFF059669),
+                      '1人分',
+                      nativeLabel: 'por pessoa',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                _LargeEquation(
+                  showNative: _showNative,
+                  parts: const [
+                    _EquationPart(
+                      '3',
+                      Color(0xFFF97316),
+                      '人数',
+                      nativeLabel: 'pessoas',
+                    ),
+                    _EquationPart('×', Color(0xFF111827), ''),
+                    _EquationPart(
+                      '4',
+                      Color(0xFF059669),
+                      '1人分',
+                      nativeLabel: 'por pessoa',
+                    ),
+                    _EquationPart('=', Color(0xFF111827), ''),
+                    _EquationPart(
+                      '12',
+                      Color(0xFF2563EB),
+                      'ぜんぶの数',
+                      nativeLabel: 'total',
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          _IconSupportActions(
+            language: widget.language,
+            showNative: _showNative,
+            translateLabel: '翻訳',
+            audioLabel: '音声',
+            onToggleNative: () {
+              setState(() => _showNative = !_showNative);
+            },
+            onAudio: () => LearningAudio.speakJapanese(
+              context,
+              label: '式の数の役割',
+              text: '12はぜんぶの数、3は人数、4は1人分です。',
             ),
           ),
         ],
@@ -6780,8 +11242,6 @@ class _ZeroOneDivisionLearn extends StatefulWidget {
 
 class _ZeroOneDivisionLearnState extends State<_ZeroOneDivisionLearn> {
   int _scenarioIndex = 0;
-  bool _showStory = false;
-  int _storyStep = 0;
   bool _showResult = false;
   bool _showProblemNative = false;
   bool _showInstructionNative = false;
@@ -6793,8 +11253,6 @@ class _ZeroOneDivisionLearnState extends State<_ZeroOneDivisionLearn> {
   void _selectScenario(int index) {
     setState(() {
       _scenarioIndex = index;
-      _showStory = false;
-      _storyStep = 0;
       _showResult = false;
       _showInstructionNative = false;
       _showResultNative = false;
@@ -6817,20 +11275,8 @@ class _ZeroOneDivisionLearnState extends State<_ZeroOneDivisionLearn> {
   void _resetScenario() {
     setState(() {
       _showResult = false;
-      _storyStep = 0;
       for (var i = 0; i < _berryOwners.length; i++) {
         _berryOwners[i] = null;
-      }
-    });
-  }
-
-  void _showAnswer() {
-    setState(() {
-      _showResult = true;
-      if (_scenario.kind == _ZeroOneScenarioKind.divideByOne) {
-        for (var i = 0; i < _berryOwners.length; i++) {
-          _berryOwners[i] = 0;
-        }
       }
     });
   }
@@ -6888,7 +11334,7 @@ class _ZeroOneDivisionLearnState extends State<_ZeroOneDivisionLearn> {
                       style: TextStyle(
                         color: Color(0xFF111827),
                         fontSize: 22,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -6927,20 +11373,6 @@ class _ZeroOneDivisionLearnState extends State<_ZeroOneDivisionLearn> {
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
-              _LearnIconButton(
-                semanticLabel: _showStory ? '操作する' : '見てみる',
-                icon: _showStory
-                    ? Icons.pan_tool_alt_rounded
-                    : Icons.play_circle_outline_rounded,
-                onPressed: () {
-                  setState(() {
-                    _showStory = !_showStory;
-                    _storyStep = 0;
-                    _showResult = false;
-                  });
-                },
-              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -6949,56 +11381,21 @@ class _ZeroOneDivisionLearnState extends State<_ZeroOneDivisionLearn> {
             onChanged: _selectScenario,
           ),
           const SizedBox(height: 16),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 220),
-            child: _showStory
-                ? _ZeroOneStoryBoard(
-                    key: ValueKey('story-$_scenarioIndex-$_storyStep'),
-                    scenario: _scenario,
-                    step: _storyStep,
-                    selectedLanguage: widget.selectedLanguage,
-                    showInstructionNative: _showInstructionNative,
-                    onToggleInstructionNative: () {
-                      setState(() {
-                        _showInstructionNative = !_showInstructionNative;
-                      });
-                    },
-                    onNext: () {
-                      setState(() {
-                        _storyStep = (_storyStep + 1).clamp(
-                          0,
-                          _scenario.maxStoryStep,
-                        );
-                        _showResult = _storyStep == _scenario.maxStoryStep;
-                      });
-                    },
-                    onBack: () {
-                      setState(() {
-                        _storyStep = (_storyStep - 1).clamp(
-                          0,
-                          _scenario.maxStoryStep,
-                        );
-                        _showResult = _storyStep == _scenario.maxStoryStep;
-                      });
-                    },
-                  )
-                : _ZeroOneDragBoard(
-                    key: ValueKey('drag-$_scenarioIndex'),
-                    scenario: _scenario,
-                    sourceBerryIds: _sourceBerryIds,
-                    targetBerryIds: _targetBerryIds,
-                    showResult: _showResult,
-                    selectedLanguage: widget.selectedLanguage,
-                    showInstructionNative: _showInstructionNative,
-                    onToggleInstructionNative: () {
-                      setState(() {
-                        _showInstructionNative = !_showInstructionNative;
-                      });
-                    },
-                    onMoveBerry: _moveBerry,
-                    onShowAnswer: _showAnswer,
-                    onReset: _resetScenario,
-                  ),
+          _ZeroOneDragBoard(
+            key: ValueKey('drag-$_scenarioIndex'),
+            scenario: _scenario,
+            sourceBerryIds: _sourceBerryIds,
+            targetBerryIds: _targetBerryIds,
+            showResult: _showResult,
+            selectedLanguage: widget.selectedLanguage,
+            showInstructionNative: _showInstructionNative,
+            onToggleInstructionNative: () {
+              setState(() {
+                _showInstructionNative = !_showInstructionNative;
+              });
+            },
+            onMoveBerry: _moveBerry,
+            onReset: _resetScenario,
           ),
           const SizedBox(height: 14),
           if (shouldShowResult) ...[
@@ -7343,7 +11740,6 @@ class _ZeroOneDragBoard extends StatelessWidget {
   final bool showInstructionNative;
   final VoidCallback onToggleInstructionNative;
   final void Function(int berryIndex, int? targetIndex) onMoveBerry;
-  final VoidCallback onShowAnswer;
   final VoidCallback onReset;
 
   const _ZeroOneDragBoard({
@@ -7356,7 +11752,6 @@ class _ZeroOneDragBoard extends StatelessWidget {
     required this.showInstructionNative,
     required this.onToggleInstructionNative,
     required this.onMoveBerry,
-    required this.onShowAnswer,
     required this.onReset,
   });
 
@@ -7412,20 +11807,6 @@ class _ZeroOneDragBoard extends StatelessWidget {
               semanticLabel: 'やり直す',
               icon: Icons.refresh_rounded,
               onPressed: onReset,
-            ),
-            const SizedBox(width: 10),
-            FilledButton(
-              onPressed: onShowAnswer,
-              style: FilledButton.styleFrom(
-                minimumSize: const Size(128, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'たしかめる',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
-              ),
             ),
           ],
         ),
@@ -8109,8 +12490,6 @@ class _EqualShareInteractiveLearnState
   static const int _berryCount = 6;
   static const int _plateCount = 3;
   final List<int?> _berryPlates = List<int?>.filled(_berryCount, null);
-  bool _showStory = false;
-  int _storyStep = 0;
   late String _message;
   bool _isCorrect = false;
   bool _showProblemNative = false;
@@ -8186,14 +12565,6 @@ class _EqualShareInteractiveLearnState
     ];
   }
 
-  List<int> _storyPlateForStep(int step) {
-    final placements = <int>[];
-    for (var i = 0; i < _berryCount; i++) {
-      placements.add(i < step ? widget.storyOrder[i] : -1);
-    }
-    return placements;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -8229,9 +12600,11 @@ class _EqualShareInteractiveLearnState
                           child: Text(
                             widget.title,
                             style: const TextStyle(
+                              fontFamily: AppFonts.display,
                               color: Color(0xFF111827),
                               fontSize: 22,
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.w700,
+                              height: 1.3,
                             ),
                           ),
                         ),
@@ -8264,66 +12637,32 @@ class _EqualShareInteractiveLearnState
                       language: widget.selectedLanguage,
                       showNative: _showProblemNative,
                       vocabularyEntries: widget.vocabularyEntries,
+                      fontWeight: FontWeight.w600,
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
-              _LearnIconButton(
-                semanticLabel: _showStory ? '操作する' : '見てみる',
-                icon: _showStory
-                    ? Icons.pan_tool_alt_rounded
-                    : Icons.play_circle_outline_rounded,
-                onPressed: () {
-                  setState(() {
-                    _showStory = !_showStory;
-                    _storyStep = 0;
-                  });
-                },
-              ),
             ],
           ),
           const SizedBox(height: 18),
-          if (_showStory)
-            _EqualShareStoryMode(
-              step: _storyStep,
-              placements: _storyPlateForStep(_storyStep),
-              storyMessage: widget.storyMessage,
-              storyCompleteMessage: widget.storyCompleteMessage,
-              resultLines: widget.resultLines,
-              equationReading: widget.equationReading,
-              equationSupports: widget.equationSupports,
-              vocabularyEntries: widget.vocabularyEntries,
-              onNext: () {
-                setState(() {
-                  _storyStep = (_storyStep + 1).clamp(0, 6);
-                });
-              },
-              onBack: () {
-                setState(() {
-                  _storyStep = (_storyStep - 1).clamp(0, 6);
-                });
-              },
-            )
-          else
-            _EqualShareDragBoard(
-              sourceBerryIds: _sourceBerryIds,
-              plateBerryIds: _plateBerryIds,
-              plateCounts: _plateCounts,
-              isCorrect: _isCorrect,
-              message: _message,
-              onMoveBerry: _moveBerry,
-              onReset: _reset,
-              selectedLanguage: widget.selectedLanguage,
-              showInstructionNative: _showInstructionNative,
-              instructionLine: widget.instructionLine,
-              successLine: widget.resultLines.first,
-              onToggleInstructionNative: () {
-                setState(() {
-                  _showInstructionNative = !_showInstructionNative;
-                });
-              },
-            ),
+          _EqualShareDragBoard(
+            sourceBerryIds: _sourceBerryIds,
+            plateBerryIds: _plateBerryIds,
+            plateCounts: _plateCounts,
+            isCorrect: _isCorrect,
+            message: _message,
+            onMoveBerry: _moveBerry,
+            onReset: _reset,
+            selectedLanguage: widget.selectedLanguage,
+            showInstructionNative: _showInstructionNative,
+            instructionLine: widget.instructionLine,
+            successLine: widget.resultLines.first,
+            onToggleInstructionNative: () {
+              setState(() {
+                _showInstructionNative = !_showInstructionNative;
+              });
+            },
+          ),
           const SizedBox(height: 14),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 220),
@@ -8706,12 +13045,14 @@ class _SupportedTextLines extends StatelessWidget {
   final AppLanguage language;
   final bool showNative;
   final List<VocabularyEntry> vocabularyEntries;
+  final FontWeight fontWeight;
 
   const _SupportedTextLines({
     required this.lines,
     required this.language,
     required this.showNative,
     this.vocabularyEntries = const [],
+    this.fontWeight = FontWeight.w800,
   });
 
   @override
@@ -8724,11 +13065,11 @@ class _SupportedTextLines extends StatelessWidget {
             text: line.rubyText,
             vocabularyEntries: vocabularyEntries,
             language: language,
-            style: const TextStyle(
+            style: TextStyle(
               color: Color(0xFF374151),
               fontSize: 17,
               height: 1.35,
-              fontWeight: FontWeight.w800,
+              fontWeight: fontWeight,
             ),
           ),
           if (showNative &&
@@ -8952,7 +13293,7 @@ class _InstructionStrip extends StatelessWidget {
                         : const Color(0xFF1E3A8A),
                     fontSize: 17,
                     height: 1.35,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -9652,7 +13993,7 @@ class _EqualShareWordsCard extends StatelessWidget {
                   style: TextStyle(
                     color: Color(0xFF111827),
                     fontSize: 22,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -10331,13 +14672,21 @@ class _CounterDot extends StatelessWidget {
 class _StrawberryPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final bodyPaint = Paint()..color = const Color(0xFFEF4444);
+    final bodyPaint = Paint()
+      ..shader = RadialGradient(
+        center: const Alignment(-0.35, -0.35),
+        colors: const [
+          Color(0xFFFF7A7A),
+          Color(0xFFEF4444),
+          Color(0xFFB91C1C),
+        ],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     final borderPaint = Paint()
       ..color = const Color(0xFFB91C1C)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = size.width * 0.045;
+      ..strokeWidth = size.width * 0.025;
     final leafPaint = Paint()..color = const Color(0xFF15803D);
-    final seedPaint = Paint()..color = const Color(0xFFFFF7ED);
+    final seedPaint = Paint()..color = const Color(0xFFEFE7B0);
 
     final body = Path()
       ..moveTo(size.width * 0.5, size.height * 0.96)
@@ -10372,14 +14721,24 @@ class _StrawberryPainter extends CustomPainter {
       ..close();
     canvas.drawPath(leaf, leafPaint);
 
-    final seeds = [
-      Offset(size.width * 0.38, size.height * 0.42),
-      Offset(size.width * 0.6, size.height * 0.44),
-      Offset(size.width * 0.46, size.height * 0.62),
-      Offset(size.width * 0.66, size.height * 0.68),
+    final seeds = const [
+      Offset(0.39, 0.43),
+      Offset(0.58, 0.45),
+      Offset(0.32, 0.58),
+      Offset(0.5, 0.62),
+      Offset(0.68, 0.6),
+      Offset(0.43, 0.76),
+      Offset(0.58, 0.76),
     ];
     for (final seed in seeds) {
-      canvas.drawCircle(seed, size.width * 0.035, seedPaint);
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(size.width * seed.dx, size.height * seed.dy),
+          width: size.width * 0.024,
+          height: size.width * 0.05,
+        ),
+        seedPaint,
+      );
     }
   }
 
@@ -10992,6 +15351,7 @@ class _ImageAnswerCard extends StatelessWidget {
 
 class _DiagramAnswerCard extends StatelessWidget {
   final Map<String, String> diagram;
+  final String itemKind;
   final Color backgroundColor;
   final Color borderColor;
   final Color textColor;
@@ -11001,6 +15361,7 @@ class _DiagramAnswerCard extends StatelessWidget {
 
   const _DiagramAnswerCard({
     required this.diagram,
+    required this.itemKind,
     required this.backgroundColor,
     required this.borderColor,
     required this.textColor,
@@ -11043,6 +15404,7 @@ class _DiagramAnswerCard extends StatelessWidget {
                   groups: groups,
                   each: each,
                   labelSuffix: labelSuffix,
+                  itemKind: itemKind,
                 ),
               ),
               if (trailingIcon != null)
@@ -11063,11 +15425,13 @@ class _ChoiceEqualShareDiagram extends StatelessWidget {
   final int groups;
   final int each;
   final String labelSuffix;
+  final String itemKind;
 
   const _ChoiceEqualShareDiagram({
     required this.groups,
     required this.each,
     required this.labelSuffix,
+    required this.itemKind,
   });
 
   @override
@@ -11093,6 +15457,7 @@ class _ChoiceEqualShareDiagram extends StatelessWidget {
                     index: index,
                     count: each,
                     labelSuffix: labelSuffix,
+                    itemKind: itemKind,
                   ),
                 ),
             ],
@@ -11107,11 +15472,13 @@ class _MiniPersonShareBox extends StatelessWidget {
   final int index;
   final int count;
   final String labelSuffix;
+  final String itemKind;
 
   const _MiniPersonShareBox({
     required this.index,
     required this.count,
     required this.labelSuffix,
+    required this.itemKind,
   });
 
   @override
@@ -11138,9 +15505,11 @@ class _MiniPersonShareBox extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Wrap(
-            spacing: 4,
+            spacing: itemKind == 'candy' ? 1 : 4,
             runSpacing: 4,
-            children: [for (var i = 0; i < count; i++) const _MiniSealDot()],
+            children: [
+              for (var i = 0; i < count; i++) _MiniDiagramItem(kind: itemKind),
+            ],
           ),
         ],
       ),
@@ -11148,22 +15517,453 @@ class _MiniPersonShareBox extends StatelessWidget {
   }
 }
 
-class _MiniSealDot extends StatelessWidget {
-  const _MiniSealDot();
+class _MiniDiagramItem extends StatelessWidget {
+  final String kind;
+
+  const _MiniDiagramItem({required this.kind});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 14,
-      height: 14,
-      decoration: BoxDecoration(
-        color: const Color(0xFF60A5FA),
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 2),
-        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 3)],
+    final isCandy = kind == 'candy';
+    return SizedBox(
+      width: isCandy ? 20 : 14,
+      height: isCandy ? 18 : 14,
+      child: CustomPaint(
+        painter: switch (kind) {
+          'candy' => const _MiniCandyPainter(),
+          'apple' => const _MiniApplePainter(),
+          'strawberry' => const _MiniStrawberryPainter(),
+          'cookie' => const _MiniCookiePainter(),
+          'card' => const _MiniCardItemPainter(),
+          'marble' => const _MiniMarblePainter(),
+          'pencil' => const _MiniPencilPainter(),
+          _ => const _MiniStickerPainter(),
+        },
       ),
     );
   }
+}
+
+class _MiniCandyPainter extends CustomPainter {
+  const _MiniCandyPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final bodyRect = RRect.fromRectAndRadius(
+      Rect.fromCenter(
+        center: center,
+        width: size.width * 0.62,
+        height: size.height * 0.52,
+      ),
+      Radius.circular(size.height * 0.2),
+    );
+    final left = Path()
+      ..moveTo(size.width * 0.28, center.dy)
+      ..lineTo(size.width * 0.04, size.height * 0.28)
+      ..lineTo(size.width * 0.04, size.height * 0.72)
+      ..close();
+    final right = Path()
+      ..moveTo(size.width * 0.72, center.dy)
+      ..lineTo(size.width * 0.96, size.height * 0.28)
+      ..lineTo(size.width * 0.96, size.height * 0.72)
+      ..close();
+    canvas.drawPath(left, Paint()..color = const Color(0xFFFDE68A));
+    canvas.drawPath(right, Paint()..color = const Color(0xFFFDE68A));
+    canvas.drawRRect(
+      bodyRect,
+      Paint()
+        ..shader = LinearGradient(
+          colors: const [Color(0xFFFCA5A5), Color(0xFFEF4444)],
+        ).createShader(bodyRect.outerRect),
+    );
+    canvas.drawRRect(
+      bodyRect,
+      Paint()
+        ..color = Colors.white
+        ..strokeWidth = 0.9
+        ..style = PaintingStyle.stroke,
+    );
+    canvas.drawCircle(
+      center.translate(-size.width * 0.12, -size.height * 0.1),
+      size.width * 0.08,
+      Paint()..color = const Color(0x80FFFFFF),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _MiniCandyPainter oldDelegate) => false;
+}
+
+class _MiniApplePainter extends CustomPainter {
+  const _MiniApplePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width * 0.5, size.height * 0.58);
+    final radius = size.shortestSide * 0.36;
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: center.translate(0, radius * 0.12),
+        width: radius * 1.55,
+        height: radius * 0.5,
+      ),
+      Paint()
+        ..color = const Color(0x220F172A)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1),
+    );
+    final body = Path()
+      ..moveTo(size.width * 0.5, size.height * 0.26)
+      ..cubicTo(
+        size.width * 0.42,
+        size.height * 0.22,
+        size.width * 0.34,
+        size.height * 0.22,
+        size.width * 0.27,
+        size.height * 0.29,
+      )
+      ..cubicTo(
+        size.width * 0.1,
+        size.height * 0.46,
+        size.width * 0.18,
+        size.height * 0.84,
+        size.width * 0.43,
+        size.height * 0.88,
+      )
+      ..cubicTo(
+        size.width * 0.48,
+        size.height * 0.89,
+        size.width * 0.52,
+        size.height * 0.89,
+        size.width * 0.57,
+        size.height * 0.88,
+      )
+      ..cubicTo(
+        size.width * 0.82,
+        size.height * 0.84,
+        size.width * 0.9,
+        size.height * 0.46,
+        size.width * 0.73,
+        size.height * 0.29,
+      )
+      ..cubicTo(
+        size.width * 0.66,
+        size.height * 0.22,
+        size.width * 0.58,
+        size.height * 0.22,
+        size.width * 0.5,
+        size.height * 0.26,
+      )
+      ..close();
+    canvas.drawPath(
+      body,
+      Paint()
+        ..shader = RadialGradient(
+          center: const Alignment(-0.35, -0.35),
+          colors: const [
+            Color(0xFFFF8A65),
+            Color(0xFFE53935),
+            Color(0xFFB91C1C),
+          ],
+        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height)),
+    );
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * 0.5, size.height * 0.27),
+        width: radius * 0.62,
+        height: radius * 0.28,
+      ),
+      Paint()..color = const Color(0x220F172A),
+    );
+    canvas.drawLine(
+      Offset(size.width * 0.51, size.height * 0.28),
+      Offset(size.width * 0.58, size.height * 0.1),
+      Paint()
+        ..color = const Color(0xFF7C2D12)
+        ..strokeWidth = size.shortestSide * 0.07
+        ..strokeCap = StrokeCap.round,
+    );
+    final leaf = Path()
+      ..moveTo(size.width * 0.58, size.height * 0.18)
+      ..quadraticBezierTo(
+        size.width * 0.78,
+        size.height * 0.06,
+        size.width * 0.72,
+        size.height * 0.28,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.63,
+        size.height * 0.25,
+        size.width * 0.58,
+        size.height * 0.18,
+      );
+    canvas.drawPath(leaf, Paint()..color = const Color(0xFF15803D));
+    canvas.drawCircle(
+      center.translate(-radius * 0.28, -radius * 0.28),
+      radius * 0.18,
+      Paint()..color = const Color(0x66FFFFFF),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _MiniApplePainter oldDelegate) => false;
+}
+
+class _MiniStrawberryPainter extends CustomPainter {
+  const _MiniStrawberryPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = size.shortestSide;
+    final body = Path()
+      ..moveTo(size.width * 0.5, size.height * 0.97)
+      ..cubicTo(
+        size.width * 0.15,
+        size.height * 0.74,
+        size.width * 0.12,
+        size.height * 0.3,
+        size.width * 0.5,
+        size.height * 0.2,
+      )
+      ..cubicTo(
+        size.width * 0.88,
+        size.height * 0.3,
+        size.width * 0.85,
+        size.height * 0.74,
+        size.width * 0.5,
+        size.height * 0.97,
+      )
+      ..close();
+    canvas.drawPath(
+      body,
+      Paint()
+        ..shader = RadialGradient(
+          center: const Alignment(-0.35, -0.35),
+          colors: const [Color(0xFFFF8A8A), Color(0xFFEF4444), Color(0xFFB91C1C)],
+        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height)),
+    );
+    for (final p in const [
+      Offset(0.42, 0.46),
+      Offset(0.58, 0.47),
+      Offset(0.34, 0.6),
+      Offset(0.5, 0.63),
+      Offset(0.66, 0.6),
+      Offset(0.43, 0.76),
+      Offset(0.57, 0.77),
+    ]) {
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(size.width * p.dx, size.height * p.dy),
+          width: size.shortestSide * 0.018,
+          height: size.shortestSide * 0.038,
+        ),
+        Paint()..color = const Color(0xFFEFE7B0),
+      );
+    }
+    final leafPaint = Paint()..color = const Color(0xFF15803D);
+    for (final dx in const [-0.2, 0.0, 0.2]) {
+      final path = Path()
+        ..moveTo(size.width * 0.5, size.height * 0.2)
+        ..lineTo(size.width * (0.5 + dx), size.height * 0.04)
+        ..lineTo(size.width * (0.43 + dx * 0.3), size.height * 0.3)
+        ..close();
+      canvas.drawPath(path, leafPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _MiniStrawberryPainter oldDelegate) => false;
+}
+
+class _MiniCookiePainter extends CustomPainter {
+  const _MiniCookiePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.shortestSide * 0.38;
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..shader = RadialGradient(
+          center: const Alignment(-0.3, -0.3),
+          colors: const [Color(0xFFFDE68A), Color(0xFFF59E0B), Color(0xFFB45309)],
+        ).createShader(Rect.fromCircle(center: center, radius: radius)),
+    );
+    final chipPaint = Paint()..color = const Color(0xFF7C2D12);
+    for (final p in const [
+      Offset(0.36, 0.36),
+      Offset(0.6, 0.35),
+      Offset(0.67, 0.57),
+      Offset(0.44, 0.64),
+    ]) {
+      canvas.drawCircle(
+        Offset(size.width * p.dx, size.height * p.dy),
+        radius * 0.13,
+        chipPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _MiniCookiePainter oldDelegate) => false;
+}
+
+class _MiniPencilPainter extends CustomPainter {
+  const _MiniPencilPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.save();
+    canvas.translate(size.width * 0.5, size.height * 0.5);
+    canvas.rotate(-math.pi / 4);
+    canvas.translate(-size.width * 0.5, -size.height * 0.5);
+
+    final y = size.height * 0.52;
+    final bodyLeft = size.width * 0.14;
+    final bodyRight = size.width * 0.76;
+    final bodyHeight = size.height * 0.34;
+    final bodyRect = Rect.fromLTWH(
+      bodyLeft,
+      y - bodyHeight / 2,
+      bodyRight - bodyLeft,
+      bodyHeight,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(size.width * 0.02, y - bodyHeight * 0.55, size.width * 0.13, bodyHeight * 1.1),
+        Radius.circular(bodyHeight * 0.18),
+      ),
+      Paint()..color = const Color(0xFFFCA5A5),
+    );
+    canvas.drawRect(
+      Rect.fromLTWH(size.width * 0.14, y - bodyHeight * 0.55, size.width * 0.035, bodyHeight * 1.1),
+      Paint()..color = const Color(0xFFCBD5E1),
+    );
+    canvas.drawRect(
+      bodyRect,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: const [Color(0xFFFFF1A8), Color(0xFFFBBF24), Color(0xFFD97706)],
+        ).createShader(bodyRect),
+    );
+    canvas.drawLine(
+      Offset(bodyLeft + 1, y - bodyHeight * 0.18),
+      Offset(bodyRight - 1, y - bodyHeight * 0.18),
+      Paint()
+        ..color = const Color(0xCCFFFFFF)
+        ..strokeWidth = 0.8
+        ..strokeCap = StrokeCap.round,
+    );
+    final wood = Path()
+      ..moveTo(bodyRight, y - bodyHeight / 2)
+      ..lineTo(size.width * 0.96, y)
+      ..lineTo(bodyRight, y + bodyHeight / 2)
+      ..close();
+    canvas.drawPath(wood, Paint()..color = const Color(0xFFF6D6A7));
+    final lead = Path()
+      ..moveTo(size.width * 0.96, y)
+      ..lineTo(size.width * 0.84, y - bodyHeight * 0.32)
+      ..lineTo(size.width * 0.84, y + bodyHeight * 0.32)
+      ..close();
+    canvas.drawPath(lead, Paint()..color = const Color(0xFF111827));
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _MiniPencilPainter oldDelegate) => false;
+}
+
+class _MiniCardItemPainter extends CustomPainter {
+  const _MiniCardItemPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(size.width * 0.22, size.height * 0.14, size.width * 0.56, size.height * 0.72),
+      Radius.circular(size.width * 0.08),
+    );
+    canvas.drawRRect(rect, Paint()..color = Colors.white);
+    canvas.drawRRect(
+      rect,
+      Paint()
+        ..color = const Color(0xFF38BDF8)
+        ..strokeWidth = 1
+        ..style = PaintingStyle.stroke,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _MiniCardItemPainter oldDelegate) => false;
+}
+
+class _MiniMarblePainter extends CustomPainter {
+  const _MiniMarblePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.shortestSide * 0.38;
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..shader = RadialGradient(
+          center: const Alignment(-0.35, -0.35),
+          colors: const [Color(0xFFE0F7FA), Color(0xFF22D3EE), Color(0xFF0891B2)],
+        ).createShader(Rect.fromCircle(center: center, radius: radius)),
+    );
+    canvas.drawCircle(
+      center.translate(-radius * 0.28, -radius * 0.32),
+      radius * 0.18,
+      Paint()..color = const Color(0xCCFFFFFF),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _MiniMarblePainter oldDelegate) => false;
+}
+
+class _MiniStickerPainter extends CustomPainter {
+  const _MiniStickerPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.shortestSide * 0.38;
+    canvas.drawCircle(
+      center.translate(0, 0.8),
+      radius,
+      Paint()
+        ..color = const Color(0x1F0F172A)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.5),
+    );
+
+    canvas.drawCircle(center, radius, Paint()..color = const Color(0xFF3B82F6));
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = Colors.white
+        ..strokeWidth = 1.4
+        ..style = PaintingStyle.stroke,
+    );
+
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: center.translate(-radius * 0.24, -radius * 0.32),
+        width: radius * 0.62,
+        height: radius * 0.34,
+      ),
+      Paint()..color = const Color(0x99FFFFFF),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _MiniStickerPainter oldDelegate) => false;
 }
 
 class _NoteButton extends StatelessWidget {
@@ -11182,7 +15982,11 @@ class _NoteButton extends StatelessWidget {
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+        textStyle: const TextStyle(
+          fontFamily: AppFonts.interface,
+          fontSize: 18,
+          fontWeight: FontWeight.w900,
+        ),
       ),
     );
   }
@@ -11350,6 +16154,7 @@ class _ExplanationOverlay extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               textStyle: const TextStyle(
+                                fontFamily: AppFonts.interface,
                                 fontSize: 20,
                                 fontWeight: FontWeight.w900,
                               ),
@@ -11442,12 +16247,6 @@ class _SolutionExplanationCard extends StatefulWidget {
 
 class _SolutionExplanationCardState extends State<_SolutionExplanationCard> {
   bool showNative = false;
-
-  @override
-  void initState() {
-    super.initState();
-    showNative = hasNativeExplanation;
-  }
 
   bool get hasNativeExplanation {
     return widget.language != AppLanguage.japanese &&

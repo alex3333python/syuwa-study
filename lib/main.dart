@@ -89,6 +89,41 @@ class MyApp extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
+        // Keep every Material control on the same readable interface font.
+        // Some lesson buttons supply colors or padding locally, so this is the
+        // shared baseline for labels that do not need a special treatment.
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            textStyle: const TextStyle(
+              fontFamily: AppFonts.interface,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            textStyle: const TextStyle(
+              fontFamily: AppFonts.interface,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            textStyle: const TextStyle(
+              fontFamily: AppFonts.interface,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            textStyle: const TextStyle(
+              fontFamily: AppFonts.interface,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
         useMaterial3: true,
       ),
       home: const HomePage(),
