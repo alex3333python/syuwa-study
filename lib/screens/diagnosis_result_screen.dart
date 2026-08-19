@@ -119,6 +119,10 @@ class DiagnosisResultScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
                 OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF2563EB),
+                    side: const BorderSide(color: Color(0xFF2563EB)),
+                  ),
                   onPressed: onHome,
                   icon: const Icon(Icons.map_rounded),
                   label: const Text('学習マップにもどる'),

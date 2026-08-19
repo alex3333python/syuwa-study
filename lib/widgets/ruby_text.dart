@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../data/audio_cues.dart';
+import '../data/learning_language_support.dart';
 import '../models/app_language.dart';
 import '../models/question.dart';
 import '../services/audio_service.dart';
+
+/// Makes the intent of learning support explicit at each call site.
+enum LearningSupportMode { off, rubyOnly, rubyAndDictionary }
 
 class RubyText extends StatelessWidget {
   final String text;
@@ -11,6 +16,9 @@ class RubyText extends StatelessWidget {
   final TextAlign textAlign;
   final List<VocabularyEntry> vocabularyEntries;
   final AppLanguage language;
+  final bool enableLearningSupport;
+  final bool learningSupportRubyOnly;
+  final LearningSupportMode? learningSupportMode;
 
   const RubyText({
     super.key,
@@ -20,6 +28,9 @@ class RubyText extends StatelessWidget {
     this.textAlign = TextAlign.start,
     this.vocabularyEntries = const [],
     this.language = AppLanguage.japanese,
+    this.enableLearningSupport = false,
+    this.learningSupportRubyOnly = false,
+    this.learningSupportMode,
   });
 
   @override
@@ -32,7 +43,21 @@ class RubyText extends StatelessWidget {
       fontWeight: FontWeight.w700,
       color: effectiveStyle.color?.withValues(alpha: 0.78),
     ).merge(rubyStyle);
-    final lines = text.split('\n');
+    final supportMode = _resolvedLearningSupportMode;
+    final supportedText = supportMode == LearningSupportMode.off
+        ? text
+        : applyLearningRuby(text);
+    final List<VocabularyEntry> effectiveVocabularyEntries;
+    if (supportMode == LearningSupportMode.off) {
+      effectiveVocabularyEntries = vocabularyEntries.isEmpty
+          ? vocabularyEntries
+          : mergeLearningVocabulary(vocabularyEntries);
+    } else if (supportMode == LearningSupportMode.rubyOnly) {
+      effectiveVocabularyEntries = const <VocabularyEntry>[];
+    } else {
+      effectiveVocabularyEntries = mergeLearningVocabulary(vocabularyEntries);
+    }
+    final lines = supportedText.split('\n');
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -40,7 +65,7 @@ class RubyText extends StatelessWidget {
       children: [
         for (var i = 0; i < lines.length; i++) ...[
           _RubyLine(
-            parts: _parseRuby(lines[i]),
+            parts: _parseRuby(lines[i], effectiveVocabularyEntries),
             style: effectiveStyle,
             rubyStyle: effectiveRubyStyle,
             alignment: _wrapAlignment,
@@ -51,6 +76,18 @@ class RubyText extends StatelessWidget {
         ],
       ],
     );
+  }
+
+  LearningSupportMode get _resolvedLearningSupportMode {
+    if (learningSupportMode != null) {
+      return learningSupportMode!;
+    }
+    if (!enableLearningSupport) {
+      return LearningSupportMode.off;
+    }
+    return learningSupportRubyOnly
+        ? LearningSupportMode.rubyOnly
+        : LearningSupportMode.rubyAndDictionary;
   }
 
   WrapAlignment get _wrapAlignment {
@@ -81,38 +118,38 @@ class RubyText extends StatelessWidget {
     }
   }
 
-  List<_RubyPart> _parseRuby(String line) {
+  List<_RubyPart> _parseRuby(String line, List<VocabularyEntry> entries) {
     final parts = <_RubyPart>[];
     var index = 0;
 
     while (index < line.length) {
       final start = line.indexOf('{', index);
       if (start == -1) {
-        _addPlainText(parts, line.substring(index));
+        _addPlainText(parts, line.substring(index), entries);
         break;
       }
 
       if (start > index) {
-        _addPlainText(parts, line.substring(index, start));
+        _addPlainText(parts, line.substring(index, start), entries);
       }
 
       final end = line.indexOf('}', start + 1);
       if (end == -1) {
-        _addPlainText(parts, line.substring(start));
+        _addPlainText(parts, line.substring(start), entries);
         break;
       }
 
       final content = line.substring(start + 1, end);
       final separator = content.indexOf('|');
       if (separator <= 0 || separator == content.length - 1) {
-        _addPlainText(parts, line.substring(start, end + 1));
+        _addPlainText(parts, line.substring(start, end + 1), entries);
       } else {
         final base = content.substring(0, separator);
         parts.add(
           _RubyPart(
             base: base,
             ruby: content.substring(separator + 1),
-            entry: _entryFor(base),
+            entry: _entryFor(base, entries),
           ),
         );
       }
@@ -122,24 +159,31 @@ class RubyText extends StatelessWidget {
     return parts;
   }
 
-  void _addPlainText(List<_RubyPart> parts, String value) {
+  void _addPlainText(
+    List<_RubyPart> parts,
+    String value,
+    List<VocabularyEntry> vocabulary,
+  ) {
     var cursor = 0;
-    final entries = vocabularyEntries.toList()
+    final entries = vocabulary.toList()
       ..sort((a, b) => b.term.length.compareTo(a.term.length));
 
     while (cursor < value.length) {
       VocabularyEntry? matched;
+      String? matchedSurface;
       for (final entry in entries) {
-        if (entry.term.isEmpty) continue;
-        if (value.startsWith(entry.term, cursor)) {
-          matched = entry;
-          break;
+        for (final surface in <String>[entry.term, ...entry.surfaces]) {
+          if (surface.isEmpty || !value.startsWith(surface, cursor)) continue;
+          if (matchedSurface == null || surface.length > matchedSurface.length) {
+            matched = entry;
+            matchedSurface = surface;
+          }
         }
       }
 
-      if (matched != null) {
-        parts.add(_RubyPart(base: matched.term, entry: matched));
-        cursor += matched.term.length;
+      if (matched != null && matchedSurface != null) {
+        parts.add(_RubyPart(base: matchedSurface, entry: matched));
+        cursor += matchedSurface.length;
         continue;
       }
 
@@ -149,10 +193,12 @@ class RubyText extends StatelessWidget {
     }
   }
 
-  VocabularyEntry? _entryFor(String base) {
+  VocabularyEntry? _entryFor(String base, List<VocabularyEntry> entries) {
     final normalized = _dictionaryBaseFor(base);
-    for (final entry in vocabularyEntries) {
-      if (entry.term == normalized) return entry;
+    for (final entry in entries) {
+      if (entry.term == normalized || entry.surfaces.contains(normalized)) {
+        return entry;
+      }
     }
     return null;
   }
@@ -162,10 +208,154 @@ class RubyText extends StatelessWidget {
       case '分けます':
       case '分けて':
       case '分けた':
+      case '分けてみよう':
       case '分けられた':
       case '分けられます':
+      case '分けられる':
       case '分け':
         return '分ける';
+      case '入ります':
+      case '入って':
+      case '入った':
+        return '入る';
+      case '入れます':
+      case '入れて':
+      case '入れた':
+      case '入れられない':
+      case '入れられます':
+      case '入れられる':
+        return '入れる';
+      case 'もらいます':
+      case 'もらって':
+      case 'もらった':
+        return 'もらう';
+      case '配ります':
+      case '配って':
+      case '配った':
+        return '配る';
+      case 'わります':
+      case 'わって':
+      case 'わった':
+        return 'わる';
+      case '測ります':
+      case '測って':
+      case '測った':
+        return '測る';
+      case '残ります':
+      case '残った':
+        return '残る';
+      case '出発して':
+        return '出発';
+      case '到着します':
+        return '到着';
+      case '選びます':
+      case '選んで':
+      case '選び':
+      case '選ぼう':
+      case '選びましょう':
+        return '選ぶ';
+      case '考えます':
+      case '考えて':
+      case '考えた':
+      case '考える':
+      case '考えよう':
+      case '考えましょう':
+        return '考える';
+      case '比べます':
+      case '比べて':
+      case '比べた':
+      case '比べよう':
+      case '比べましょう':
+        return '比べる';
+      case '動かします':
+      case '動かして':
+      case '動かした':
+      case '動かそう':
+        return '動かす';
+      case '進めます':
+      case '進めて':
+      case '進めた':
+      case '進めよう':
+        return '進める';
+      case '戻します':
+      case '戻して':
+      case '戻した':
+        return '戻す';
+      case '座ります':
+      case '座って':
+      case '座らせて':
+      case '座れます':
+        return '座る';
+      case '切ります':
+      case '切って':
+      case '切った':
+        return '切る';
+      case '使います':
+      case '使って':
+      case '使った':
+        return '使う';
+      case 'かかります':
+      case 'かかった':
+        return 'かかる';
+      case '乗せます':
+      case '乗せて':
+      case '乗せた':
+        return '乗せる';
+      case '積みます':
+      case '積んで':
+      case '積む':
+        return '積む';
+      case '作ります':
+      case '作って':
+      case '作った':
+        return '作る';
+      case '見つけます':
+      case '見つけて':
+      case '見つけた':
+      case '見つけよう':
+      case '見つけられます':
+      case '見つけられる':
+        return '見つける';
+      case '置きます':
+      case '置いて':
+      case '置いた':
+        return '置く';
+      case '読みます':
+      case '読んで':
+      case '読んだ':
+        return '読む';
+      case '見ます':
+      case '見て':
+      case '見よう':
+        return '見る';
+      case '始まります':
+      case '始まって':
+      case '始まった':
+        return '始まる';
+      case '終わります':
+      case '終わって':
+      case '終わった':
+        return '終わる';
+      case '増やします':
+      case '増やして':
+        return '増やす';
+      case '進みます':
+      case '進んで':
+        return '進む';
+      case '合わせます':
+      case '合わせて':
+      case '合わせた':
+        return '合わせる';
+      case '届きます':
+      case '届いて':
+        return '届く';
+      case '分かります':
+      case '分かった':
+        return '分かる';
+      case '表します':
+      case '表して':
+      case '表しています':
+        return '表す';
       default:
         return base;
     }
@@ -309,8 +499,41 @@ class _RubyPiece extends StatelessWidget {
         return const [_RubySegment('分', 'わ'), _RubySegment('けられた')];
       case '分けられます':
         return const [_RubySegment('分', 'わ'), _RubySegment('けられます')];
+      case '分けられる':
+        return const [_RubySegment('分', 'わ'), _RubySegment('けられる')];
       case '分け':
         return const [_RubySegment('分', 'わ'), _RubySegment('け')];
+      case '入る':
+        return const [_RubySegment('入', 'はい'), _RubySegment('る')];
+      case '入れる':
+        return const [_RubySegment('入', 'い'), _RubySegment('れる')];
+      case '配る':
+        return const [_RubySegment('配', 'くば'), _RubySegment('る')];
+      case '1人分':
+        return const [
+          _RubySegment('1'),
+          _RubySegment('人', 'ひとり'),
+          _RubySegment('分', 'ぶん'),
+        ];
+      case 'わられる数':
+        return const [_RubySegment('わられる'), _RubySegment('数', 'かず')];
+      case 'わる数':
+        return const [_RubySegment('わる'), _RubySegment('数', 'かず')];
+      case '全部の数':
+        return const [
+          _RubySegment('全', 'ぜん'),
+          _RubySegment('部', 'ぶ'),
+          _RubySegment('の'),
+          _RubySegment('数', 'かず'),
+        ];
+      case '全部':
+        return const [_RubySegment('全', 'ぜん'), _RubySegment('部', 'ぶ')];
+      case '人数':
+        return const [_RubySegment('人', 'にん'), _RubySegment('数', 'ずう')];
+      case 'かけ算':
+        return const [_RubySegment('かけ'), _RubySegment('算', 'さん')];
+      case 'わり算':
+        return const [_RubySegment('わり'), _RubySegment('算', 'さん')];
       case '何こ':
         return const [_RubySegment('何', 'なん'), _RubySegment('こ')];
       case '何人':
@@ -323,12 +546,96 @@ class _RubyPiece extends StatelessWidget {
         return const [_RubySegment('書', 'か'), _RubySegment('いて')];
       case '余ります':
         return const [_RubySegment('余', 'あま'), _RubySegment('ります')];
+      case '余り':
+        return const [_RubySegment('余', 'あま'), _RubySegment('り')];
       case '残ります':
         return const [_RubySegment('残', 'のこ'), _RubySegment('ります')];
       case '残った':
         return const [_RubySegment('残', 'のこ'), _RubySegment('った')];
+      case '残る':
+        return const [_RubySegment('残', 'のこ'), _RubySegment('る')];
       case '作れて':
         return const [_RubySegment('作', 'つく'), _RubySegment('れて')];
+      case '時計':
+        return const [_RubySegment('時', 'と'), _RubySegment('計', 'けい')];
+      case '時刻':
+        return const [_RubySegment('時', 'じ'), _RubySegment('刻', 'こく')];
+      case '時間':
+        return const [_RubySegment('時', 'じ'), _RubySegment('間', 'かん')];
+      case '午前':
+        return const [_RubySegment('午', 'ご'), _RubySegment('前', 'ぜん')];
+      case '午後':
+        return const [_RubySegment('午', 'ご'), _RubySegment('後', 'ご')];
+      case '出発':
+        return const [_RubySegment('出', 'しゅっ'), _RubySegment('発', 'ぱつ')];
+      case '出発して':
+        return const [
+          _RubySegment('出', 'しゅっ'),
+          _RubySegment('発', 'ぱつ'),
+          _RubySegment('して'),
+        ];
+      case '到着':
+        return const [_RubySegment('到', 'とう'), _RubySegment('着', 'ちゃく')];
+      case '到着します':
+        return const [
+          _RubySegment('到', 'とう'),
+          _RubySegment('着', 'ちゃく'),
+          _RubySegment('します'),
+        ];
+      case '長さ':
+        return const [_RubySegment('長', 'なが'), _RubySegment('さ')];
+      case '測る':
+        return const [_RubySegment('測', 'はか'), _RubySegment('る')];
+      case '測ります':
+        return const [_RubySegment('測', 'はか'), _RubySegment('ります')];
+      case '測って':
+        return const [_RubySegment('測', 'はか'), _RubySegment('って')];
+      case '測った':
+        return const [_RubySegment('測', 'はか'), _RubySegment('った')];
+      case '巻き尺':
+        return const [
+          _RubySegment('巻', 'ま'),
+          _RubySegment('き'),
+          _RubySegment('尺', 'じゃく'),
+        ];
+      case '道のり':
+        return const [_RubySegment('道', 'みち'), _RubySegment('のり')];
+      case '距離':
+        return const [_RubySegment('距', 'きょ'), _RubySegment('離', 'り')];
+      case '重さ':
+        return const [_RubySegment('重', 'おも'), _RubySegment('さ')];
+      case '重い':
+        return const [_RubySegment('重', 'おも'), _RubySegment('い')];
+      case '軽い':
+        return const [_RubySegment('軽', 'かる'), _RubySegment('い')];
+      case '目盛り':
+        return const [
+          _RubySegment('目', 'め'),
+          _RubySegment('盛', 'も'),
+          _RubySegment('り'),
+        ];
+      case '天びん':
+        return const [_RubySegment('天', 'てん'), _RubySegment('びん')];
+      case '荷物':
+        return const [_RubySegment('荷', 'に'), _RubySegment('物', 'もつ')];
+      case '自動車':
+        return const [
+          _RubySegment('自', 'じ'),
+          _RubySegment('動', 'どう'),
+          _RubySegment('車', 'しゃ'),
+        ];
+      case '鉛筆':
+        return const [_RubySegment('鉛', 'えん'), _RubySegment('筆', 'ぴつ')];
+      case '皿':
+        return const [_RubySegment('皿', 'さら')];
+      case '答え':
+        return const [_RubySegment('答', 'こた'), _RubySegment('え')];
+      case '式':
+        return const [_RubySegment('式', 'しき')];
+      case '秒':
+        return const [_RubySegment('秒', 'びょう')];
+      case 'ビー玉':
+        return const [_RubySegment('ビー'), _RubySegment('玉', 'だま')];
       default:
         return [_RubySegment(base, ruby)];
     }
@@ -368,7 +675,7 @@ class _RubyPiece extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Expanded(
+                    Flexible(
                       child: Text(
                         entry.term,
                         style: const TextStyle(
@@ -376,18 +683,18 @@ class _RubyPiece extends StatelessWidget {
                           fontWeight: FontWeight.w900,
                           color: Color(0xFF111827),
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    TextButton.icon(
+                    const SizedBox(width: 10),
+                    _VocabularyAudioButton(
                       onPressed: () {
-                        LearningAudio.speakJapanese(
+                        LearningAudio.play(
                           context,
-                          label: entry.term,
-                          text: entry.term,
+                          AudioCueFactory.vocabulary(term: entry.term),
                         );
                       },
-                      icon: const Icon(Icons.volume_up_rounded),
-                      label: const Text('音声'),
                     ),
                   ],
                 ),
@@ -435,6 +742,36 @@ class _RubyPiece extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _VocabularyAudioButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _VocabularyAudioButton({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: Material(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: const BorderSide(color: Color(0xFFE5E7EB)),
+        ),
+        child: IconButton(
+          tooltip: '音声',
+          onPressed: onPressed,
+          constraints: const BoxConstraints.tightFor(width: 40, height: 40),
+          padding: EdgeInsets.zero,
+          iconSize: 20,
+          color: const Color(0xFF374151),
+          icon: const Icon(Icons.volume_up_rounded),
+        ),
+      ),
     );
   }
 }

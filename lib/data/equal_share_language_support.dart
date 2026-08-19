@@ -338,6 +338,30 @@ const equalShareVocabularyEntries = [
     category: 'math_language',
   ),
   VocabularyEntry(
+    term: 'わられる数',
+    reading: 'わられる かず',
+    simpleJapanese: 'わり算で、分けるもとの数です。',
+    translations: {
+      AppLanguage.portuguese: 'dividendo',
+      AppLanguage.tagalog: 'dividend',
+      AppLanguage.vietnamese: 'số bị chia',
+    },
+    exampleSentence: '6 ÷ 3 の6は、わられる数です。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: 'わる数',
+    reading: 'わる かず',
+    simpleJapanese: 'わり算で、何人に分けるかを表す数です。',
+    translations: {
+      AppLanguage.portuguese: 'divisor',
+      AppLanguage.tagalog: 'divisor',
+      AppLanguage.vietnamese: 'số chia',
+    },
+    exampleSentence: '6 ÷ 3 の3は、わる数です。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
     term: '全部の数',
     reading: 'ぜんぶのかず',
     simpleJapanese: 'はじめにある、全部の数',
@@ -442,7 +466,7 @@ const measureDivisionResultLines = [
   ),
   SupportLine(
     japanese: 'また、この式では、6を「わられる数」、2を「わる数」といいます。',
-    ruby: 'また、この{式|しき}では、6を「わられる{数|かず}」、2を「わる{数|かず}」といいます。',
+    ruby: 'また、この{式|しき}では、6を「{わられる数|わられる かず}」、2を「{わる数|わる かず}」といいます。',
     native: {
       AppLanguage.portuguese:
           'Nesta conta, 6 é o número que será dividido, e 2 é o número pelo qual dividimos.',
@@ -991,15 +1015,51 @@ const zeroOneDivisionVocabularyEntries = [
     category: 'math_language',
   ),
   VocabularyEntry(
-    term: '配るもの',
-    reading: 'くばるもの',
-    simpleJapanese: '分けるものです。',
+    term: '配る',
+    reading: 'くばる',
+    simpleJapanese: '何人かにものを分けて渡すことです。',
     translations: {
-      AppLanguage.portuguese: 'coisas para distribuir',
-      AppLanguage.tagalog: 'bagay na ipapamahagi',
-      AppLanguage.vietnamese: 'đồ để chia',
+      AppLanguage.portuguese: 'distribuir',
+      AppLanguage.tagalog: 'ipamahagi',
+      AppLanguage.vietnamese: 'phân phát',
     },
-    exampleSentence: '配るものがないので、みんな0こです。',
+    exampleSentence: '3人にいちごを配ります。',
+    category: 'school_japanese',
+  ),
+  VocabularyEntry(
+    term: '入れる',
+    reading: 'いれる',
+    simpleJapanese: 'ものを中に移すことです。',
+    translations: {
+      AppLanguage.portuguese: 'colocar / pôr dentro',
+      AppLanguage.tagalog: 'ilagay sa loob',
+      AppLanguage.vietnamese: 'đặt vào trong',
+    },
+    exampleSentence: 'いちごを皿に入れます。',
+    category: 'school_japanese',
+  ),
+  VocabularyEntry(
+    term: '答え',
+    reading: 'こたえ',
+    simpleJapanese: '問題を考えて出す数です。',
+    translations: {
+      AppLanguage.portuguese: 'resposta',
+      AppLanguage.tagalog: 'sagot',
+      AppLanguage.vietnamese: 'đáp án',
+    },
+    exampleSentence: '答えは0です。',
+    category: 'school_japanese',
+  ),
+  VocabularyEntry(
+    term: '何',
+    reading: 'なに',
+    simpleJapanese: '分からないものや数を聞く言葉です。',
+    translations: {
+      AppLanguage.portuguese: 'o que / qual',
+      AppLanguage.tagalog: 'ano / alin',
+      AppLanguage.vietnamese: 'gì / nào',
+    },
+    exampleSentence: '答えは何ですか。',
     category: 'math_language',
   ),
   VocabularyEntry(
@@ -1018,6 +1078,18 @@ const zeroOneDivisionVocabularyEntries = [
 
 const measureDivisionVocabularyEntries = [
   ...equalShareVocabularyEntries,
+  VocabularyEntry(
+    term: '正しい',
+    reading: 'ただしい',
+    simpleJapanese: '合っていて、まちがっていないことです。',
+    translations: {
+      AppLanguage.portuguese: 'correto / certo',
+      AppLanguage.tagalog: 'tama',
+      AppLanguage.vietnamese: 'đúng',
+    },
+    exampleSentence: '正しい式を選びます。',
+    category: 'school_japanese',
+  ),
   VocabularyEntry(
     term: 'クッキー',
     reading: 'くっきー',

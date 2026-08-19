@@ -33,7 +33,9 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: '多言語算数学習',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF0082FF),
+        ),
         fontFamily: AppFonts.interface,
         textTheme: const TextTheme(
           headlineLarge: TextStyle(
@@ -94,6 +96,8 @@ class MyApp extends StatelessWidget {
         // shared baseline for labels that do not need a special treatment.
         filledButtonTheme: FilledButtonThemeData(
           style: FilledButton.styleFrom(
+            backgroundColor: const Color(0xFF0082FF),
+            foregroundColor: Colors.white,
             textStyle: const TextStyle(
               fontFamily: AppFonts.interface,
               fontWeight: FontWeight.w600,
@@ -110,9 +114,19 @@ class MyApp extends StatelessWidget {
         ),
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
+            foregroundColor: const Color(0xFF0082FF),
+            disabledForegroundColor: const Color(0xFF9CA3AF),
             textStyle: const TextStyle(
               fontFamily: AppFonts.interface,
               fontWeight: FontWeight.w600,
+            ),
+          ).copyWith(
+            side: WidgetStateProperty.resolveWith(
+              (states) => BorderSide(
+                color: states.contains(WidgetState.disabled)
+                    ? const Color(0xFFD1D5DB)
+                    : const Color(0xFF0082FF),
+              ),
             ),
           ),
         ),

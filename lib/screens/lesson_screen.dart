@@ -2,7 +2,9 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../data/audio_cues.dart';
 import '../data/equal_share_language_support.dart';
+import '../data/learning_language_support.dart';
 import '../models/answer_record.dart';
 import '../models/app_language.dart';
 import '../models/lesson.dart';
@@ -198,8 +200,14 @@ class _LessonScreenState extends State<LessonScreen> {
     final isIndependent = stepType == LessonStepType.independentPractice;
     final isJapaneseOnlyChallenge =
         currentStep?.title == '日本語だけで挑戦' ||
+        currentStep?.title == 'たしかめ問題' ||
         widget.lesson.title == 'たしかめ問題' ||
         (currentStep?.id.contains('japanese') ?? false);
+    final supportsLearningLanguage =
+        !isJapaneseOnlyChallenge &&
+        (stepType == LessonStepType.learn ||
+            stepType == LessonStepType.guidedPractice ||
+            stepType == LessonStepType.independentPractice);
     final questionLanguage = isJapaneseOnlyChallenge
         ? AppLanguage.japanese
         : widget.selectedLanguage;
@@ -297,8 +305,16 @@ class _LessonScreenState extends State<LessonScreen> {
                         RubyText(
                           text: promptRuby,
                           textAlign: TextAlign.center,
-                          vocabularyEntries: question.vocabularyEntries,
+                          vocabularyEntries: supportsLearningLanguage
+                              ? mergeLearningVocabulary(
+                                  question.vocabularyEntries,
+                                )
+                              : const <VocabularyEntry>[],
                           language: widget.selectedLanguage,
+                          enableLearningSupport: supportsLearningLanguage,
+                          learningSupportMode: supportsLearningLanguage
+                              ? LearningSupportMode.rubyAndDictionary
+                              : LearningSupportMode.off,
                           style: const TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
@@ -350,6 +366,7 @@ class _LessonScreenState extends State<LessonScreen> {
                             optionRubies: optionRubies,
                             correctAnswer: correctAnswer,
                             isCorrect: isCorrect,
+                            vocabularyEntries: question.vocabularyEntries,
                           )
                         else
                           _buildTextOptions(
@@ -357,6 +374,7 @@ class _LessonScreenState extends State<LessonScreen> {
                             optionRubies: optionRubies,
                             correctAnswer: correctAnswer,
                             isCorrect: isCorrect,
+                            vocabularyEntries: question.vocabularyEntries,
                           ),
                       ],
                     ),
@@ -527,6 +545,7 @@ class _LessonScreenState extends State<LessonScreen> {
     required List<String> optionRubies,
     required int correctAnswer,
     required bool isCorrect,
+    required List<VocabularyEntry> vocabularyEntries,
   }) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -553,7 +572,7 @@ class _LessonScreenState extends State<LessonScreen> {
             return _AnswerCard(
               rubyText: optionRubies[index],
               useCompactLayout: useCompactLayout,
-              vocabularyEntries: const [],
+              vocabularyEntries: vocabularyEntries,
               language: widget.selectedLanguage,
               backgroundColor: style.backgroundColor,
               borderColor: style.borderColor,
@@ -574,6 +593,7 @@ class _LessonScreenState extends State<LessonScreen> {
     required List<String> imageUrls,
     required int correctAnswer,
     required bool isCorrect,
+    required List<VocabularyEntry> vocabularyEntries,
   }) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -598,7 +618,7 @@ class _LessonScreenState extends State<LessonScreen> {
 
             return _ImageAnswerCard(
               labelRuby: optionRubies[index],
-              vocabularyEntries: const [],
+              vocabularyEntries: vocabularyEntries,
               language: widget.selectedLanguage,
               imageUrl: imageUrls[index],
               backgroundColor: style.backgroundColor,
@@ -1378,6 +1398,7 @@ class _TimeMainLearnState extends State<_TimeMainLearn> {
             language: widget.selectedLanguage,
             showNative: _showNative,
             vocabularyEntries: _timeVocabularyEntries,
+            enableLearningSupport: true,
           ),
           const SizedBox(height: 12),
           _SupportedInstruction(
@@ -1524,6 +1545,7 @@ class _ShortTimeLearnState extends State<_ShortTimeLearn> {
             language: widget.selectedLanguage,
             showNative: _showNative,
             vocabularyEntries: _timeVocabularyEntries,
+            enableLearningSupport: true,
           ),
           const SizedBox(height: 20),
           switch (_page) {
@@ -1584,6 +1606,7 @@ class _SupportedInstruction extends StatelessWidget {
               language: language,
               showNative: showNative,
               vocabularyEntries: vocabularyEntries,
+              learningSupportMode: LearningSupportMode.rubyOnly,
             ),
           ),
           const SizedBox(width: 10),
@@ -1593,10 +1616,13 @@ class _SupportedInstruction extends StatelessWidget {
             translateLabel: showNative ? '日本語で見る' : '${language.label}で見る',
             audioLabel: '操作案内の音声',
             onToggleNative: onToggleNative,
-            onAudio: () => LearningAudio.speakJapanese(
+            onAudio: () => LearningAudio.play(
               context,
-              label: '操作案内',
-              text: line.japanese,
+              AudioCueFactory.instruction(
+                namespace: 'lesson.supported_instruction',
+                label: '操作案内',
+                text: line.japanese,
+              ),
             ),
           ),
         ],
@@ -1667,24 +1693,24 @@ class _ClockActivityPanel extends StatelessWidget {
     final controls = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        OutlinedButton(
-          onPressed: locked ? null : () => onChangeOffset(-5),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: const Color(0xFF2563EB),
-            side: const BorderSide(color: Color(0xFF93C5FD)),
-            minimumSize: const Size.fromHeight(52),
-          ),
-          child: const Text('-5分'),
-        ),
-        const SizedBox(height: 10),
         FilledButton(
           onPressed: locked ? null : () => onChangeOffset(5),
           style: FilledButton.styleFrom(
             backgroundColor: const Color(0xFF2563EB),
             disabledBackgroundColor: const Color(0xFFE5E7EB),
-            minimumSize: const Size.fromHeight(52),
+            minimumSize: const Size.fromHeight(46),
           ),
           child: const Text('+5分'),
+        ),
+        const SizedBox(height: 10),
+        OutlinedButton(
+          onPressed: locked ? null : () => onChangeOffset(-5),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: const Color(0xFF2563EB),
+            side: const BorderSide(color: Color(0xFF93C5FD)),
+            minimumSize: const Size.fromHeight(46),
+          ),
+          child: const Text('-5分'),
         ),
       ],
     );
@@ -1696,9 +1722,15 @@ class _ClockActivityPanel extends StatelessWidget {
             children: [
               clock,
               const SizedBox(height: 16),
-              timeSummary,
-              const SizedBox(height: 16),
-              SizedBox(width: 240, child: controls),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(width: 112, child: controls),
+                  const SizedBox(width: 18),
+                  timeSummary,
+                ],
+              ),
             ],
           );
         }
@@ -1708,20 +1740,11 @@ class _ClockActivityPanel extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              SizedBox(width: 112, child: controls),
+              const SizedBox(width: 22),
               clock,
               const SizedBox(width: 28),
-              SizedBox(
-                width: 240,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    timeSummary,
-                    const SizedBox(height: 18),
-                    controls,
-                  ],
-                ),
-              ),
+              timeSummary,
             ],
           ),
         );
@@ -1855,10 +1878,7 @@ class _TimeResultBox extends StatefulWidget {
   final _TimeLearnPage page;
   final AppLanguage selectedLanguage;
 
-  const _TimeResultBox({
-    required this.page,
-    required this.selectedLanguage,
-  });
+  const _TimeResultBox({required this.page, required this.selectedLanguage});
 
   @override
   State<_TimeResultBox> createState() => _TimeResultBoxState();
@@ -1870,15 +1890,12 @@ class _TimeResultBoxState extends State<_TimeResultBox> {
   String get _nativeAnswer {
     final isArrival = widget.page.answer == '午前8時10分';
     return switch (widget.selectedLanguage) {
-      AppLanguage.portuguese => isArrival
-          ? '8:10 da manhã'
-          : '1 hora e 10 minutos',
-      AppLanguage.tagalog => isArrival
-          ? '8:10 ng umaga'
-          : '1 oras at 10 minuto',
-      AppLanguage.vietnamese => isArrival
-          ? '8 gio 10 phut sang'
-          : '1 gio 10 phut',
+      AppLanguage.portuguese =>
+        isArrival ? '8:10 da manhã' : '1 hora e 10 minutos',
+      AppLanguage.tagalog =>
+        isArrival ? '8:10 ng umaga' : '1 oras at 10 minuto',
+      AppLanguage.vietnamese =>
+        isArrival ? '8 gio 10 phut sang' : '1 gio 10 phut',
       AppLanguage.japanese => '',
     };
   }
@@ -1886,15 +1903,18 @@ class _TimeResultBoxState extends State<_TimeResultBox> {
   String get _nativeExplanation {
     final isArrival = widget.page.answer == '午前8時10分';
     return switch (widget.selectedLanguage) {
-      AppLanguage.portuguese => isArrival
-          ? 'Foram 20 minutos ate as 8:00 e mais 10 minutos ate as 8:10. Por isso, a chegada foi as 8:10 da manha.'
-          : 'Das 3:40 ate as 4:00 sao 20 minutos, e das 4:00 ate as 4:50 sao mais 50 minutos. 20 + 50 = 70 minutos, ou 1 hora e 10 minutos.',
-      AppLanguage.tagalog => isArrival
-          ? '20 minuto hanggang 8:00 at 10 minuto mula 8:00 hanggang 8:10. Kaya dumating nang 8:10 ng umaga.'
-          : '20 minuto mula 3:40 hanggang 4:00 at 50 minuto mula 4:00 hanggang 4:50. Ang 20 + 50 ay 70 minuto, o 1 oras at 10 minuto.',
-      AppLanguage.vietnamese => isArrival
-          ? 'Can 20 phut den 8 gio va 10 phut tu 8 gio den 8 gio 10. Vi vay den truong luc 8 gio 10 sang.'
-          : 'Tu 3 gio 40 den 4 gio la 20 phut, va tu 4 gio den 4 gio 50 la 50 phut. 20 + 50 = 70 phut, hay 1 gio 10 phut.',
+      AppLanguage.portuguese =>
+        isArrival
+            ? 'Foram 20 minutos ate as 8:00 e mais 10 minutos ate as 8:10. Por isso, a chegada foi as 8:10 da manha.'
+            : 'Das 3:40 ate as 4:00 sao 20 minutos, e das 4:00 ate as 4:50 sao mais 50 minutos. 20 + 50 = 70 minutos, ou 1 hora e 10 minutos.',
+      AppLanguage.tagalog =>
+        isArrival
+            ? '20 minuto hanggang 8:00 at 10 minuto mula 8:00 hanggang 8:10. Kaya dumating nang 8:10 ng umaga.'
+            : '20 minuto mula 3:40 hanggang 4:00 at 50 minuto mula 4:00 hanggang 4:50. Ang 20 + 50 ay 70 minuto, o 1 oras at 10 minuto.',
+      AppLanguage.vietnamese =>
+        isArrival
+            ? 'Can 20 phut den 8 gio va 10 phut tu 8 gio den 8 gio 10. Vi vay den truong luc 8 gio 10 sang.'
+            : 'Tu 3 gio 40 den 4 gio la 20 phut, va tu 4 gio den 4 gio 50 la 50 phut. 20 + 50 = 70 phut, hay 1 gio 10 phut.',
       AppLanguage.japanese => '',
     };
   }
@@ -2394,7 +2414,7 @@ class _SecondHandPanel extends StatelessWidget {
             style: TextStyle(
               fontFamily: AppFonts.display,
               color: Color(0xFF2563EB),
-              fontSize: 28,
+              fontSize: 32,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -2415,6 +2435,7 @@ class _SecondHandPanel extends StatelessWidget {
             ),
             language: selectedLanguage,
             vocabularyEntries: _timeVocabularyEntries,
+            backgroundColor: const Color(0xFFECFDF5),
           ),
         ],
       ),
@@ -2734,13 +2755,8 @@ class _MinuteSecondPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(16),
-      ),
       child: Column(
         children: [
           Wrap(
@@ -2762,8 +2778,7 @@ class _MinuteSecondPanel extends StatelessWidget {
           _InlineExplanationSupport(
             line: const SupportLine(
               japanese: '1分は60秒。だから、1分20秒は80秒です。',
-              ruby:
-                  '1{分|ぷん}は60{秒|びょう}。だから、1{分|ぷん}20{秒|びょう}は80{秒|びょう}です。',
+              ruby: '1{分|ぷん}は60{秒|びょう}。だから、1{分|ぷん}20{秒|びょう}は80{秒|びょう}です。',
               native: {
                 AppLanguage.portuguese:
                     '1 minuto tem 60 segundos. Por isso, 1 minuto e 20 segundos sao 80 segundos.',
@@ -2775,6 +2790,7 @@ class _MinuteSecondPanel extends StatelessWidget {
             ),
             language: selectedLanguage,
             vocabularyEntries: _timeVocabularyEntries,
+            backgroundColor: const Color(0xFFECFDF5),
           ),
         ],
       ),
@@ -2786,11 +2802,13 @@ class _InlineExplanationSupport extends StatefulWidget {
   final SupportLine line;
   final AppLanguage language;
   final List<VocabularyEntry> vocabularyEntries;
+  final Color backgroundColor;
 
   const _InlineExplanationSupport({
     required this.line,
     required this.language,
     this.vocabularyEntries = const [],
+    this.backgroundColor = const Color(0xFFF8FAFC),
   });
 
   @override
@@ -2807,7 +2825,7 @@ class _InlineExplanationSupportState extends State<_InlineExplanationSupport> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: widget.backgroundColor,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -2819,6 +2837,7 @@ class _InlineExplanationSupportState extends State<_InlineExplanationSupport> {
               language: widget.language,
               showNative: _showNative,
               vocabularyEntries: widget.vocabularyEntries,
+              enableLearningSupport: true,
             ),
           ),
           const SizedBox(width: 10),
@@ -3007,10 +3026,7 @@ class _LengthMeasureLearnState extends State<_LengthMeasureLearn> {
         SupportLine(
           japanese: '木のみきをはかりましょう。',
           ruby: '{木|き}のみきをはかりましょう。',
-          native: {
-            AppLanguage.portuguese:
-                'Vamos medir o tronco da árvore.',
-          },
+          native: {AppLanguage.portuguese: 'Vamos medir o tronco da árvore.'},
         ),
       ],
       _ => const [
@@ -3071,6 +3087,7 @@ class _LengthMeasureLearnState extends State<_LengthMeasureLearn> {
             language: widget.selectedLanguage,
             showNative: _showNative,
             vocabularyEntries: _lengthVocabularyEntries,
+            enableLearningSupport: true,
           ),
           if (_page == 0) ...[
             const SizedBox(height: 12),
@@ -3115,7 +3132,6 @@ class _LengthMeasureLearnState extends State<_LengthMeasureLearn> {
   }
 }
 
-
 class _InteractiveRulerPanel extends StatelessWidget {
   final Offset rulerPosition;
   final ValueChanged<Offset> onChanged;
@@ -3147,9 +3163,7 @@ class _InteractiveRulerPanel extends StatelessWidget {
           final maxX = math.max(18.0, boardWidth - usableRulerWidth - 18);
           return Offset(
             position.dx.clamp(18.0, maxX).toDouble(),
-            position.dy
-                .clamp(102.0, boardHeight - rulerHeight - 14)
-                .toDouble(),
+            position.dy.clamp(102.0, boardHeight - rulerHeight - 14).toDouble(),
           );
         }
 
@@ -3196,9 +3210,7 @@ class _InteractiveRulerPanel extends StatelessWidget {
                         // A small finger movement should move the ruler far enough
                         // to feel direct on touch screens.
                         onChanged(
-                          clampPosition(
-                            rulerPosition + details.delta * 1.7,
-                          ),
+                          clampPosition(rulerPosition + details.delta * 1.7),
                         );
                       },
                       child: _RealisticRuler(
@@ -3350,8 +3362,9 @@ class _RealisticRulerPainter extends CustomPainter {
     for (var centimeter = 0; centimeter <= cmCount; centimeter++) {
       final x = cm * centimeter;
       final isLongMarker = centimeter % 5 == 0;
-      final markerColor =
-          isLongMarker ? const Color(0xFF111827) : const Color(0xFF334155);
+      final markerColor = isLongMarker
+          ? const Color(0xFF111827)
+          : const Color(0xFF334155);
       final h = centimeter % 5 == 0 ? 38.0 : 27.0;
       canvas.drawLine(
         Offset(x, 0),
@@ -3361,7 +3374,8 @@ class _RealisticRulerPainter extends CustomPainter {
           ..strokeWidth = isLongMarker ? 2.8 : 1.6,
       );
       final shouldShowMeasuredNumber =
-          highlightedCentimeters != null && centimeter == highlightedCentimeters;
+          highlightedCentimeters != null &&
+          centimeter == highlightedCentimeters;
       if (isLongMarker || shouldShowMeasuredNumber) {
         _paintText(
           canvas,
@@ -3638,11 +3652,7 @@ class _InteractiveTapeMeasurePanel extends StatelessWidget {
           ),
           child: Column(
             children: [
-              _TapeMeasureBar(
-                value: value,
-                maxMeters: 6,
-                onChanged: onChanged,
-              ),
+              _TapeMeasureBar(value: value, maxMeters: 6, onChanged: onChanged),
             ],
           ),
         ),
@@ -3712,10 +3722,10 @@ class _TapeMeasureBar extends StatelessWidget {
                     behavior: HitTestBehavior.opaque,
                     onPanUpdate: (details) {
                       // Keep the pull tab responsive on touch screens.
-                      final next = (value +
-                              details.delta.dx / tapeWidth * maxMeters * 4)
-                          .clamp(0.0, maxMeters)
-                          .toDouble();
+                      final next =
+                          (value + details.delta.dx / tapeWidth * maxMeters * 4)
+                              .clamp(0.0, maxMeters)
+                              .toDouble();
                       onChanged(next);
                     },
                     child: const SizedBox(width: 52, height: 62),
@@ -3742,7 +3752,12 @@ class _HallwayTapeMeasurePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final wall = Rect.fromLTWH(0, 0, size.width, size.height * .66);
-    final floor = Rect.fromLTWH(0, wall.bottom, size.width, size.height - wall.bottom);
+    final floor = Rect.fromLTWH(
+      0,
+      wall.bottom,
+      size.width,
+      size.height - wall.bottom,
+    );
     canvas.drawRRect(
       RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(16)),
       Paint()..color = const Color(0xFFF8FAFC),
@@ -3821,7 +3836,11 @@ class _HallwayTapeMeasurePainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
     for (var i = -1; i <= 1; i++) {
       final y = origin.dy + i * 9;
-      canvas.drawLine(Offset(tapeEndX - 3, y), Offset(tapeEndX + 3, y), gripPaint);
+      canvas.drawLine(
+        Offset(tapeEndX - 3, y),
+        Offset(tapeEndX + 3, y),
+        gripPaint,
+      );
     }
 
     _paintText(
@@ -3851,20 +3870,9 @@ class _HallwayTapeMeasurePainter extends CustomPainter {
       );
       canvas.drawRRect(rect, windowPaint);
       canvas.drawRRect(rect, framePaint);
-      canvas.drawLine(
-        Offset(left + 47, 34),
-        Offset(left + 47, 96),
-        framePaint,
-      );
-      canvas.drawLine(
-        Offset(left, 65),
-        Offset(left + 94, 65),
-        framePaint,
-      );
-      canvas.drawRect(
-        Rect.fromLTWH(left + 17, 68, 7, 20),
-        trunkPaint,
-      );
+      canvas.drawLine(Offset(left + 47, 34), Offset(left + 47, 96), framePaint);
+      canvas.drawLine(Offset(left, 65), Offset(left + 94, 65), framePaint);
+      canvas.drawRect(Rect.fromLTWH(left + 17, 68, 7, 20), trunkPaint);
       canvas.drawCircle(Offset(left + 20, 62), 15, treePaint);
     }
 
@@ -3963,10 +3971,9 @@ class _CurvedTapePanelState extends State<_CurvedTapePanel> {
               setState(() {
                 final delta = details.delta.dx;
                 _rotation = (_rotation + delta * .012) % (math.pi * 2);
-                _tapeProgress =
-                    (_tapeProgress + delta.abs() / 340)
-                        .clamp(0.0, 1.0)
-                        .toDouble();
+                _tapeProgress = (_tapeProgress + delta.abs() / 340)
+                    .clamp(0.0, 1.0)
+                    .toDouble();
               });
             },
             child: CustomPaint(
@@ -3985,14 +3992,11 @@ class _CurvedTapePanelState extends State<_CurvedTapePanel> {
             answer: '80cm',
             titleSuffix: ' でした。',
             portugueseTitle: 'A volta do tronco da árvore tem 80 cm.',
-            japaneseLines: [
-              'まきじゃくは、まるいもののまわりをはかるときに便利です。',
-            ],
+            japaneseLines: ['まきじゃくは、まるいもののまわりをはかるときに便利です。'],
             portugueseLines: [
               'A fita métrica é útil para medir ao redor de coisas redondas.',
             ],
-            audioText:
-                '木のみきのまわりは80センチメートルでした。まきじゃくは、まるいもののまわりをはかるときに便利です。',
+            audioText: '木のみきのまわりは80センチメートルでした。まきじゃくは、まるいもののまわりをはかるときに便利です。',
           )
         else
           const _SoftResultLine(text: 'まきじゃくの0と、ひとまわりした目もりが重なるところを見つけよう。'),
@@ -4039,7 +4043,12 @@ class _TrunkMeasurePainter extends CustomPainter {
   }
 
   void _paintGround(Canvas canvas, Size size, Rect trunkRect) {
-    final ground = Rect.fromLTRB(0, trunkRect.bottom - 12, size.width, size.height);
+    final ground = Rect.fromLTRB(
+      0,
+      trunkRect.bottom - 12,
+      size.width,
+      size.height,
+    );
     canvas.drawRect(ground, Paint()..color = const Color(0xFFE7F5E8));
     for (var i = 0; i < 10; i++) {
       final x = (i + .5) * size.width / 10;
@@ -4121,7 +4130,8 @@ class _TrunkMeasurePainter extends CustomPainter {
     canvas.clipPath(trunkPath);
     for (var i = 0; i < 12; i++) {
       final phase = rotation + i * .78;
-      final x = rect.left + rect.width * (.18 + .64 * ((math.sin(phase) + 1) / 2));
+      final x =
+          rect.left + rect.width * (.18 + .64 * ((math.sin(phase) + 1) / 2));
       final top = rect.top + 34 + (i % 4) * 9;
       final path = Path()..moveTo(x, top);
       for (var y = top; y < rect.bottom - 14; y += 34) {
@@ -4137,7 +4147,9 @@ class _TrunkMeasurePainter extends CustomPainter {
 
     for (var i = 0; i < 9; i++) {
       final y = rect.top + 54 + i * 24;
-      final x = rect.left + rect.width * (.3 + .4 * ((math.cos(rotation + i) + 1) / 2));
+      final x =
+          rect.left +
+          rect.width * (.3 + .4 * ((math.cos(rotation + i) + 1) / 2));
       canvas.drawOval(
         Rect.fromCenter(center: Offset(x, y), width: 18, height: 8),
         Paint()..color = const Color(0xFF4A220D).withOpacity(.24),
@@ -4222,30 +4234,14 @@ class _TrunkMeasurePainter extends CustomPainter {
 
     final freeEnd = _ellipsePoint(ellipse, endAngle);
     if (tapeProgress < .98) {
-      canvas.drawCircle(
-        freeEnd,
-        7,
-        Paint()..color = const Color(0xFF2563EB),
-      );
-      canvas.drawCircle(
-        freeEnd,
-        3.5,
-        Paint()..color = Colors.white,
-      );
+      canvas.drawCircle(freeEnd, 7, Paint()..color = const Color(0xFF2563EB));
+      canvas.drawCircle(freeEnd, 3.5, Paint()..color = Colors.white);
     }
 
     if (tapeProgress >= .98) {
       _paintTapeLabel(canvas, '80cm', zeroPoint.translate(0, 25));
-      canvas.drawCircle(
-        zeroPoint,
-        8,
-        Paint()..color = const Color(0xFF16A34A),
-      );
-      canvas.drawCircle(
-        zeroPoint,
-        4,
-        Paint()..color = Colors.white,
-      );
+      canvas.drawCircle(zeroPoint, 8, Paint()..color = const Color(0xFF16A34A));
+      canvas.drawCircle(zeroPoint, 4, Paint()..color = Colors.white);
     }
   }
 
@@ -4321,7 +4317,8 @@ class _ToolChoiceSummaryPanel extends StatefulWidget {
   const _ToolChoiceSummaryPanel();
 
   @override
-  State<_ToolChoiceSummaryPanel> createState() => _ToolChoiceSummaryPanelState();
+  State<_ToolChoiceSummaryPanel> createState() =>
+      _ToolChoiceSummaryPanelState();
 }
 
 class _ToolChoiceSummaryPanelState extends State<_ToolChoiceSummaryPanel> {
@@ -4600,7 +4597,7 @@ class _KilometerLearnState extends State<_KilometerLearn> {
         SupportLine(
           japanese: '1kmは1000mです。kmはキロメートルといいます。長い道のりはkmで表すとわかりやすいです。',
           ruby:
-              '1kmは1000mです。kmはキロメートルといいます。{長|なが}い{道|みち}のりはkmで{表|あらわ}すとわかりやすいです。',
+              '1kmは1000mです。kmは{キロメートル|きろめーとる}といいます。{長|なが}い{道|みち}のりはkmで{表|あらわ}すとわかりやすいです。',
           native: {
             AppLanguage.portuguese:
                 '1 km são 1000 m. km se lê quilômetro. Caminhos longos ficam mais fáceis de entender em km.',
@@ -4617,6 +4614,8 @@ class _KilometerLearnState extends State<_KilometerLearn> {
     return _RemainderLearnShell(
       icon: Icons.map_rounded,
       title: '学校から町へ出かけよう',
+      titleRuby: '{学校|がっこう}から{町|まち}へ{出|で}かけよう',
+      titleVocabularyEntries: _lengthVocabularyEntries,
       selectedLanguage: widget.selectedLanguage,
       showNative: _showNative,
       onToggleNative: () => setState(() => _showNative = !_showNative),
@@ -4642,16 +4641,40 @@ class _KilometerLearnState extends State<_KilometerLearn> {
             language: widget.selectedLanguage,
             showNative: _showNative,
             vocabularyEntries: _lengthVocabularyEntries,
+            enableLearningSupport: true,
           ),
           const SizedBox(height: 18),
           switch (currentPage) {
-            0 => _DistanceRoutePanel(
-              step: _routeStep,
-              onAdvance: () => setState(() {
-                _routeStep = (_routeStep + 1).clamp(0, 3);
-              }),
+            0 => Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _InlineExplanationSupport(
+                  line: const SupportLine(
+                    japanese: 'ボタンをおして、道にそって進んでみよう。',
+                    ruby: 'ボタンをおして、{道|みち}にそって{進|すす}んでみよう。',
+                    native: {
+                      AppLanguage.portuguese:
+                          'Aperte o botao e vamos seguir pelo caminho.',
+                      AppLanguage.tagalog:
+                          'Pindutin ang pindutan at sundan natin ang daan.',
+                      AppLanguage.vietnamese:
+                          'Hay bam nut va di theo con duong nhe.',
+                    },
+                  ),
+                  language: widget.selectedLanguage,
+                  vocabularyEntries: _lengthVocabularyEntries,
+                  backgroundColor: const Color(0xFFEFF6FF),
+                ),
+                const SizedBox(height: 18),
+                _DistanceRoutePanel(
+                  step: _routeStep,
+                  onAdvance: () => setState(() {
+                    _routeStep = (_routeStep + 1).clamp(0, 3);
+                  }),
+                ),
+              ],
             ),
-            1 => const _KilometerConversionPanel(),
+            1 => _KilometerConversionPanel(language: widget.selectedLanguage),
             _ => const SizedBox.shrink(),
           },
         ],
@@ -4669,17 +4692,18 @@ class _DistanceRoutePanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final total = [0, 300, 700, 1000][step];
-    final label = step >= 3 ? '公園につきました' : '道にそって進んでみよう';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _SimpleDistanceMap(highlightedSegments: step),
-        const SizedBox(height: 14),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
-        ),
+        if (step >= 3) ...[
+          const SizedBox(height: 14),
+          const Text(
+            '公園につきました',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+          ),
+        ],
         const SizedBox(height: 8),
         Text(
           '進んだ道のり：$total m',
@@ -4698,6 +4722,10 @@ class _DistanceRoutePanel extends StatelessWidget {
         const SizedBox(height: 12),
         FilledButton(
           onPressed: step >= 3 ? null : onAdvance,
+          style: FilledButton.styleFrom(
+            backgroundColor: const Color(0xFF2563EB),
+            disabledBackgroundColor: const Color(0xFFE5E7EB),
+          ),
           child: Text(step >= 3 ? '1kmになりました' : 'つぎの道を進む'),
         ),
       ],
@@ -4725,48 +4753,39 @@ class _DistanceConceptBoxState extends State<_DistanceConceptBox> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> lines = _showNative
-        ? const [
-            _DistanceDefinitionLine(
-              color: Color(0xFF2563EB),
-              text: 'O caminho é o comprimento medido seguindo a estrada.',
-            ),
-            SizedBox(height: 8),
-            _DistanceDefinitionLine(
-              color: Color(0xFFEF4444),
-              text: 'A distância é o comprimento medido em linha reta.',
-            ),
-          ]
-        : const [
-            _DistanceDefinitionLine(
-              color: Color(0xFF2563EB),
-              text: '道のりは、道にそってはかった長さです。',
-            ),
-            SizedBox(height: 8),
-            _DistanceDefinitionLine(
-              color: Color(0xFFEF4444),
-              text: 'きょりは、まっすぐにはかった長さです。',
-            ),
-          ];
-
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFEFF6FF),
-        borderRadius: BorderRadius.circular(14),
+        color: const Color(0xFFECFDF5),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Expanded(
-                child: Text(
-                  '道のりときょり',
-                  style: TextStyle(
-                    color: Color(0xFF111827),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
+              const Padding(
+                padding: EdgeInsets.only(top: 4),
+                child: Icon(
+                  Icons.check_circle_rounded,
+                  color: Color(0xFF059669),
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 9),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: RubyText(
+                    text: '{道|みち}のりときょり',
+                    enableLearningSupport: true,
+                    style: TextStyle(
+                      fontFamily: AppFonts.display,
+                      color: Color(0xFF064E3B),
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),
@@ -4784,10 +4803,46 @@ class _DistanceConceptBoxState extends State<_DistanceConceptBox> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: lines,
+          const SizedBox(height: 9),
+          Padding(
+            padding: const EdgeInsets.only(left: 33),
+            child: _showNative
+                ? const Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(text: 'O '),
+                        TextSpan(
+                          text: 'caminho',
+                          style: TextStyle(
+                            color: Color(0xFF2563EB),
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        TextSpan(
+                          text:
+                              ' é o comprimento medido seguindo a estrada. A ',
+                        ),
+                        TextSpan(
+                          text: 'distância',
+                          style: TextStyle(
+                            color: Color(0xFFEF4444),
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        TextSpan(
+                          text: ' é o comprimento medido em linha reta.',
+                        ),
+                      ],
+                    ),
+                    style: TextStyle(
+                      fontFamily: AppFonts.interface,
+                      color: Color(0xFF064E3B),
+                      fontSize: 17,
+                      height: 1.55,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  )
+                : const _DistanceConceptJapaneseText(),
           ),
         ],
       ),
@@ -4795,38 +4850,78 @@ class _DistanceConceptBoxState extends State<_DistanceConceptBox> {
   }
 }
 
-class _DistanceDefinitionLine extends StatelessWidget {
-  final Color color;
-  final String text;
+class _DistanceConceptJapaneseText extends StatelessWidget {
+  const _DistanceConceptJapaneseText();
 
-  const _DistanceDefinitionLine({
-    required this.color,
-    required this.text,
-  });
+  static const _bodyStyle = TextStyle(
+    fontFamily: AppFonts.interface,
+    color: Color(0xFF064E3B),
+    fontSize: 17,
+    height: 1.55,
+    fontWeight: FontWeight.w600,
+  );
+  static const _routeStyle = TextStyle(
+    fontFamily: AppFonts.interface,
+    color: Color(0xFF2563EB),
+    fontSize: 17,
+    height: 1.55,
+    fontWeight: FontWeight.w800,
+  );
+  static const _distanceStyle = TextStyle(
+    fontFamily: AppFonts.interface,
+    color: Color(0xFFEF4444),
+    fontSize: 17,
+    height: 1.55,
+    fontWeight: FontWeight.w800,
+  );
 
   @override
   Widget build(BuildContext context) {
-    return Text.rich(
-      TextSpan(
-        children: [
-          WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: Container(
-              width: 10,
-              height: 10,
-              margin: const EdgeInsets.only(right: 8),
-              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            RubyText(
+              text: '{道|みち}にそってはかった{長|なが}さを「',
+              style: _bodyStyle,
+              enableLearningSupport: true,
             ),
-          ),
-          TextSpan(text: text),
-        ],
-      ),
-      style: const TextStyle(
-        color: Color(0xFF111827),
-        fontSize: 17,
-        height: 1.45,
-        fontWeight: FontWeight.w800,
-      ),
+            RubyText(
+              text: '{道|みち}のり',
+              style: _routeStyle,
+              enableLearningSupport: true,
+            ),
+            RubyText(
+              text: '」といいます。',
+              style: _bodyStyle,
+              enableLearningSupport: true,
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            RubyText(
+              text: 'まっすぐにはかった{長|なが}さを「',
+              style: _bodyStyle,
+              enableLearningSupport: true,
+            ),
+            RubyText(
+              text: 'きょり',
+              style: _distanceStyle,
+              enableLearningSupport: true,
+            ),
+            RubyText(
+              text: '」といいます。',
+              style: _bodyStyle,
+              enableLearningSupport: true,
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
@@ -5015,7 +5110,11 @@ class _SimpleDistanceMapPainter extends CustomPainter {
       Paint()..color = Colors.white,
     );
     for (final dx in [-7.0, 0.0, 7.0]) {
-      canvas.drawCircle(center.translate(dx, 0), 2.2, Paint()..color = Colors.white);
+      canvas.drawCircle(
+        center.translate(dx, 0),
+        2.2,
+        Paint()..color = Colors.white,
+      );
     }
   }
 
@@ -5042,9 +5141,21 @@ class _SimpleDistanceMapPainter extends CustomPainter {
       Rect.fromCenter(center: center.translate(0, 8), width: 5, height: 14),
       Paint()..color = const Color(0xFF92400E),
     );
-    canvas.drawCircle(center.translate(-5, -1), 8, Paint()..color = const Color(0xFF22C55E));
-    canvas.drawCircle(center.translate(5, -2), 8, Paint()..color = const Color(0xFF16A34A));
-    canvas.drawCircle(center.translate(0, -8), 8, Paint()..color = const Color(0xFF86EFAC));
+    canvas.drawCircle(
+      center.translate(-5, -1),
+      8,
+      Paint()..color = const Color(0xFF22C55E),
+    );
+    canvas.drawCircle(
+      center.translate(5, -2),
+      8,
+      Paint()..color = const Color(0xFF16A34A),
+    );
+    canvas.drawCircle(
+      center.translate(0, -8),
+      8,
+      Paint()..color = const Color(0xFF86EFAC),
+    );
   }
 
   void _paintText(
@@ -5079,111 +5190,97 @@ class _SimpleDistanceMapPainter extends CustomPainter {
 }
 
 class _KilometerConversionPanel extends StatelessWidget {
-  const _KilometerConversionPanel();
+  final AppLanguage language;
+
+  const _KilometerConversionPanel({required this.language});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEFF6FF),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '1km',
+    return Column(
+      children: [
+        const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '1km',
+              style: TextStyle(
+                fontFamily: AppFonts.display,
+                fontSize: 42,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF16A34A),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 14),
+              child: Text(
+                '=',
                 style: TextStyle(
                   fontFamily: AppFonts.display,
-                  fontSize: 42,
+                  fontSize: 34,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF16A34A),
+                  color: Color(0xFF64748B),
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 14),
-                child: Text(
-                  '=',
-                  style: TextStyle(
-                    fontFamily: AppFonts.display,
-                    fontSize: 34,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF64748B),
-                  ),
-                ),
+            ),
+            Text(
+              '1000m',
+              style: TextStyle(
+                fontFamily: AppFonts.display,
+                fontSize: 42,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF2563EB),
               ),
-              Text(
-                '1000m',
-                style: TextStyle(
-                  fontFamily: AppFonts.display,
-                  fontSize: 42,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF2563EB),
-                ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final useRow = constraints.maxWidth >= 560;
+            final cards = [
+              _KilometerExampleCard(
+                placeRuby: '{図書館|としょかん}',
+                meters: '1500m',
+                kilometers: '1km500m',
+                language: language,
               ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final useRow = constraints.maxWidth >= 560;
-              const cards = [
-                _KilometerExampleCard(
-                  place: '図書館',
-                  meters: '1500m',
-                  kilometers: '1km500m',
-                ),
-                _KilometerExampleCard(
-                  place: '駅',
-                  meters: '2000m',
-                  kilometers: '2km',
-                ),
-              ];
-              if (!useRow) {
-                return const Column(
-                  children: [
-                    _KilometerExampleCard(
-                      place: '図書館',
-                      meters: '1500m',
-                      kilometers: '1km500m',
-                    ),
-                    SizedBox(height: 12),
-                    _KilometerExampleCard(
-                      place: '駅',
-                      meters: '2000m',
-                      kilometers: '2km',
-                    ),
-                  ],
-                );
-              }
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Expanded(child: cards[0]),
-                  const SizedBox(width: 12),
-                  Expanded(child: cards[1]),
-                ],
+              _KilometerExampleCard(
+                placeRuby: '{駅|えき}',
+                meters: '2000m',
+                kilometers: '2km',
+                language: language,
+              ),
+            ];
+            if (!useRow) {
+              return Column(
+                children: [cards[0], const SizedBox(height: 12), cards[1]],
               );
-            },
-          ),
-        ],
-      ),
+            }
+            return Row(
+              children: [
+                Expanded(child: cards[0]),
+                const SizedBox(width: 12),
+                Expanded(child: cards[1]),
+              ],
+            );
+          },
+        ),
+      ],
     );
   }
 }
 
 class _KilometerExampleCard extends StatelessWidget {
-  final String place;
+  final String placeRuby;
   final String meters;
   final String kilometers;
+  final AppLanguage language;
 
   const _KilometerExampleCard({
-    required this.place,
+    required this.placeRuby,
     required this.meters,
     required this.kilometers,
+    required this.language,
   });
 
   @override
@@ -5192,19 +5289,22 @@ class _KilometerExampleCard extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 104),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFFEFF6FF),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFDDE7F3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            place,
+          RubyText(
+            text: placeRuby,
+            language: language,
+            vocabularyEntries: _lengthVocabularyEntries,
+            enableLearningSupport: true,
             style: const TextStyle(
+              fontFamily: AppFonts.interface,
               color: Color(0xFF111827),
               fontSize: 18,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 8),
@@ -5482,7 +5582,7 @@ class _MultiplicationDivisionLearnState
           lines: const [
             SupportLine(
               japanese: '12このクッキーを、3人に同じ数ずつ分けてみよう。',
-              ruby: '12このクッキーを、3{人|にん}に{同|おな}じ{数|かず}ずつ{分|わ}けてみよう。',
+              ruby: '12このクッキーを、3{人|にん}に{同じ数ずつ|おなじ かずずつ}{分けてみよう|わけてみよう}。',
               native: {
                 AppLanguage.portuguese:
                     'Vamos dividir 12 biscoitos igualmente entre 3 pessoas.',
@@ -5507,7 +5607,7 @@ class _MultiplicationDivisionLearnState
             SupportLine(
               japanese: '同じ3つの数を使って、わり算とかけ算の式を作ることができます。',
               ruby:
-                  '{同|おな}じ3つの{数|かず}を{使|つか}って、わり{算|ざん}とかけ{算|ざん}の{式|しき}を{作|つく}ることができます。',
+                  '{同じ|おなじ}3つの{数|かず}を{使って|つかって}、{わり算|わりざん}と{かけ算|かけざん}の{式|しき}を{作る|つくる}ことができます。',
               native: {
                 AppLanguage.portuguese:
                     'Com os mesmos três números, podemos fazer uma conta de divisão e uma de multiplicação.',
@@ -5515,7 +5615,8 @@ class _MultiplicationDivisionLearnState
             ),
             SupportLine(
               japanese: 'わり算の答えは、かけ算を使って見つけられます。',
-              ruby: 'わり{算|ざん}の{答え|こたえ}は、かけ{算|ざん}を{使|つか}って{見|み}つけられます。',
+              ruby:
+                  '{わり算|わりざん}の{答え|こたえ}は、{かけ算|かけざん}を{使って|つかって}{見つけられます|みつけられます}。',
               native: {
                 AppLanguage.portuguese:
                     'A resposta da divisão pode ser encontrada usando a multiplicação.',
@@ -5530,7 +5631,6 @@ class _MultiplicationDivisionLearnState
       ],
     );
   }
-
 }
 
 class _RemainderDivisionLearn extends StatefulWidget {
@@ -5645,6 +5745,7 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
           language: widget.selectedLanguage,
           showNative: _showNative,
           vocabularyEntries: _remainderLearnVocabulary,
+          enableLearningSupport: true,
         ),
         const SizedBox(height: 18),
         switch (_page) {
@@ -5773,6 +5874,7 @@ class _RemainderContextLearnState extends State<_RemainderContextLearn> {
           language: widget.selectedLanguage,
           showNative: _showNative,
           vocabularyEntries: _remainderContextVocabulary,
+          enableLearningSupport: true,
         ),
         const SizedBox(height: 18),
         switch (_page) {
@@ -5836,9 +5938,7 @@ class _WeightGramKgLearnState extends State<_WeightGramKgLearn> {
         SupportLine(
           japanese: 'りんごの重さをはかってみよう。',
           ruby: 'りんごの{重|おも}さをはかってみよう。',
-          native: {
-            AppLanguage.portuguese: 'Vamos medir o peso da maçã.',
-          },
+          native: {AppLanguage.portuguese: 'Vamos medir o peso da maçã.'},
         ),
       ],
       2 => const [
@@ -5858,8 +5958,7 @@ class _WeightGramKgLearnState extends State<_WeightGramKgLearn> {
       _ => const [
         SupportLine(
           japanese: '少し重いものは、kgとgを合わせて表すことがあります。',
-          ruby:
-              '{少|すこ}し{重|おも}いものは、kgとgを{合|あ}わせて{表|あらわ}すことがあります。',
+          ruby: '{少|すこ}し{重|おも}いものは、kgとgを{合|あ}わせて{表|あらわ}すことがあります。',
           native: {
             AppLanguage.portuguese:
                 'Para coisas um pouco pesadas, podemos usar kg e g juntos.',
@@ -5898,6 +5997,7 @@ class _WeightGramKgLearnState extends State<_WeightGramKgLearn> {
             language: widget.selectedLanguage,
             showNative: _showNative,
             vocabularyEntries: _weightVocabularyEntries,
+            enableLearningSupport: true,
           ),
           const SizedBox(height: 18),
           switch (_page) {
@@ -5912,7 +6012,8 @@ class _WeightGramKgLearnState extends State<_WeightGramKgLearn> {
               ),
               showResultNative: _showComparisonResultNative,
               onToggleResultNative: () => setState(
-                () => _showComparisonResultNative = !_showComparisonResultNative,
+                () =>
+                    _showComparisonResultNative = !_showComparisonResultNative,
               ),
               onPlaceApple: () => setState(() => _appleOnBalance = true),
               onPlacePencil: () => setState(() => _pencilOnBalance = true),
@@ -5926,7 +6027,8 @@ class _WeightGramKgLearnState extends State<_WeightGramKgLearn> {
               appleOnScale: _appleOnScale,
               showInstructionNative: _showScaleInstructionNative,
               onToggleInstructionNative: () => setState(
-                () => _showScaleInstructionNative = !_showScaleInstructionNative,
+                () =>
+                    _showScaleInstructionNative = !_showScaleInstructionNative,
               ),
               showResultNative: _showScaleResultNative,
               onToggleResultNative: () => setState(
@@ -6001,8 +6103,7 @@ class _WeightComparePanel extends StatelessWidget {
                   'Vamos colocar a maçã e o lápis na balança de dois pratos.',
               AppLanguage.tagalog:
                   'Ilagay natin ang mansanas at lapis sa timbangan.',
-              AppLanguage.vietnamese:
-                  'Hãy đặt quả táo và bút chì lên cân đĩa.',
+              AppLanguage.vietnamese: 'Hãy đặt quả táo và bút chì lên cân đĩa.',
             },
           ),
           language: selectedLanguage,
@@ -6030,11 +6131,7 @@ class _WeightComparePanel extends StatelessWidget {
             ];
             if (!isWide) {
               return Column(
-                children: [
-                  cards[0],
-                  const SizedBox(height: 12),
-                  cards[1],
-                ],
+                children: [cards[0], const SizedBox(height: 12), cards[1]],
               );
             }
             return Row(
@@ -6107,10 +6204,13 @@ class _WeightComparePanel extends StatelessWidget {
           ),
         ],
         const SizedBox(height: 10),
-        OutlinedButton.icon(
-          onPressed: onReset,
-          icon: const Icon(Icons.refresh_rounded),
-          label: const Text('もう一度'),
+        Align(
+          alignment: Alignment.centerRight,
+          child: _LearnIconButton(
+            semanticLabel: 'もう一度',
+            icon: Icons.refresh_rounded,
+            onPressed: onReset,
+          ),
         ),
       ],
     );
@@ -6184,10 +6284,7 @@ class _WeightObjectVisual extends StatelessWidget {
   final _WeightObjectKind kind;
   final double size;
 
-  const _WeightObjectVisual({
-    required this.kind,
-    this.size = 48,
-  });
+  const _WeightObjectVisual({required this.kind, this.size = 48});
 
   @override
   Widget build(BuildContext context) {
@@ -6419,8 +6516,10 @@ class _WeightScaleDragPanel extends StatelessWidget {
             japanese: 'りんごをはかりの上にのせてみよう。',
             ruby: 'りんごをはかりの{上|うえ}にのせてみよう。',
             native: {
-              AppLanguage.portuguese: 'Vamos colocar a maçã em cima da balança.',
-              AppLanguage.tagalog: 'Ilagay natin ang mansanas sa ibabaw ng timbangan.',
+              AppLanguage.portuguese:
+                  'Vamos colocar a maçã em cima da balança.',
+              AppLanguage.tagalog:
+                  'Ilagay natin ang mansanas sa ibabaw ng timbangan.',
               AppLanguage.vietnamese: 'Hãy đặt quả táo lên trên cái cân.',
             },
           ),
@@ -6434,7 +6533,7 @@ class _WeightScaleDragPanel extends StatelessWidget {
           builder: (context, constraints) {
             final isWide = constraints.maxWidth >= 640;
             final apple = appleOnScale
-                ? const SizedBox(height: 96)
+                ? const SizedBox(width: 148, height: 82)
                 : Draggable<String>(
                     data: 'apple',
                     feedback: const Material(
@@ -6446,14 +6545,13 @@ class _WeightScaleDragPanel extends StatelessWidget {
                     ),
                     childWhenDragging: const Opacity(
                       opacity: 0.25,
-                      child: _WeightObjectVisual(
+                      child: _WeightScaleDish(),
+                    ),
+                    child: const _WeightScaleDish(
+                      item: _WeightObjectVisual(
                         kind: _WeightObjectKind.apple,
                         size: 58,
                       ),
-                    ),
-                    child: const _WeightObjectVisual(
-                      kind: _WeightObjectKind.apple,
-                      size: 58,
                     ),
                   );
             final scale = DragTarget<String>(
@@ -6465,7 +6563,16 @@ class _WeightScaleDragPanel extends StatelessWidget {
                         kind: _WeightObjectKind.apple,
                         size: 48,
                       )
-                    : const Text('ここに乗せる', style: TextStyle(fontSize: 15)),
+                    : const Text(
+                        'ここにのせる',
+                        style: TextStyle(
+                          fontFamily: AppFonts.interface,
+                          fontSize: 18,
+                          height: 1.2,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF334155),
+                        ),
+                      ),
               ),
             );
             if (!isWide) {
@@ -6477,13 +6584,15 @@ class _WeightScaleDragPanel extends StatelessWidget {
                 ],
               );
             }
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(width: 160, child: Center(child: apple)),
-                const SizedBox(width: 28),
-                Expanded(child: Center(child: scale)),
-              ],
+            return Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(width: 148, child: Center(child: apple)),
+                  const SizedBox(width: 32),
+                  scale,
+                ],
+              ),
             );
           },
         ),
@@ -6497,8 +6606,7 @@ class _WeightScaleDragPanel extends StatelessWidget {
               AppLanguage.vietnamese: 'Quả táo nặng 300 g.',
             },
             explanation: const SupportLine(
-              japanese:
-                  '針が300gを指しています。重さを数字で表すときは、グラムを使います。グラムはgと書きます。',
+              japanese: '針が300gを指しています。重さを数字で表すときは、グラムを使います。グラムはgと書きます。',
               ruby:
                   '{針|はり}が300gを{指|さ}しています。{重|おも}さを{数字|すうじ}で{表|あらわ}すときは、グラムを{使|つか}います。グラムはgと{書|か}きます。',
               native: {
@@ -6517,10 +6625,13 @@ class _WeightScaleDragPanel extends StatelessWidget {
             audioLabel: 'グラムの説明を聞く',
           ),
         const SizedBox(height: 10),
-        OutlinedButton.icon(
-          onPressed: onReset,
-          icon: const Icon(Icons.refresh_rounded),
-          label: const Text('もう一度'),
+        Align(
+          alignment: Alignment.centerRight,
+          child: _LearnIconButton(
+            semanticLabel: 'もう一度',
+            icon: Icons.refresh_rounded,
+            onPressed: onReset,
+          ),
         ),
       ],
     );
@@ -6562,8 +6673,7 @@ class _WeightThousandPanel extends StatelessWidget {
                   'Vamos colocar os pesos de 100 g, um de cada vez, na balança.',
               AppLanguage.tagalog:
                   'Ilagay natin ang mga pabigat na 100 g sa timbangan, isa-isa.',
-              AppLanguage.vietnamese:
-                  'Hãy đặt từng quả cân 100 g lên cân.',
+              AppLanguage.vietnamese: 'Hãy đặt từng quả cân 100 g lên cân.',
             },
           ),
           language: selectedLanguage,
@@ -6577,22 +6687,25 @@ class _WeightThousandPanel extends StatelessWidget {
           child: _WeightBlockTray(count: count),
         ),
         const SizedBox(height: 12),
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          alignment: WrapAlignment.center,
-          children: [
-            FilledButton.icon(
-              onPressed: count >= 10 ? null : onAdd,
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('100gを乗せる'),
+        Center(
+          child: FilledButton.icon(
+            onPressed: count >= 10 ? null : onAdd,
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF2563EB),
+              foregroundColor: Colors.white,
             ),
-            OutlinedButton.icon(
-              onPressed: onReset,
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text('もどす'),
-            ),
-          ],
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('100gを乗せる'),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Align(
+          alignment: Alignment.centerRight,
+          child: _LearnIconButton(
+            semanticLabel: 'もどす',
+            icon: Icons.refresh_rounded,
+            onPressed: onReset,
+          ),
         ),
         if (count >= 10) ...[
           const SizedBox(height: 14),
@@ -6603,8 +6716,7 @@ class _WeightThousandPanel extends StatelessWidget {
             nativeTitle: const {},
             explanation: const SupportLine(
               japanese: '1000gになりました。1000gを1キログラムといいます。',
-              ruby:
-                  '1000gになりました。1000gを1キログラムといいます。',
+              ruby: '1000gになりました。1000gを1キログラムといいます。',
               native: {
                 AppLanguage.portuguese:
                     'Chegamos a 1000 g. Chamamos 1000 g de 1 quilograma.',
@@ -6738,6 +6850,8 @@ class _WeightTonLearnState extends State<_WeightTonLearn> {
   int _page = 0;
   int _loads = 0;
   bool _showNative = false;
+  bool _showLoadInstructionNative = false;
+  bool _showLoadResultNative = false;
 
   static const _lastPage = 1;
 
@@ -6746,8 +6860,7 @@ class _WeightTonLearnState extends State<_WeightTonLearn> {
       0 => const [
         SupportLine(
           japanese: 'とても重いものは、トンで表すことがあります。',
-          ruby:
-              'とても{重|おも}いものは、トンで{表|あらわ}すことがあります。',
+          ruby: 'とても{重|おも}いものは、トンで{表|あらわ}すことがあります。',
           native: {
             AppLanguage.portuguese:
                 'Coisas muito pesadas podem ser mostradas em toneladas.',
@@ -6756,23 +6869,21 @@ class _WeightTonLearnState extends State<_WeightTonLearn> {
       ],
       1 => const [
         SupportLine(
-          japanese: '100kgの荷物をトラックに積んで、1000kgを作りましょう。',
-          ruby:
-              '100kgの{荷物|にもつ}をトラックに{積|つ}んで、1000kgを{作|つく}りましょう。',
+          japanese: '100kgの荷物を10こ積むと、何kgになるかな？',
+          ruby: '100kgの{荷物|にもつ}を10こ{積|つ}むと、{何|なん}kgになるかな？',
           native: {
             AppLanguage.portuguese:
-                'Coloque cargas de 100 kg no caminhão para formar 1000 kg.',
+                'Ao colocar 10 cargas de 100 kg no caminhão, quantos quilogramas serão ao todo?',
           },
         ),
       ],
       _ => const [
         SupportLine(
-          japanese: '100kgの荷物をトラックに積んで、1000kgを作りましょう。',
-          ruby:
-              '100kgの{荷物|にもつ}をトラックに{積|つ}んで、1000kgを{作|つく}りましょう。',
+          japanese: '100kgの荷物を10こ積むと、何kgになるかな？',
+          ruby: '100kgの{荷物|にもつ}を10こ{積|つ}むと、{何|なん}kgになるかな？',
           native: {
             AppLanguage.portuguese:
-                'Coloque cargas de 100 kg no caminhão para formar 1000 kg.',
+                'Ao colocar 10 cargas de 100 kg no caminhão, quantos quilogramas serão ao todo?',
           },
         ),
       ],
@@ -6808,12 +6919,22 @@ class _WeightTonLearnState extends State<_WeightTonLearn> {
             language: widget.selectedLanguage,
             showNative: _showNative,
             vocabularyEntries: _weightVocabularyEntries,
+            enableLearningSupport: true,
           ),
           const SizedBox(height: 18),
           switch (_page) {
             0 => const _TonIntroPanel(),
             1 => _TonLoadPanel(
               loads: _loads,
+              selectedLanguage: widget.selectedLanguage,
+              showInstructionNative: _showLoadInstructionNative,
+              showResultNative: _showLoadResultNative,
+              onToggleInstructionNative: () => setState(
+                () => _showLoadInstructionNative = !_showLoadInstructionNative,
+              ),
+              onToggleResultNative: () => setState(
+                () => _showLoadResultNative = !_showLoadResultNative,
+              ),
               onAdd: () => setState(() {
                 if (_loads < 10) _loads++;
               }),
@@ -6821,6 +6942,15 @@ class _WeightTonLearnState extends State<_WeightTonLearn> {
             ),
             _ => _TonLoadPanel(
               loads: _loads,
+              selectedLanguage: widget.selectedLanguage,
+              showInstructionNative: _showLoadInstructionNative,
+              showResultNative: _showLoadResultNative,
+              onToggleInstructionNative: () => setState(
+                () => _showLoadInstructionNative = !_showLoadInstructionNative,
+              ),
+              onToggleResultNative: () => setState(
+                () => _showLoadResultNative = !_showLoadResultNative,
+              ),
               onAdd: () => setState(() {
                 if (_loads < 10) _loads++;
               }),
@@ -6898,10 +7028,10 @@ class _HeavyObjectCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minHeight: 174),
+      constraints: const BoxConstraints(minHeight: 184),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: const Color(0xFFEFF6FF),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -6913,18 +7043,34 @@ class _HeavyObjectCard extends StatelessWidget {
             child: CustomPaint(painter: _HeavyObjectPainter(kind: kind)),
           ),
           const SizedBox(height: 8),
-          Text(
-            label,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-          ),
+          if (kind == _HeavyObjectKind.car)
+            RubyText(
+              text: '{自動車|じどうしゃ}',
+              enableLearningSupport: true,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 21,
+                height: 1.2,
+                fontWeight: FontWeight.w700,
+              ),
+            )
+          else
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 21,
+                height: 1.2,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           const SizedBox(height: 4),
           Text(
             _approxWeight,
             style: const TextStyle(
-              fontSize: 15,
+              fontSize: 18,
               height: 1.2,
               color: Color(0xFF2563EB),
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -6961,21 +7107,37 @@ class _HeavyObjectPainter extends CustomPainter {
     final window = Paint()..color = const Color(0xFFEFF6FF);
     final car = Path()
       ..moveTo(size.width * 0.12, size.height * 0.58)
-      ..cubicTo(size.width * 0.14, size.height * 0.43, size.width * 0.2,
-          size.height * 0.38, size.width * 0.29, size.height * 0.38)
+      ..cubicTo(
+        size.width * 0.14,
+        size.height * 0.43,
+        size.width * 0.2,
+        size.height * 0.38,
+        size.width * 0.29,
+        size.height * 0.38,
+      )
       ..lineTo(size.width * 0.38, size.height * 0.22)
       ..lineTo(size.width * 0.6, size.height * 0.22)
       ..lineTo(size.width * 0.74, size.height * 0.38)
-      ..cubicTo(size.width * 0.84, size.height * 0.39, size.width * 0.9,
-          size.height * 0.45, size.width * 0.91, size.height * 0.57)
+      ..cubicTo(
+        size.width * 0.84,
+        size.height * 0.39,
+        size.width * 0.9,
+        size.height * 0.45,
+        size.width * 0.91,
+        size.height * 0.57,
+      )
       ..lineTo(size.width * 0.88, size.height * 0.65)
       ..lineTo(size.width * 0.14, size.height * 0.65)
       ..close();
     canvas.drawPath(car, body);
     canvas.drawPath(car, outline);
     final sideShade = RRect.fromRectAndRadius(
-      Rect.fromLTWH(size.width * 0.16, size.height * 0.52, size.width * 0.58,
-          size.height * 0.08),
+      Rect.fromLTWH(
+        size.width * 0.16,
+        size.height * 0.52,
+        size.width * 0.58,
+        size.height * 0.08,
+      ),
       const Radius.circular(6),
     );
     canvas.drawRRect(sideShade, bodyShade);
@@ -6992,10 +7154,16 @@ class _HeavyObjectPainter extends CustomPainter {
       ..lineTo(size.width * 0.42, size.height * 0.38)
       ..close();
     canvas.drawPath(rearWindow, window);
-    canvas.drawCircle(Offset(size.width * 0.84, size.height * 0.54), 3.8,
-        Paint()..color = const Color(0xFFFDE68A));
-    canvas.drawCircle(Offset(size.width * 0.17, size.height * 0.55), 3.2,
-        Paint()..color = const Color(0xFFFCA5A5));
+    canvas.drawCircle(
+      Offset(size.width * 0.84, size.height * 0.54),
+      3.8,
+      Paint()..color = const Color(0xFFFDE68A),
+    );
+    canvas.drawCircle(
+      Offset(size.width * 0.17, size.height * 0.55),
+      3.2,
+      Paint()..color = const Color(0xFFFCA5A5),
+    );
     _drawWheel(canvas, Offset(size.width * 0.3, size.height * 0.68), dark);
     _drawWheel(canvas, Offset(size.width * 0.7, size.height * 0.68), dark);
   }
@@ -7012,8 +7180,12 @@ class _HeavyObjectPainter extends CustomPainter {
       ..strokeWidth = 2.2;
     final window = Paint()..color = const Color(0xFFE0F2FE);
     final cargoRect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(size.width * 0.08, size.height * 0.24, size.width * 0.52,
-          size.height * 0.38),
+      Rect.fromLTWH(
+        size.width * 0.08,
+        size.height * 0.24,
+        size.width * 0.52,
+        size.height * 0.38,
+      ),
       const Radius.circular(7),
     );
     canvas.drawRRect(cargoRect, cargo);
@@ -7027,33 +7199,53 @@ class _HeavyObjectPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round,
     );
     canvas.drawRect(
-      Rect.fromLTWH(size.width * 0.1, size.height * 0.53, size.width * 0.48,
-          size.height * 0.09),
+      Rect.fromLTWH(
+        size.width * 0.1,
+        size.height * 0.53,
+        size.width * 0.48,
+        size.height * 0.09,
+      ),
       cargoShade,
     );
     final cabPath = Path()
       ..moveTo(size.width * 0.61, size.height * 0.62)
       ..lineTo(size.width * 0.61, size.height * 0.37)
-      ..quadraticBezierTo(size.width * 0.64, size.height * 0.28,
-          size.width * 0.72, size.height * 0.28)
+      ..quadraticBezierTo(
+        size.width * 0.64,
+        size.height * 0.28,
+        size.width * 0.72,
+        size.height * 0.28,
+      )
       ..lineTo(size.width * 0.82, size.height * 0.28)
-      ..quadraticBezierTo(size.width * 0.87, size.height * 0.37,
-          size.width * 0.89, size.height * 0.48)
+      ..quadraticBezierTo(
+        size.width * 0.87,
+        size.height * 0.37,
+        size.width * 0.89,
+        size.height * 0.48,
+      )
       ..lineTo(size.width * 0.89, size.height * 0.62)
       ..close();
     canvas.drawPath(cabPath, cab);
     canvas.drawPath(cabPath, outline);
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.width * 0.69, size.height * 0.34,
-            size.width * 0.12, size.height * 0.1),
+        Rect.fromLTWH(
+          size.width * 0.69,
+          size.height * 0.34,
+          size.width * 0.12,
+          size.height * 0.1,
+        ),
         const Radius.circular(3),
       ),
       window,
     );
     canvas.drawRect(
-      Rect.fromLTWH(size.width * 0.62, size.height * 0.54, size.width * 0.24,
-          size.height * 0.08),
+      Rect.fromLTWH(
+        size.width * 0.62,
+        size.height * 0.54,
+        size.width * 0.24,
+        size.height * 0.08,
+      ),
       cabShade,
     );
     canvas.drawLine(
@@ -7070,103 +7262,136 @@ class _HeavyObjectPainter extends CustomPainter {
   }
 
   void _drawElephant(Canvas canvas, Size size) {
-    final animal = Paint()..color = const Color(0xFF9CA3AF);
-    final dark = Paint()..color = const Color(0xFF4B5563);
-    final light = Paint()..color = const Color(0xFFD1D5DB);
+    final animal = Paint()..color = const Color(0xFF9AA8BC);
+    final animalDark = Paint()..color = const Color(0xFF738399);
+    final dark = Paint()..color = const Color(0xFF334155);
+    final ear = Paint()..color = const Color(0xFFB9C5D5);
     final outline = Paint()
-      ..color = const Color(0xFF6B7280)
+      ..color = const Color(0xFF64748B)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-    final body = Rect.fromLTWH(size.width * 0.16, size.height * 0.28,
-        size.width * 0.52, size.height * 0.34);
-    canvas.drawOval(body, animal);
-    canvas.drawOval(body, outline);
-    final headCenter = Offset(size.width * 0.7, size.height * 0.4);
-    canvas.drawCircle(headCenter, size.height * 0.16, animal);
-    canvas.drawCircle(headCenter, size.height * 0.16, outline);
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(size.width * 0.62, size.height * 0.38),
-        width: size.width * 0.16,
-        height: size.height * 0.22,
-      ),
-      animal,
-    );
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(size.width * 0.62, size.height * 0.38),
-        width: size.width * 0.16,
-        height: size.height * 0.22,
-      ),
-      outline,
-    );
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(size.width * 0.77, size.height * 0.39),
-        width: size.width * 0.12,
-        height: size.height * 0.2,
-      ),
-      animal,
-    );
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(size.width * 0.77, size.height * 0.39),
-        width: size.width * 0.12,
-        height: size.height * 0.2,
-      ),
-      outline,
-    );
-    final trunk = Path()
-      ..moveTo(size.width * 0.78, size.height * 0.48)
-      ..cubicTo(size.width * 0.86, size.height * 0.55, size.width * 0.87,
-          size.height * 0.68, size.width * 0.8, size.height * 0.72);
-    canvas.drawPath(
-      trunk,
-      Paint()
-        ..color = const Color(0xFF9CA3AF)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 8
-        ..strokeCap = StrokeCap.round,
-    );
-    canvas.drawPath(
-      trunk,
-      Paint()
-        ..color = const Color(0xFF6B7280)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2
-        ..strokeCap = StrokeCap.round,
-    );
-    for (final x in [0.25, 0.4, 0.56]) {
+      ..strokeWidth = 1.9;
+
+    // Four legs sit behind one continuous body, so the animal reads as a
+    // single side-view elephant instead of a stack of separate shapes.
+    for (final x in [0.22, 0.39, 0.53, 0.63]) {
       final leg = RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.width * x, size.height * 0.53, size.width * 0.08,
-            size.height * 0.22),
-        const Radius.circular(5),
+        Rect.fromLTWH(
+          size.width * x,
+          size.height * 0.53,
+          size.width * 0.085,
+          size.height * 0.25,
+        ),
+        const Radius.circular(6),
       );
-      canvas.drawRRect(leg, animal);
+      canvas.drawRRect(leg, animalDark);
       canvas.drawRRect(leg, outline);
     }
+
+    final body = Path()
+      ..moveTo(size.width * 0.16, size.height * 0.57)
+      ..cubicTo(
+        size.width * 0.13,
+        size.height * 0.46,
+        size.width * 0.16,
+        size.height * 0.29,
+        size.width * 0.3,
+        size.height * 0.24,
+      )
+      ..cubicTo(
+        size.width * 0.45,
+        size.height * 0.17,
+        size.width * 0.63,
+        size.height * 0.22,
+        size.width * 0.7,
+        size.height * 0.34,
+      )
+      ..lineTo(size.width * 0.7, size.height * 0.58)
+      ..cubicTo(
+        size.width * 0.57,
+        size.height * 0.65,
+        size.width * 0.31,
+        size.height * 0.67,
+        size.width * 0.16,
+        size.height * 0.57,
+      )
+      ..close();
+    canvas.drawPath(body, animal);
+    canvas.drawPath(body, outline);
+
+    final headCenter = Offset(size.width * 0.72, size.height * 0.39);
+    canvas.drawCircle(headCenter, size.height * 0.17, animal);
+    canvas.drawCircle(headCenter, size.height * 0.17, outline);
+    final earOval = Rect.fromCenter(
+      center: Offset(size.width * 0.65, size.height * 0.4),
+      width: size.width * 0.19,
+      height: size.height * 0.29,
+    );
+    canvas.drawOval(earOval, ear);
+    canvas.drawOval(earOval, outline);
+
+    final trunk = Path()
+      ..moveTo(size.width * 0.82, size.height * 0.43)
+      ..cubicTo(
+        size.width * 0.91,
+        size.height * 0.46,
+        size.width * 0.92,
+        size.height * 0.62,
+        size.width * 0.88,
+        size.height * 0.7,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.85,
+        size.height * 0.76,
+        size.width * 0.8,
+        size.height * 0.71,
+      );
+    canvas.drawPath(
+      trunk,
+      Paint()
+        ..color = const Color(0xFF9AA8BC)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 10
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.drawPath(
+      trunk,
+      Paint()
+        ..color = const Color(0xFF64748B)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.9
+        ..strokeCap = StrokeCap.round,
+    );
+
     canvas.drawPath(
       Path()
-        ..moveTo(size.width * 0.2, size.height * 0.38)
-        ..quadraticBezierTo(size.width * 0.1, size.height * 0.34,
-            size.width * 0.09, size.height * 0.45),
+        ..moveTo(size.width * 0.18, size.height * 0.39)
+        ..quadraticBezierTo(
+          size.width * 0.08,
+          size.height * 0.34,
+          size.width * 0.07,
+          size.height * 0.47,
+        ),
       Paint()
-        ..color = const Color(0xFF6B7280)
+        ..color = const Color(0xFF64748B)
         ..strokeWidth = 2.2
         ..strokeCap = StrokeCap.round
         ..style = PaintingStyle.stroke,
     );
-    canvas.drawOval(
-        Rect.fromCenter(
-          center: Offset(size.width * 0.46, size.height * 0.36),
-          width: size.width * 0.18,
-          height: size.height * 0.15,
+    canvas.drawCircle(Offset(size.width * 0.77, size.height * 0.35), 2.2, dark);
+    canvas.drawPath(
+      Path()
+        ..moveTo(size.width * 0.82, size.height * 0.5)
+        ..quadraticBezierTo(
+          size.width * 0.87,
+          size.height * 0.49,
+          size.width * 0.88,
+          size.height * 0.54,
         ),
-        light);
-    canvas.drawCircle(
-      Offset(size.width * 0.74, size.height * 0.37),
-      2.2,
-      dark,
+      Paint()
+        ..color = Colors.white
+        ..strokeWidth = 2.6
+        ..strokeCap = StrokeCap.round
+        ..style = PaintingStyle.stroke,
     );
   }
 
@@ -7183,72 +7408,107 @@ class _HeavyObjectPainter extends CustomPainter {
 
 class _TonLoadPanel extends StatelessWidget {
   final int loads;
+  final AppLanguage selectedLanguage;
+  final bool showInstructionNative;
+  final bool showResultNative;
+  final VoidCallback onToggleInstructionNative;
+  final VoidCallback onToggleResultNative;
   final VoidCallback onAdd;
   final VoidCallback onReset;
 
   const _TonLoadPanel({
     required this.loads,
+    required this.selectedLanguage,
+    required this.showInstructionNative,
+    required this.showResultNative,
+    required this.onToggleInstructionNative,
+    required this.onToggleResultNative,
     required this.onAdd,
     required this.onReset,
   });
+
+  static const _instruction = SupportLine(
+    japanese: '100kgの荷物を、トラックに1こずつ積んでみよう。',
+    ruby: '100kgの{荷物|にもつ}を、トラックに1こずつ{積|つ}んでみよう。',
+    native: {
+      AppLanguage.portuguese:
+          'Vamos colocar as cargas de 100 kg no caminhão, uma por vez.',
+    },
+  );
+
+  static const _resultExplanation = SupportLine(
+    japanese: '100kgの荷物が10こで、1000kgになります。1000kgを1トンといいます。',
+    ruby: '100kgの{荷物|にもつ}が10こで、1000kgになります。1000kgを1トンといいます。',
+    native: {
+      AppLanguage.portuguese:
+          'Dez cargas de 100 kg fazem 1000 kg. Chamamos 1000 kg de 1 tonelada.',
+    },
+  );
 
   @override
   Widget build(BuildContext context) {
     final kg = loads * 100;
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            children: [
-              _TonTruckLoadVisual(loads: loads),
-              const SizedBox(height: 16),
-              Text(
-                loads >= 10 ? '1000kg = 1t' : '${kg}kg',
-                style: const TextStyle(
-                  fontFamily: AppFonts.display,
-                  fontSize: 34,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF2563EB),
-                ),
-              ),
-              if (loads >= 10) ...[
-                const SizedBox(height: 8),
-                const Text(
-                  '1tは1000kgです。',
-                  style: TextStyle(
-                    fontSize: 18,
-                    height: 1.45,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF334155),
-                  ),
-                ),
-              ],
-            ],
+        _InstructionStrip(
+          message: _instruction.japanese,
+          isSuccess: false,
+          language: selectedLanguage,
+          showNative: showInstructionNative,
+          instructionLine: _instruction,
+          onToggleNative: onToggleInstructionNative,
+          vocabularyEntries: _weightVocabularyEntries,
+          learningSupportMode: LearningSupportMode.rubyAndDictionary,
+        ),
+        const SizedBox(height: 18),
+        Center(child: _TonTruckLoadVisual(loads: loads)),
+        const SizedBox(height: 10),
+        Center(
+          child: Text(
+            loads >= 10 ? '1000kg = 1t' : '${kg}kg',
+            style: const TextStyle(
+              fontFamily: AppFonts.display,
+              fontSize: 34,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF2563EB),
+            ),
           ),
         ),
         const SizedBox(height: 12),
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          alignment: WrapAlignment.center,
-          children: [
-            FilledButton.icon(
-              onPressed: loads >= 10 ? null : onAdd,
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('100kgを積む'),
+        Center(
+          child: FilledButton.icon(
+            onPressed: loads >= 10 ? null : onAdd,
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF2563EB),
+              foregroundColor: Colors.white,
             ),
-            OutlinedButton.icon(
-              onPressed: onReset,
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text('もどす'),
-            ),
-          ],
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('100kgを積む'),
+          ),
         ),
+        const SizedBox(height: 10),
+        Align(
+          alignment: Alignment.centerRight,
+          child: _LearnIconButton(
+            semanticLabel: 'もどす',
+            icon: Icons.refresh_rounded,
+            onPressed: onReset,
+          ),
+        ),
+        if (loads >= 10) ...[
+          const SizedBox(height: 18),
+          _WeightSupportedResultBox(
+            title: '1000kg = 1t',
+            nativeTitle: const {AppLanguage.portuguese: '1000 kg = 1 t'},
+            explanation: _resultExplanation,
+            selectedLanguage: selectedLanguage,
+            showNative: showResultNative,
+            onToggleNative: onToggleResultNative,
+            vocabularyEntries: _weightVocabularyEntries,
+            audioLabel: '1トンの説明',
+          ),
+        ],
       ],
     );
   }
@@ -7300,10 +7560,7 @@ class _TonLoadTray extends StatelessWidget {
       childAspectRatio: 1.25,
       children: [
         for (var i = 0; i < 10; i++)
-          Opacity(
-            opacity: i < loads ? 1 : 0,
-            child: const _TonLoadBox(),
-          ),
+          Opacity(opacity: i < loads ? 1 : 0, child: const _TonLoadBox()),
       ],
     );
   }
@@ -7386,8 +7643,11 @@ class _TonTruckPainter extends CustomPainter {
       window,
     );
     canvas.drawRect(const Rect.fromLTWH(330, 132, 78, 28), cabShade);
-    canvas.drawCircle(const Offset(409, 128), 4.5,
-        Paint()..color = const Color(0xFFFDE68A));
+    canvas.drawCircle(
+      const Offset(409, 128),
+      4.5,
+      Paint()..color = const Color(0xFFFDE68A),
+    );
 
     canvas.drawLine(
       const Offset(34, 166),
@@ -7410,6 +7670,68 @@ class _TonTruckPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _TonTruckPainter oldDelegate) => false;
+}
+
+class _WeightScaleDish extends StatelessWidget {
+  final Widget? item;
+
+  const _WeightScaleDish({this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 148,
+      height: 82,
+      child: Stack(
+        alignment: Alignment.topCenter,
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            top: 37,
+            child: const SizedBox(
+              width: 168,
+              height: 44,
+              child: CustomPaint(painter: _WeightSourcePlatePainter()),
+            ),
+          ),
+          if (item != null) Positioned(top: 0, child: item!),
+        ],
+      ),
+    );
+  }
+}
+
+class _WeightSourcePlatePainter extends CustomPainter {
+  const _WeightSourcePlatePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final outer = Rect.fromLTWH(1, 2, size.width - 2, size.height - 4);
+    final inner = Rect.fromCenter(
+      center: Offset(size.width / 2, size.height / 2 - 1),
+      width: size.width - 24,
+      height: size.height - 18,
+    );
+    canvas.drawOval(outer, Paint()..color = const Color(0xFFE2E8F0));
+    canvas.drawOval(
+      outer,
+      Paint()
+        ..color = const Color(0xFFCBD5E1)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+    canvas.drawOval(inner, Paint()..color = Colors.white);
+    canvas.drawOval(
+      inner,
+      Paint()
+        ..color = const Color(0xFFF1F5F9)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _WeightSourcePlatePainter oldDelegate) => false;
 }
 
 class _AnalogScale extends StatelessWidget {
@@ -7625,8 +7947,9 @@ class _WeightSupportedResultBox extends StatelessWidget {
               _IconSupportActions(
                 language: selectedLanguage,
                 showNative: showNative,
-                translateLabel:
-                    showNative ? '日本語で見る' : '${selectedLanguage.label}で見る',
+                translateLabel: showNative
+                    ? '日本語で見る'
+                    : '${selectedLanguage.label}で見る',
                 audioLabel: audioLabel,
                 onToggleNative: onToggleNative,
                 onAudio: () => LearningAudio.speakJapanese(
@@ -7642,6 +7965,7 @@ class _WeightSupportedResultBox extends StatelessWidget {
             text: explanation.rubyText,
             vocabularyEntries: vocabularyEntries,
             language: selectedLanguage,
+            enableLearningSupport: true,
             style: const TextStyle(
               fontFamily: AppFonts.interface,
               fontSize: 17,
@@ -7772,7 +8096,6 @@ class _BalancePainter extends CustomPainter {
       pencilOnBalance ? _WeightObjectKind.pencil : null,
     );
     canvas.restore();
-
   }
 
   void _drawChain(Canvas canvas, Offset start, Offset end) {
@@ -7854,7 +8177,10 @@ class _ScalePainter extends CustomPainter {
         ..style = PaintingStyle.stroke,
     );
 
-    final arcRect = Rect.fromCircle(center: dialCenter, radius: dialRadius - 18);
+    final arcRect = Rect.fromCircle(
+      center: dialCenter,
+      radius: dialRadius - 18,
+    );
     canvas.drawArc(
       arcRect,
       math.pi * 1.12,
@@ -7871,11 +8197,18 @@ class _ScalePainter extends CustomPainter {
       final angle = math.pi * 1.12 + math.pi * 0.76 * i / 20;
       final isMajor = i % 10 == 0;
       final isMedium = i % 5 == 0;
-      final outer = dialCenter +
+      final outer =
+          dialCenter +
           Offset(math.cos(angle), math.sin(angle)) * (dialRadius - 12);
-      final inner = dialCenter +
+      final inner =
+          dialCenter +
           Offset(math.cos(angle), math.sin(angle)) *
-              (dialRadius - (isMajor ? 32 : isMedium ? 26 : 20));
+              (dialRadius -
+                  (isMajor
+                      ? 32
+                      : isMedium
+                      ? 26
+                      : 20));
       canvas.drawLine(
         inner,
         outer,
@@ -7885,7 +8218,11 @@ class _ScalePainter extends CustomPainter {
           ..strokeCap = StrokeCap.round,
       );
       if (isMajor) {
-        final value = i == 0 ? '0' : i == 10 ? '500' : '1kg';
+        final value = i == 0
+            ? '0'
+            : i == 10
+            ? '500'
+            : '1kg';
         _paintText(
           canvas,
           value,
@@ -7899,7 +8236,8 @@ class _ScalePainter extends CustomPainter {
 
     final clamped = grams.clamp(0, 1000);
     final angle = math.pi * 1.12 + math.pi * 0.76 * clamped / 1000;
-    final needleEnd = dialCenter +
+    final needleEnd =
+        dialCenter +
         Offset(math.cos(angle), math.sin(angle)) * (dialRadius - 34);
     canvas.drawLine(
       dialCenter,
@@ -8027,6 +8365,22 @@ const _weightVocabularyEntries = [
     category: 'math_language',
   ),
   VocabularyEntry(
+    term: '荷物',
+    reading: 'にもつ',
+    simpleJapanese: '運んだり、置いたりするものです。',
+    translations: {AppLanguage.portuguese: 'carga / bagagem'},
+    exampleSentence: '荷物をトラックに積みます。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
+    term: '積む',
+    reading: 'つむ',
+    simpleJapanese: 'ものを重ねたり、乗り物に入れたりすることです。',
+    translations: {AppLanguage.portuguese: 'carregar / empilhar'},
+    exampleSentence: '荷物をトラックに積みます。',
+    category: 'math_language',
+  ),
+  VocabularyEntry(
     term: 'トン',
     reading: 'とん',
     simpleJapanese: 'とても重いものに使う単位です。tと書きます。',
@@ -8039,6 +8393,8 @@ const _weightVocabularyEntries = [
 class _RemainderLearnShell extends StatelessWidget {
   final IconData icon;
   final String title;
+  final String? titleRuby;
+  final List<VocabularyEntry> titleVocabularyEntries;
   final AppLanguage selectedLanguage;
   final bool showNative;
   final VoidCallback onToggleNative;
@@ -8052,6 +8408,8 @@ class _RemainderLearnShell extends StatelessWidget {
   const _RemainderLearnShell({
     required this.icon,
     required this.title,
+    this.titleRuby,
+    this.titleVocabularyEntries = const [],
     required this.selectedLanguage,
     required this.showNative,
     required this.onToggleNative,
@@ -8081,8 +8439,11 @@ class _RemainderLearnShell extends StatelessWidget {
               _LearnHeaderIcon(icon: icon),
               const SizedBox(width: 14),
               Expanded(
-                child: Text(
-                  title,
+                child: RubyText(
+                  text: titleRuby ?? title,
+                  language: selectedLanguage,
+                  vocabularyEntries: titleVocabularyEntries,
+                  learningSupportMode: LearningSupportMode.rubyOnly,
                   style: const TextStyle(
                     fontFamily: AppFonts.display,
                     fontSize: 24,
@@ -8221,7 +8582,8 @@ class _InteractiveRemainderShare extends StatefulWidget {
       _InteractiveRemainderShareState();
 }
 
-class _InteractiveRemainderShareState extends State<_InteractiveRemainderShare> {
+class _InteractiveRemainderShareState
+    extends State<_InteractiveRemainderShare> {
   final List<int> _groupCounts = List<int>.filled(3, 0);
   bool _showInstructionNative = false;
   bool _showResultNative = false;
@@ -8260,9 +8622,8 @@ class _InteractiveRemainderShareState extends State<_InteractiveRemainderShare> 
           line: instruction,
           language: widget.language,
           showNative: _showInstructionNative,
-          onToggleNative: () => setState(
-            () => _showInstructionNative = !_showInstructionNative,
-          ),
+          onToggleNative: () =>
+              setState(() => _showInstructionNative = !_showInstructionNative),
           vocabularyEntries: _remainderLearnVocabulary,
         ),
         const SizedBox(height: 14),
@@ -8282,8 +8643,7 @@ class _InteractiveRemainderShareState extends State<_InteractiveRemainderShare> 
                     child: _RemainderDropTarget(
                       index: i + 1,
                       count: _groupCounts[i],
-                      acceptsStrawberry:
-                          _groupCounts[i] < 2 && !_isComplete,
+                      acceptsStrawberry: _groupCounts[i] < 2 && !_isComplete,
                       onAccept: () => _placeStrawberry(i),
                     ),
                   ),
@@ -8293,10 +8653,10 @@ class _InteractiveRemainderShareState extends State<_InteractiveRemainderShare> 
         ),
         Align(
           alignment: Alignment.centerRight,
-          child: TextButton.icon(
+          child: _LearnIconButton(
+            semanticLabel: 'もう一度',
+            icon: Icons.refresh_rounded,
             onPressed: _placedCount == 0 ? null : _reset,
-            icon: const Icon(Icons.refresh_rounded, size: 18),
-            label: const Text('もう一度'),
           ),
         ),
         if (_isComplete) ...[
@@ -8304,9 +8664,8 @@ class _InteractiveRemainderShareState extends State<_InteractiveRemainderShare> 
           _RemainderShareResult(
             language: widget.language,
             showNative: _showResultNative,
-            onToggleNative: () => setState(
-              () => _showResultNative = !_showResultNative,
-            ),
+            onToggleNative: () =>
+                setState(() => _showResultNative = !_showResultNative),
           ),
         ],
       ],
@@ -8523,8 +8882,7 @@ class _RemainderDropTarget extends StatelessWidget {
                   active: active,
                   itemExtent: 40,
                   children: [
-                    for (var i = 0; i < count; i++)
-                      const _CounterDot(size: 40),
+                    for (var i = 0; i < count; i++) const _CounterDot(size: 40),
                   ],
                 ),
               ),
@@ -8649,6 +9007,7 @@ class _RemainderShareResult extends StatelessWidget {
             language: language,
             showNative: showNative,
             vocabularyEntries: _remainderLearnVocabulary,
+            enableLearningSupport: true,
           ),
         ],
       ),
@@ -8690,9 +9049,8 @@ class _RemainderEquationBuilderState extends State<_RemainderEquationBuilder> {
           line: instruction,
           language: widget.language,
           showNative: _showInstructionNative,
-          onToggleNative: () => setState(
-            () => _showInstructionNative = !_showInstructionNative,
-          ),
+          onToggleNative: () =>
+              setState(() => _showInstructionNative = !_showInstructionNative),
           vocabularyEntries: _remainderLearnVocabulary,
         ),
         const SizedBox(height: 16),
@@ -8752,12 +9110,13 @@ class _RemainderEquationBuilderState extends State<_RemainderEquationBuilder> {
           _RemainderGreenExplanation(
             language: widget.language,
             showNative: _showResultNative,
-            onToggleNative: () => setState(
-              () => _showResultNative = !_showResultNative,
-            ),
+            onToggleNative: () =>
+                setState(() => _showResultNative = !_showResultNative),
             japanese: '1人分は2こ、残ったのは1こ。だから、7 ÷ 3 = 2 あまり 1 と書きます。',
-            ruby: '{1人|ひとり}{分|ぶん}は2こ、{残|のこ}ったのは1こ。だから、7 ÷ 3 = 2 あまり 1 と{書|か}きます。',
-            portuguese: 'Cada pessoa recebe 2 e sobra 1. Por isso escrevemos 7 ÷ 3 = 2, resto 1.',
+            ruby:
+                '{1人|ひとり}{分|ぶん}は2こ、{残|のこ}ったのは1こ。だから、7 ÷ 3 = 2 あまり 1 と{書|か}きます。',
+            portuguese:
+                'Cada pessoa recebe 2 e sobra 1. Por isso escrevemos 7 ÷ 3 = 2, resto 1.',
           ),
         ],
       ],
@@ -8788,12 +9147,16 @@ class _RemainderValueButton extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           fixedSize: const Size(62, 52),
           padding: EdgeInsets.zero,
-          backgroundColor: selected ? color.withValues(alpha: 0.10) : Colors.white,
+          backgroundColor: selected
+              ? color.withValues(alpha: 0.10)
+              : Colors.white,
           side: BorderSide(
             color: selected ? color : const Color(0xFFD7DEE8),
             width: selected ? 2 : 1,
           ),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
         child: Text(
           '$value',
@@ -8867,7 +9230,8 @@ class _RemainderTimesTableFinder extends StatefulWidget {
       _RemainderTimesTableFinderState();
 }
 
-class _RemainderTimesTableFinderState extends State<_RemainderTimesTableFinder> {
+class _RemainderTimesTableFinderState
+    extends State<_RemainderTimesTableFinder> {
   int? _selected;
   bool _showInstructionNative = false;
   bool _showResultNative = false;
@@ -8889,9 +9253,8 @@ class _RemainderTimesTableFinderState extends State<_RemainderTimesTableFinder> 
           line: instruction,
           language: widget.language,
           showNative: _showInstructionNative,
-          onToggleNative: () => setState(
-            () => _showInstructionNative = !_showInstructionNative,
-          ),
+          onToggleNative: () =>
+              setState(() => _showInstructionNative = !_showInstructionNative),
           vocabularyEntries: _remainderLearnVocabulary,
         ),
         const SizedBox(height: 16),
@@ -8936,12 +9299,13 @@ class _RemainderTimesTableFinderState extends State<_RemainderTimesTableFinder> 
           _RemainderGreenExplanation(
             language: widget.language,
             showNative: _showResultNative,
-            onToggleNative: () => setState(
-              () => _showResultNative = !_showResultNative,
-            ),
+            onToggleNative: () =>
+                setState(() => _showResultNative = !_showResultNative),
             japanese: '3 × 2 = 6です。7から6を使うと、1こ残ります。だから、7 ÷ 3 = 2 あまり 1です。',
-            ruby: '3 × 2 = 6です。7から6を{使|つか}うと、1こ{残|のこ}ります。だから、7 ÷ 3 = 2 あまり 1です。',
-            portuguese: '3 × 2 = 6. Ao usar 6 dos 7, sobra 1. Por isso, 7 ÷ 3 = 2, resto 1.',
+            ruby:
+                '3 × 2 = 6です。7から6を{使|つか}うと、1こ{残|のこ}ります。だから、7 ÷ 3 = 2 あまり 1です。',
+            portuguese:
+                '3 × 2 = 6. Ao usar 6 dos 7, sobra 1. Por isso, 7 ÷ 3 = 2, resto 1.',
           ),
         ],
       ],
@@ -9023,9 +9387,8 @@ class _RemainderGrowthExplorerState extends State<_RemainderGrowthExplorer> {
           line: instruction,
           language: widget.language,
           showNative: _showInstructionNative,
-          onToggleNative: () => setState(
-            () => _showInstructionNative = !_showInstructionNative,
-          ),
+          onToggleNative: () =>
+              setState(() => _showInstructionNative = !_showInstructionNative),
           vocabularyEntries: _remainderLearnVocabulary,
         ),
         const SizedBox(height: 16),
@@ -9056,12 +9419,13 @@ class _RemainderGrowthExplorerState extends State<_RemainderGrowthExplorer> {
           _RemainderGreenExplanation(
             language: widget.language,
             showNative: _showResultNative,
-            onToggleNative: () => setState(
-              () => _showResultNative = !_showResultNative,
-            ),
+            onToggleNative: () =>
+                setState(() => _showResultNative = !_showResultNative),
             japanese: 'あまりが3こになる前に、3人にもう1こずつ分けられました。あまりは、わる数の3より小さくなります。',
-            ruby: 'あまりが3こになる{前|まえ}に、3{人|にん}にもう1こずつ{分|わ}けられました。あまりは、わる{数|かず}の3より{小|ちい}さくなります。',
-            portuguese: 'Antes de o resto chegar a 3, conseguimos dar mais 1 para cada uma das 3 pessoas. O resto é menor que 3.',
+            ruby:
+                'あまりが3こになる{前|まえ}に、3{人|にん}にもう1こずつ{分|わ}けられました。あまりは、{わる数|わる かず}の3より{小|ちい}さくなります。',
+            portuguese:
+                'Antes de o resto chegar a 3, conseguimos dar mais 1 para cada uma das 3 pessoas. O resto é menor que 3.',
           ),
         ],
       ],
@@ -9108,9 +9472,13 @@ class _RemainderVisualGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isRemainder ? const Color(0xFFFDE68A) : const Color(0xFFD1D5DB);
+    final color = isRemainder
+        ? const Color(0xFFFDE68A)
+        : const Color(0xFFD1D5DB);
     final background = isRemainder ? const Color(0xFFFFFBEB) : Colors.white;
-    final textColor = isRemainder ? const Color(0xFF92400E) : const Color(0xFF065F46);
+    final textColor = isRemainder
+        ? const Color(0xFF92400E)
+        : const Color(0xFF065F46);
     return Container(
       width: 142,
       constraints: const BoxConstraints(minHeight: 126),
@@ -9201,6 +9569,7 @@ class _RemainderGreenExplanation extends StatelessWidget {
               language: language,
               showNative: showNative,
               vocabularyEntries: _remainderLearnVocabulary,
+              enableLearningSupport: true,
             ),
           ),
           const SizedBox(width: 8),
@@ -9349,15 +9718,18 @@ class _BenchSeatingActivityState extends State<_BenchSeatingActivity> {
   String get _instructionTranslation {
     final isFirstTry = widget.benchCount == 2;
     return switch (widget.selectedLanguage) {
-      AppLanguage.portuguese => isFirstTry
-          ? 'Primeiro, vamos sentar em 2 bancos!'
-          : 'Agora, vamos sentar em 3 bancos!',
-      AppLanguage.tagalog => isFirstTry
-          ? 'Subukan muna nating umupo sa 2 bangko!'
-          : 'Ngayon, subukan nating umupo sa 3 bangko!',
-      AppLanguage.vietnamese => isFirstTry
-          ? 'Truoc het, hay ngoi tren 2 chiec ghe bang!'
-          : 'Bay gio, hay ngoi tren 3 chiec ghe bang!',
+      AppLanguage.portuguese =>
+        isFirstTry
+            ? 'Primeiro, vamos sentar em 2 bancos!'
+            : 'Agora, vamos sentar em 3 bancos!',
+      AppLanguage.tagalog =>
+        isFirstTry
+            ? 'Subukan muna nating umupo sa 2 bangko!'
+            : 'Ngayon, subukan nating umupo sa 3 bangko!',
+      AppLanguage.vietnamese =>
+        isFirstTry
+            ? 'Truoc het, hay ngoi tren 2 chiec ghe bang!'
+            : 'Bay gio, hay ngoi tren 3 chiec ghe bang!',
       AppLanguage.japanese => '',
     };
   }
@@ -9456,8 +9828,8 @@ class _BenchSeatingActivityState extends State<_BenchSeatingActivity> {
                   final benchWidth = availableWidth < 620
                       ? availableWidth
                       : availableWidth < 920
-                          ? (availableWidth - 12) / 2
-                          : 280.0;
+                      ? (availableWidth - 12) / 2
+                      : 280.0;
                   return Wrap(
                     spacing: 12,
                     runSpacing: 12,
@@ -9469,7 +9841,8 @@ class _BenchSeatingActivityState extends State<_BenchSeatingActivity> {
                           child: _BenchDropBox(
                             index: i + 1,
                             people: _peopleForBench(i),
-                            onAccept: (personIndex) => _seatPerson(personIndex, i),
+                            onAccept: (personIndex) =>
+                                _seatPerson(personIndex, i),
                             canAccept: _canSitOnBench(i),
                             allSeated: _isComplete,
                           ),
@@ -9484,10 +9857,10 @@ class _BenchSeatingActivityState extends State<_BenchSeatingActivity> {
         const SizedBox(height: 12),
         Align(
           alignment: Alignment.centerRight,
-          child: OutlinedButton.icon(
+          child: _LearnIconButton(
+            semanticLabel: 'もう一度',
+            icon: Icons.refresh_rounded,
             onPressed: _reset,
-            icon: const Icon(Icons.refresh_rounded),
-            label: const Text('もう一度'),
           ),
         ),
         if (_hasUnseatedRemainder || _isComplete) ...[
@@ -9506,10 +9879,7 @@ class _PersonPool extends StatelessWidget {
   final List<int> people;
   final bool showSadRemainder;
 
-  const _PersonPool({
-    required this.people,
-    required this.showSadRemainder,
-  });
+  const _PersonPool({required this.people, required this.showSadRemainder});
 
   @override
   Widget build(BuildContext context) {
@@ -9535,10 +9905,7 @@ class _DraggablePerson extends StatelessWidget {
   final int personIndex;
   final bool isSad;
 
-  const _DraggablePerson({
-    required this.personIndex,
-    required this.isSad,
-  });
+  const _DraggablePerson({required this.personIndex, required this.isSad});
 
   @override
   Widget build(BuildContext context) {
@@ -9589,7 +9956,9 @@ class _BenchDropBox extends StatelessWidget {
             color: isActive ? const Color(0xFFEFF6FF) : Colors.white,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: isActive ? const Color(0xFF93C5FD) : const Color(0xFFE5E7EB),
+              color: isActive
+                  ? const Color(0xFF93C5FD)
+                  : const Color(0xFFE5E7EB),
             ),
           ),
           child: Column(
@@ -9845,9 +10214,12 @@ class _PersonPainter extends CustomPainter {
     final skinPaint = Paint()..color = palette.skin;
     final hairPaint = Paint()..color = palette.hair;
     final shirtPaint = Paint()..color = palette.shirt;
-    final shadowPaint = Paint()..color = const Color(0xFF0F172A).withOpacity(0.10);
-    final cheekPaint = Paint()..color = const Color(0xFFEF7C8E).withOpacity(0.34);
-    final neckPaint = Paint()..color = Color.lerp(palette.skin, const Color(0xFF8B4513), 0.10)!;
+    final shadowPaint = Paint()
+      ..color = const Color(0xFF0F172A).withOpacity(0.10);
+    final cheekPaint = Paint()
+      ..color = const Color(0xFFEF7C8E).withOpacity(0.34);
+    final neckPaint = Paint()
+      ..color = Color.lerp(palette.skin, const Color(0xFF8B4513), 0.10)!;
     final linePaint = Paint()
       ..color = const Color(0xFF111827)
       ..strokeWidth = math.max(1.5, w * 0.032)
@@ -9877,21 +10249,57 @@ class _PersonPainter extends CustomPainter {
       ..close();
     final leftArmPath = Path()
       ..moveTo(cx - w * 0.23, h * 0.70)
-      ..cubicTo(cx - w * 0.32, h * 0.72, cx - w * 0.42, h * 0.78,
-          cx - w * 0.49, h * 0.88)
-      ..cubicTo(cx - w * 0.45, h * 0.94, cx - w * 0.38, h * 0.94,
-          cx - w * 0.34, h * 0.88)
-      ..cubicTo(cx - w * 0.30, h * 0.80, cx - w * 0.22, h * 0.76,
-          cx - w * 0.13, h * 0.72)
+      ..cubicTo(
+        cx - w * 0.32,
+        h * 0.72,
+        cx - w * 0.42,
+        h * 0.78,
+        cx - w * 0.49,
+        h * 0.88,
+      )
+      ..cubicTo(
+        cx - w * 0.45,
+        h * 0.94,
+        cx - w * 0.38,
+        h * 0.94,
+        cx - w * 0.34,
+        h * 0.88,
+      )
+      ..cubicTo(
+        cx - w * 0.30,
+        h * 0.80,
+        cx - w * 0.22,
+        h * 0.76,
+        cx - w * 0.13,
+        h * 0.72,
+      )
       ..close();
     final rightArmPath = Path()
       ..moveTo(cx + w * 0.23, h * 0.70)
-      ..cubicTo(cx + w * 0.32, h * 0.72, cx + w * 0.42, h * 0.78,
-          cx + w * 0.49, h * 0.88)
-      ..cubicTo(cx + w * 0.45, h * 0.94, cx + w * 0.38, h * 0.94,
-          cx + w * 0.34, h * 0.88)
-      ..cubicTo(cx + w * 0.30, h * 0.80, cx + w * 0.22, h * 0.76,
-          cx + w * 0.13, h * 0.72)
+      ..cubicTo(
+        cx + w * 0.32,
+        h * 0.72,
+        cx + w * 0.42,
+        h * 0.78,
+        cx + w * 0.49,
+        h * 0.88,
+      )
+      ..cubicTo(
+        cx + w * 0.45,
+        h * 0.94,
+        cx + w * 0.38,
+        h * 0.94,
+        cx + w * 0.34,
+        h * 0.88,
+      )
+      ..cubicTo(
+        cx + w * 0.30,
+        h * 0.80,
+        cx + w * 0.22,
+        h * 0.76,
+        cx + w * 0.13,
+        h * 0.72,
+      )
       ..close();
     canvas.drawPath(leftArmPath, shirtPaint);
     canvas.drawPath(rightArmPath, shirtPaint);
@@ -9928,10 +10336,22 @@ class _PersonPainter extends CustomPainter {
       backHairPath
         ..moveTo(cx - w * 0.31, h * 0.66)
         ..lineTo(cx - w * 0.31, h * 0.30)
-        ..cubicTo(cx - w * 0.29, h * 0.10, cx - w * 0.12, h * 0.06,
-            cx, h * 0.07)
-        ..cubicTo(cx + w * 0.16, h * 0.06, cx + w * 0.31, h * 0.16,
-            cx + w * 0.31, h * 0.31)
+        ..cubicTo(
+          cx - w * 0.29,
+          h * 0.10,
+          cx - w * 0.12,
+          h * 0.06,
+          cx,
+          h * 0.07,
+        )
+        ..cubicTo(
+          cx + w * 0.16,
+          h * 0.06,
+          cx + w * 0.31,
+          h * 0.16,
+          cx + w * 0.31,
+          h * 0.31,
+        )
         ..lineTo(cx + w * 0.31, h * 0.66)
         ..quadraticBezierTo(cx + w * 0.25, h * 0.74, cx + w * 0.17, h * 0.73)
         ..lineTo(cx - w * 0.17, h * 0.73)
@@ -9941,14 +10361,38 @@ class _PersonPainter extends CustomPainter {
     } else if (palette.hairStyle == 3) {
       backHairPath
         ..moveTo(cx - w * 0.34, h * 0.49)
-        ..cubicTo(cx - w * 0.45, h * 0.40, cx - w * 0.42, h * 0.22,
-            cx - w * 0.28, h * 0.19)
-        ..cubicTo(cx - w * 0.26, h * 0.06, cx - w * 0.08, h * 0.03,
-            cx + w * 0.01, h * 0.10)
-        ..cubicTo(cx + w * 0.13, h * 0.03, cx + w * 0.31, h * 0.10,
-            cx + w * 0.30, h * 0.22)
-        ..cubicTo(cx + w * 0.43, h * 0.28, cx + w * 0.43, h * 0.44,
-            cx + w * 0.33, h * 0.51)
+        ..cubicTo(
+          cx - w * 0.45,
+          h * 0.40,
+          cx - w * 0.42,
+          h * 0.22,
+          cx - w * 0.28,
+          h * 0.19,
+        )
+        ..cubicTo(
+          cx - w * 0.26,
+          h * 0.06,
+          cx - w * 0.08,
+          h * 0.03,
+          cx + w * 0.01,
+          h * 0.10,
+        )
+        ..cubicTo(
+          cx + w * 0.13,
+          h * 0.03,
+          cx + w * 0.31,
+          h * 0.10,
+          cx + w * 0.30,
+          h * 0.22,
+        )
+        ..cubicTo(
+          cx + w * 0.43,
+          h * 0.28,
+          cx + w * 0.43,
+          h * 0.44,
+          cx + w * 0.33,
+          h * 0.51,
+        )
         ..lineTo(cx + w * 0.25, h * 0.64)
         ..lineTo(cx - w * 0.25, h * 0.64)
         ..close();
@@ -9959,10 +10403,22 @@ class _PersonPainter extends CustomPainter {
       backHairPath
         ..moveTo(cx - w * 0.30, h * 0.69)
         ..lineTo(cx - w * 0.30, h * 0.30)
-        ..cubicTo(cx - w * 0.28, h * 0.12, cx - w * 0.11, h * 0.07,
-            cx, h * 0.08)
-        ..cubicTo(cx + w * 0.15, h * 0.07, cx + w * 0.30, h * 0.16,
-            cx + w * 0.30, h * 0.31)
+        ..cubicTo(
+          cx - w * 0.28,
+          h * 0.12,
+          cx - w * 0.11,
+          h * 0.07,
+          cx,
+          h * 0.08,
+        )
+        ..cubicTo(
+          cx + w * 0.15,
+          h * 0.07,
+          cx + w * 0.30,
+          h * 0.16,
+          cx + w * 0.30,
+          h * 0.31,
+        )
         ..lineTo(cx + w * 0.30, h * 0.69)
         ..quadraticBezierTo(cx + w * 0.22, h * 0.73, cx + w * 0.15, h * 0.70)
         ..lineTo(cx - w * 0.15, h * 0.70)
@@ -9986,72 +10442,198 @@ class _PersonPainter extends CustomPainter {
     if (palette.hairStyle == 0) {
       hairPath
         ..moveTo(leftTemple, h * 0.36)
-        ..cubicTo(leftTemple, faceTop + h * 0.04, cx - w * 0.10,
-            faceTop - h * 0.02, cx + w * 0.05, faceTop + h * 0.01)
-        ..cubicTo(rightTemple, faceTop + h * 0.04, rightTemple, h * 0.23,
-            rightTemple, h * 0.39)
-        ..cubicTo(cx + w * 0.10, hairLine, cx - w * 0.08, h * 0.31,
-            leftTemple, h * 0.36)
+        ..cubicTo(
+          leftTemple,
+          faceTop + h * 0.04,
+          cx - w * 0.10,
+          faceTop - h * 0.02,
+          cx + w * 0.05,
+          faceTop + h * 0.01,
+        )
+        ..cubicTo(
+          rightTemple,
+          faceTop + h * 0.04,
+          rightTemple,
+          h * 0.23,
+          rightTemple,
+          h * 0.39,
+        )
+        ..cubicTo(
+          cx + w * 0.10,
+          hairLine,
+          cx - w * 0.08,
+          h * 0.31,
+          leftTemple,
+          h * 0.36,
+        )
         ..close();
     } else if (palette.hairStyle == 1) {
       hairPath
         ..moveTo(leftTemple - w * 0.02, h * 0.36)
-        ..cubicTo(leftTemple, faceTop + h * 0.03, cx - w * 0.08,
-            faceTop - h * 0.02, cx, faceTop + h * 0.02)
-        ..cubicTo(cx + w * 0.12, faceTop - h * 0.01, rightTemple,
-            faceTop + h * 0.04, rightTemple + w * 0.02, h * 0.37)
-        ..cubicTo(cx + w * 0.11, h * 0.32, cx - w * 0.10, h * 0.32,
-            leftTemple - w * 0.02, h * 0.36)
+        ..cubicTo(
+          leftTemple,
+          faceTop + h * 0.03,
+          cx - w * 0.08,
+          faceTop - h * 0.02,
+          cx,
+          faceTop + h * 0.02,
+        )
+        ..cubicTo(
+          cx + w * 0.12,
+          faceTop - h * 0.01,
+          rightTemple,
+          faceTop + h * 0.04,
+          rightTemple + w * 0.02,
+          h * 0.37,
+        )
+        ..cubicTo(
+          cx + w * 0.11,
+          h * 0.32,
+          cx - w * 0.10,
+          h * 0.32,
+          leftTemple - w * 0.02,
+          h * 0.36,
+        )
         ..close();
     } else if (palette.hairStyle == 2) {
       hairPath
         ..moveTo(leftTemple - w * 0.04, h * 0.40)
-        ..cubicTo(leftTemple - w * 0.02, h * 0.24, cx - w * 0.15,
-            faceTop - h * 0.03, cx + w * 0.03, faceTop - h * 0.04)
-        ..cubicTo(cx + w * 0.18, faceTop - h * 0.03, rightTemple + w * 0.04,
-            h * 0.22, rightTemple + w * 0.04, h * 0.40)
-        ..cubicTo(cx + w * 0.14, h * 0.34, cx - w * 0.11, h * 0.33,
-            leftTemple - w * 0.04, h * 0.40)
+        ..cubicTo(
+          leftTemple - w * 0.02,
+          h * 0.24,
+          cx - w * 0.15,
+          faceTop - h * 0.03,
+          cx + w * 0.03,
+          faceTop - h * 0.04,
+        )
+        ..cubicTo(
+          cx + w * 0.18,
+          faceTop - h * 0.03,
+          rightTemple + w * 0.04,
+          h * 0.22,
+          rightTemple + w * 0.04,
+          h * 0.40,
+        )
+        ..cubicTo(
+          cx + w * 0.14,
+          h * 0.34,
+          cx - w * 0.11,
+          h * 0.33,
+          leftTemple - w * 0.04,
+          h * 0.40,
+        )
         ..close();
     } else if (palette.hairStyle == 3) {
       hairPath
         ..moveTo(leftTemple - w * 0.05, h * 0.41)
-        ..cubicTo(leftTemple - w * 0.02, h * 0.22, cx - w * 0.16,
-            faceTop - h * 0.04, cx, faceTop - h * 0.05)
-        ..cubicTo(cx + w * 0.19, faceTop - h * 0.04, rightTemple + w * 0.07,
-            h * 0.22, rightTemple + w * 0.05, h * 0.42)
-        ..cubicTo(cx + w * 0.11, h * 0.35, cx - w * 0.11, h * 0.35,
-            leftTemple - w * 0.05, h * 0.41)
+        ..cubicTo(
+          leftTemple - w * 0.02,
+          h * 0.22,
+          cx - w * 0.16,
+          faceTop - h * 0.04,
+          cx,
+          faceTop - h * 0.05,
+        )
+        ..cubicTo(
+          cx + w * 0.19,
+          faceTop - h * 0.04,
+          rightTemple + w * 0.07,
+          h * 0.22,
+          rightTemple + w * 0.05,
+          h * 0.42,
+        )
+        ..cubicTo(
+          cx + w * 0.11,
+          h * 0.35,
+          cx - w * 0.11,
+          h * 0.35,
+          leftTemple - w * 0.05,
+          h * 0.41,
+        )
         ..close();
     } else if (palette.hairStyle == 4) {
       hairPath
         ..moveTo(leftTemple - w * 0.03, h * 0.39)
-        ..cubicTo(leftTemple - w * 0.01, h * 0.20, cx - w * 0.16,
-            faceTop - h * 0.03, cx + w * 0.02, faceTop - h * 0.04)
-        ..cubicTo(cx + w * 0.17, faceTop - h * 0.03, rightTemple + w * 0.07,
-            h * 0.22, rightTemple + w * 0.04, h * 0.39)
-        ..cubicTo(cx + w * 0.12, h * 0.33, cx - w * 0.06, h * 0.34,
-            leftTemple - w * 0.03, h * 0.39)
+        ..cubicTo(
+          leftTemple - w * 0.01,
+          h * 0.20,
+          cx - w * 0.16,
+          faceTop - h * 0.03,
+          cx + w * 0.02,
+          faceTop - h * 0.04,
+        )
+        ..cubicTo(
+          cx + w * 0.17,
+          faceTop - h * 0.03,
+          rightTemple + w * 0.07,
+          h * 0.22,
+          rightTemple + w * 0.04,
+          h * 0.39,
+        )
+        ..cubicTo(
+          cx + w * 0.12,
+          h * 0.33,
+          cx - w * 0.06,
+          h * 0.34,
+          leftTemple - w * 0.03,
+          h * 0.39,
+        )
         ..close();
     } else if (palette.hairStyle == 5) {
       hairPath
         ..moveTo(leftTemple - w * 0.04, h * 0.40)
-        ..cubicTo(leftTemple - w * 0.01, h * 0.23, cx - w * 0.10,
-            faceTop - h * 0.04, cx, faceTop - h * 0.04)
-        ..cubicTo(cx + w * 0.11, faceTop - h * 0.04, rightTemple + w * 0.04,
-            h * 0.23, rightTemple + w * 0.04, h * 0.40)
-        ..cubicTo(cx + w * 0.12, h * 0.34, cx - w * 0.12, h * 0.34,
-            leftTemple - w * 0.04, h * 0.40)
+        ..cubicTo(
+          leftTemple - w * 0.01,
+          h * 0.23,
+          cx - w * 0.10,
+          faceTop - h * 0.04,
+          cx,
+          faceTop - h * 0.04,
+        )
+        ..cubicTo(
+          cx + w * 0.11,
+          faceTop - h * 0.04,
+          rightTemple + w * 0.04,
+          h * 0.23,
+          rightTemple + w * 0.04,
+          h * 0.40,
+        )
+        ..cubicTo(
+          cx + w * 0.12,
+          h * 0.34,
+          cx - w * 0.12,
+          h * 0.34,
+          leftTemple - w * 0.04,
+          h * 0.40,
+        )
         ..close();
     } else {
       hairPath
         ..moveTo(leftTemple - w * 0.04, h * 0.40)
-        ..cubicTo(leftTemple - w * 0.02, h * 0.20, cx - w * 0.15,
-            faceTop - h * 0.03, cx + w * 0.04, faceTop - h * 0.04)
-        ..cubicTo(cx + w * 0.19, faceTop - h * 0.03, rightTemple + w * 0.07,
-            h * 0.22, rightTemple + w * 0.05, h * 0.40)
-        ..cubicTo(cx + w * 0.10, h * 0.34, cx - w * 0.09, h * 0.33,
-            leftTemple - w * 0.04, h * 0.40)
+        ..cubicTo(
+          leftTemple - w * 0.02,
+          h * 0.20,
+          cx - w * 0.15,
+          faceTop - h * 0.03,
+          cx + w * 0.04,
+          faceTop - h * 0.04,
+        )
+        ..cubicTo(
+          cx + w * 0.19,
+          faceTop - h * 0.03,
+          rightTemple + w * 0.07,
+          h * 0.22,
+          rightTemple + w * 0.05,
+          h * 0.40,
+        )
+        ..cubicTo(
+          cx + w * 0.10,
+          h * 0.34,
+          cx - w * 0.09,
+          h * 0.33,
+          leftTemple - w * 0.04,
+          h * 0.40,
+        )
         ..close();
     }
     canvas.drawPath(hairPath, hairPaint);
@@ -10129,10 +10711,7 @@ class _BenchResultMessage extends StatefulWidget {
   final bool isComplete;
   final AppLanguage language;
 
-  const _BenchResultMessage({
-    required this.isComplete,
-    required this.language,
-  });
+  const _BenchResultMessage({required this.isComplete, required this.language});
 
   @override
   State<_BenchResultMessage> createState() => _BenchResultMessageState();
@@ -10149,15 +10728,18 @@ class _BenchResultMessageState extends State<_BenchResultMessage> {
 
   String get _nativeText {
     return switch (widget.language) {
-      AppLanguage.portuguese => widget.isComplete
-          ? 'Com 3 bancos, as 9 pessoas conseguem se sentar.'
-          : 'Com 2 bancos, cabem 8 pessoas. Ainda falta 1 pessoa sentar.',
-      AppLanguage.tagalog => widget.isComplete
-          ? 'Sa 3 bangko, makakaupo ang lahat ng 9 na tao.'
-          : 'Hanggang 8 tao ang makakaupo sa 2 bangko. May 1 tao pang hindi makaupo.',
-      AppLanguage.vietnamese => widget.isComplete
-          ? 'Voi 3 ghe bang, ca 9 nguoi deu ngoi duoc.'
-          : 'Hai ghe bang chi du cho 8 nguoi. Con 1 nguoi chua ngoi duoc.',
+      AppLanguage.portuguese =>
+        widget.isComplete
+            ? 'Com 3 bancos, as 9 pessoas conseguem se sentar.'
+            : 'Com 2 bancos, cabem 8 pessoas. Ainda falta 1 pessoa sentar.',
+      AppLanguage.tagalog =>
+        widget.isComplete
+            ? 'Sa 3 bangko, makakaupo ang lahat ng 9 na tao.'
+            : 'Hanggang 8 tao ang makakaupo sa 2 bangko. May 1 tao pang hindi makaupo.',
+      AppLanguage.vietnamese =>
+        widget.isComplete
+            ? 'Voi 3 ghe bang, ca 9 nguoi deu ngoi duoc.'
+            : 'Hai ghe bang chi du cho 8 nguoi. Con 1 nguoi chua ngoi duoc.',
       AppLanguage.japanese => '',
     };
   }
@@ -10313,6 +10895,7 @@ class _RemainderContextSummaryPanelState
             text: _conclusionLine.rubyText,
             vocabularyEntries: _remainderContextVocabulary,
             language: widget.selectedLanguage,
+            enableLearningSupport: true,
             style: const TextStyle(
               color: Color(0xFF065F46),
               fontSize: 18,
@@ -10322,7 +10905,9 @@ class _RemainderContextSummaryPanelState
           ),
           if (_showNative &&
               widget.selectedLanguage != AppLanguage.japanese &&
-              _conclusionLine.nativeFor(widget.selectedLanguage).isNotEmpty) ...[
+              _conclusionLine
+                  .nativeFor(widget.selectedLanguage)
+                  .isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
               _conclusionLine.nativeFor(widget.selectedLanguage),
@@ -10359,6 +10944,7 @@ class _LearnTextBlock extends StatelessWidget {
       language: language,
       showNative: showNative,
       vocabularyEntries: _divisionMultiplicationVocabulary,
+      enableLearningSupport: true,
     );
   }
 }
@@ -10475,40 +11061,40 @@ class _InteractiveCookieShareState extends State<_InteractiveCookieShare> {
         const SizedBox(height: 14),
         Column(
           children: [
-              _InteractiveCookieSource(remainingCount: _remainingCount),
-              const SizedBox(height: 14),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final compact = constraints.maxWidth < 680;
-                  return Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    alignment: WrapAlignment.center,
-                    children: [
-                      for (var i = 0; i < _groupCounts.length; i++)
-                        SizedBox(
-                          width: compact ? 148 : 180,
-                          child: _InteractiveCookieTarget(
-                            index: i + 1,
-                            count: _groupCounts[i],
-                            acceptsCookie:
-                                _groupCounts[i] < 4 && _remainingCount > 0,
-                            onAccept: () => _placeCookie(i),
-                          ),
+            _InteractiveCookieSource(remainingCount: _remainingCount),
+            const SizedBox(height: 14),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final compact = constraints.maxWidth < 680;
+                return Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    for (var i = 0; i < _groupCounts.length; i++)
+                      SizedBox(
+                        width: compact ? 148 : 180,
+                        child: _InteractiveCookieTarget(
+                          index: i + 1,
+                          count: _groupCounts[i],
+                          acceptsCookie:
+                              _groupCounts[i] < 4 && _remainingCount > 0,
+                          onAccept: () => _placeCookie(i),
                         ),
-                    ],
-                  );
-                },
+                      ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: _LearnIconButton(
+                semanticLabel: 'もう一度',
+                icon: Icons.refresh_rounded,
+                onPressed: _placedCount == 0 ? null : _reset,
               ),
-              const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  onPressed: _placedCount == 0 ? null : _reset,
-                  icon: const Icon(Icons.refresh_rounded, size: 18),
-                  label: const Text('もう一度'),
-                ),
-              ),
+            ),
           ],
         ),
         if (_isComplete) ...[
@@ -10558,7 +11144,7 @@ class _InteractiveCookieResult extends StatelessWidget {
           )
         : const SupportLine(
             japanese: '12こを3人で分けたから、12 ÷ 3 = 4。',
-            ruby: '12こを3{人|にん}で{分|わ}けたから、12 ÷ 3 = 4。',
+            ruby: '12こを3{人|にん}で{分けた|わけた}から、12 ÷ 3 = 4。',
             native: {
               AppLanguage.portuguese:
                   'Dividimos 12 biscoitos entre 3 pessoas, por isso 12 ÷ 3 = 4.',
@@ -10692,6 +11278,7 @@ class _InteractiveCookieResult extends StatelessWidget {
             language: language,
             showNative: showNative,
             vocabularyEntries: _divisionMultiplicationVocabulary,
+            enableLearningSupport: true,
           ),
         ],
       ),
@@ -11347,6 +11934,7 @@ class _ZeroOneDivisionLearnState extends State<_ZeroOneDivisionLearn> {
                             language: widget.selectedLanguage,
                             showNative: _showProblemNative,
                             vocabularyEntries: zeroOneDivisionVocabularyEntries,
+                            enableLearningSupport: true,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -11460,7 +12048,7 @@ const _zeroOneScenarios = [
     problemLine: SupportLine(
       japanese: 'いちごが6こあります。1人で同じ数ずつ分けると、1人分は何こになりますか。',
       ruby:
-          'いちごが6こあります。{1人|ひとり}で{同|おな}じ{数|かず}ずつ{分|わ}けると、{1人|ひとり}{分|ぶん}は{何|なん}こになりますか。',
+          'いちごが6こあります。{1人|ひとり}で{同じ数ずつ|おなじかずずつ}{分ける|わける}と、{1人|ひとり}{分|ぶん}は{何|なん}こになりますか。',
       native: {
         AppLanguage.portuguese:
             'Há 6 morangos. Se dividirmos igualmente com 1 pessoa, quantos morangos essa pessoa recebe?',
@@ -11499,7 +12087,7 @@ const _zeroOneScenarios = [
     explanationLine: SupportLine(
       japanese: '1人で分けるので、6このいちごは全部その人がもらいます。だから、1人分は6こです。',
       ruby:
-          '{1人|ひとり}で{分|わ}けるので、6このいちごは{全部|ぜんぶ}その{人|ひと}がもらいます。だから、{1人|ひとり}{分|ぶん}は6こです。',
+          '{1人|ひとり}で{分ける|わける}ので、6このいちごは{全部|ぜんぶ}その{人|ひと}がもらいます。だから、{1人|ひとり}{分|ぶん}は6こです。',
       native: {
         AppLanguage.portuguese:
             'Como dividimos com 1 pessoa, essa pessoa recebe todos os 6 morangos. Então, a parte de 1 pessoa é 6.',
@@ -11511,7 +12099,7 @@ const _zeroOneScenarios = [
     ),
     ruleLine: SupportLine(
       japanese: '1でわると、答えはもとの数になります。',
-      ruby: '1でわると、{答|こた}えはもとの{数|かず}になります。',
+      ruby: '1でわると、{答え|こたえ}はもとの{数|かず}になります。',
       native: {
         AppLanguage.portuguese:
             'Quando dividimos por 1, a resposta é o número original.',
@@ -11528,7 +12116,7 @@ const _zeroOneScenarios = [
     problemLine: SupportLine(
       japanese: 'いちごが0こあります。3人で同じ数ずつ分けると、1人分は何こになりますか。',
       ruby:
-          'いちごが0こあります。3{人|にん}で{同|おな}じ{数|かず}ずつ{分|わ}けると、{1人|ひとり}{分|ぶん}は{何|なん}こになりますか。',
+          'いちごが0こあります。3{人|にん}で{同じ数ずつ|おなじかずずつ}{分ける|わける}と、{1人|ひとり}{分|ぶん}は{何|なん}こになりますか。',
       native: {
         AppLanguage.portuguese:
             'Há 0 morangos. Se dividirmos igualmente entre 3 pessoas, quantos morangos cada pessoa recebe?',
@@ -11564,7 +12152,7 @@ const _zeroOneScenarios = [
     equation: '0 ÷ 3 = 0',
     explanationLine: SupportLine(
       japanese: 'いちごは0こなので、配るものがありません。3人のお皿は、どれも0こです。',
-      ruby: 'いちごは0こなので、{配|くば}るものがありません。3{人|にん}のお{皿|さら}は、どれも0こです。',
+      ruby: 'いちごは0こなので、{配る|くばる}ものがありません。3{人|にん}のお{皿|さら}は、どれも0こです。',
       native: {
         AppLanguage.portuguese:
             'Como há 0 morangos, não há nada para distribuir. Os pratos das 3 pessoas ficam com 0.',
@@ -11576,7 +12164,7 @@ const _zeroOneScenarios = [
     ),
     ruleLine: SupportLine(
       japanese: '0を人数でわると、答えは0になります。',
-      ruby: '0を{人数|にんずう}でわると、{答|こた}えは0になります。',
+      ruby: '0を{人数|にんずう}でわると、{答え|こたえ}は0になります。',
       native: {
         AppLanguage.portuguese:
             'Quando dividimos 0 pelo número de pessoas, a resposta é 0.',
@@ -11592,7 +12180,7 @@ const _zeroOneScenarios = [
     tabLabel: '0ではわれない',
     problemLine: SupportLine(
       japanese: 'いちごが6こあります。0人で同じ数ずつ分けることはできますか。',
-      ruby: 'いちごが6こあります。0{人|にん}で{同|おな}じ{数|かず}ずつ{分|わ}けることはできますか。',
+      ruby: 'いちごが6こあります。0{人|にん}で{同じ数ずつ|おなじかずずつ}{分ける|わける}ことはできますか。',
       native: {
         AppLanguage.portuguese:
             'Há 6 morangos. É possível dividir igualmente entre 0 pessoas?',
@@ -11626,7 +12214,7 @@ const _zeroOneScenarios = [
     explanationLine: SupportLine(
       japanese: 'いちごは6こありますが、分ける人が0人です。だれのお皿にも入れられないので、分けることはできません。',
       ruby:
-          'いちごは6こありますが、{分|わ}ける{人|ひと}が0{人|にん}です。だれのお{皿|さら}にも{入|い}れられないので、{分|わ}けることはできません。',
+          'いちごは6こありますが、{分ける|わける}{人|ひと}が0{人|にん}です。だれのお{皿|さら}にも{入れられない|いれられない}ので、{分ける|わける}ことはできません。',
       native: {
         AppLanguage.portuguese:
             'Há 6 morangos, mas há 0 pessoas para receber. Não há prato de ninguém, então não é possível dividir.',
@@ -11846,6 +12434,7 @@ class _ZeroOneInstruction extends StatelessWidget {
               language: language,
               showNative: showNative,
               vocabularyEntries: zeroOneDivisionVocabularyEntries,
+              learningSupportMode: LearningSupportMode.rubyOnly,
             ),
           ),
           const SizedBox(width: 10),
@@ -12377,6 +12966,7 @@ class _ZeroOneResultPanel extends StatelessWidget {
                   language: selectedLanguage,
                   showNative: showNative,
                   vocabularyEntries: zeroOneDivisionVocabularyEntries,
+                  enableLearningSupport: true,
                 ),
               ),
               const SizedBox(width: 10),
@@ -12440,6 +13030,7 @@ class _ZeroOneResultPanel extends StatelessWidget {
             language: selectedLanguage,
             showNative: showNative,
             vocabularyEntries: zeroOneDivisionVocabularyEntries,
+            enableLearningSupport: true,
           ),
         ],
       ),
@@ -12597,8 +13188,11 @@ class _EqualShareInteractiveLearnState
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Flexible(
-                          child: Text(
-                            widget.title,
+                          child: RubyText(
+                            text: widget.title,
+                            vocabularyEntries: widget.vocabularyEntries,
+                            language: widget.selectedLanguage,
+                            learningSupportMode: LearningSupportMode.rubyOnly,
                             style: const TextStyle(
                               fontFamily: AppFonts.display,
                               color: Color(0xFF111827),
@@ -12638,6 +13232,7 @@ class _EqualShareInteractiveLearnState
                       showNative: _showProblemNative,
                       vocabularyEntries: widget.vocabularyEntries,
                       fontWeight: FontWeight.w600,
+                      enableLearningSupport: true,
                     ),
                   ],
                 ),
@@ -12645,7 +13240,7 @@ class _EqualShareInteractiveLearnState
             ],
           ),
           const SizedBox(height: 18),
-          _EqualShareDragBoard(
+        _EqualShareDragBoard(
             sourceBerryIds: _sourceBerryIds,
             plateBerryIds: _plateBerryIds,
             plateCounts: _plateCounts,
@@ -12657,6 +13252,8 @@ class _EqualShareInteractiveLearnState
             showInstructionNative: _showInstructionNative,
             instructionLine: widget.instructionLine,
             successLine: widget.resultLines.first,
+            vocabularyEntries: widget.vocabularyEntries,
+            learningSupportMode: LearningSupportMode.rubyAndDictionary,
             onToggleInstructionNative: () {
               setState(() {
                 _showInstructionNative = !_showInstructionNative;
@@ -12710,6 +13307,8 @@ class _EqualShareDragBoard extends StatelessWidget {
   final bool showInstructionNative;
   final SupportLine instructionLine;
   final SupportLine? successLine;
+  final List<VocabularyEntry> vocabularyEntries;
+  final LearningSupportMode? learningSupportMode;
   final VoidCallback onToggleInstructionNative;
 
   const _EqualShareDragBoard({
@@ -12724,6 +13323,8 @@ class _EqualShareDragBoard extends StatelessWidget {
     required this.showInstructionNative,
     this.instructionLine = equalShareInstruction,
     this.successLine,
+    this.vocabularyEntries = const [],
+    this.learningSupportMode,
     required this.onToggleInstructionNative,
   });
 
@@ -12755,6 +13356,8 @@ class _EqualShareDragBoard extends StatelessWidget {
               showNative: showInstructionNative,
               instructionLine: instructionLine,
               successLine: successLine,
+              vocabularyEntries: vocabularyEntries,
+              learningSupportMode: learningSupportMode,
               onToggleNative: onToggleInstructionNative,
             ),
             const SizedBox(height: 14),
@@ -12788,7 +13391,7 @@ class _EqualShareDragBoard extends StatelessWidget {
 class _LearnIconButton extends StatelessWidget {
   final String semanticLabel;
   final IconData icon;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   const _LearnIconButton({
     required this.semanticLabel,
@@ -12802,14 +13405,14 @@ class _LearnIconButton extends StatelessWidget {
       button: true,
       label: semanticLabel,
       child: SizedBox(
-        width: 58,
-        height: 48,
+        width: 52,
+        height: 52,
         child: OutlinedButton(
           onPressed: onPressed,
           style: OutlinedButton.styleFrom(
             padding: EdgeInsets.zero,
-            minimumSize: const Size(58, 48),
-            fixedSize: const Size(58, 48),
+            minimumSize: const Size(52, 52),
+            fixedSize: const Size(52, 52),
             tapTargetSize: MaterialTapTargetSize.padded,
             side: const BorderSide(color: Color(0xFF9CA3AF), width: 1.4),
             shape: RoundedRectangleBorder(
@@ -12817,7 +13420,7 @@ class _LearnIconButton extends StatelessWidget {
             ),
           ),
           child: Center(
-            child: Icon(icon, size: 22, color: const Color(0xFF4F46E5)),
+            child: Icon(icon, size: 22, color: const Color(0xFF0082FF)),
           ),
         ),
       ),
@@ -13046,6 +13649,9 @@ class _SupportedTextLines extends StatelessWidget {
   final bool showNative;
   final List<VocabularyEntry> vocabularyEntries;
   final FontWeight fontWeight;
+  final bool enableLearningSupport;
+  final bool learningSupportRubyOnly;
+  final LearningSupportMode? learningSupportMode;
 
   const _SupportedTextLines({
     required this.lines,
@@ -13053,6 +13659,9 @@ class _SupportedTextLines extends StatelessWidget {
     required this.showNative,
     this.vocabularyEntries = const [],
     this.fontWeight = FontWeight.w800,
+    this.enableLearningSupport = false,
+    this.learningSupportRubyOnly = false,
+    this.learningSupportMode,
   });
 
   @override
@@ -13065,6 +13674,9 @@ class _SupportedTextLines extends StatelessWidget {
             text: line.rubyText,
             vocabularyEntries: vocabularyEntries,
             language: language,
+            enableLearningSupport: enableLearningSupport,
+            learningSupportRubyOnly: learningSupportRubyOnly,
+            learningSupportMode: learningSupportMode,
             style: TextStyle(
               color: Color(0xFF374151),
               fontSize: 17,
@@ -13248,6 +13860,8 @@ class _InstructionStrip extends StatelessWidget {
   final SupportLine instructionLine;
   final SupportLine? successLine;
   final VoidCallback onToggleNative;
+  final List<VocabularyEntry> vocabularyEntries;
+  final LearningSupportMode? learningSupportMode;
 
   const _InstructionStrip({
     required this.message,
@@ -13257,6 +13871,8 @@ class _InstructionStrip extends StatelessWidget {
     this.instructionLine = equalShareInstruction,
     this.successLine,
     required this.onToggleNative,
+    this.vocabularyEntries = const [],
+    this.learningSupportMode,
   });
 
   @override
@@ -13283,8 +13899,14 @@ class _InstructionStrip extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                child: Text(
-                  line.japanese,
+                child: RubyText(
+                  text: line.japanese,
+                  language: language,
+                  vocabularyEntries: mergeLearningVocabulary(vocabularyEntries),
+                  learningSupportMode: learningSupportMode ??
+                      (isSuccess
+                          ? LearningSupportMode.rubyAndDictionary
+                          : LearningSupportMode.rubyOnly),
                   style: TextStyle(
                     color: isSuccess
                         ? const Color(0xFF166534)
@@ -13305,10 +13927,13 @@ class _InstructionStrip extends StatelessWidget {
                 audioLabel: '操作案内の音声',
                 onToggleNative: onToggleNative,
                 onAudio: () {
-                  LearningAudio.speakJapanese(
+                  LearningAudio.play(
                     context,
-                    label: '操作案内',
-                    text: line.japanese,
+                    AudioCueFactory.instruction(
+                      namespace: 'lesson.instruction_strip',
+                      label: '操作案内',
+                      text: line.japanese,
+                    ),
                   );
                 },
               ),
@@ -13358,6 +13983,9 @@ class _DivisionResultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveVocabularyEntries = mergeLearningVocabulary(
+      vocabularyEntries,
+    );
     return Padding(
       padding: const EdgeInsets.only(top: 4),
       child: Column(
@@ -13372,8 +14000,12 @@ class _DivisionResultCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: Text(
-                  resultLines.first.japanese,
+                child: RubyText(
+                  text: resultLines.first.rubyText,
+                  vocabularyEntries: effectiveVocabularyEntries,
+                  language: selectedLanguage,
+                  enableLearningSupport: true,
+                  learningSupportMode: LearningSupportMode.rubyAndDictionary,
                   style: const TextStyle(
                     color: Color(0xFF065F46),
                     fontSize: 20,
@@ -13398,7 +14030,9 @@ class _DivisionResultCard extends StatelessWidget {
             lines: resultLines.skip(1).toList(),
             language: selectedLanguage,
             showNative: showNative,
-            vocabularyEntries: vocabularyEntries,
+            vocabularyEntries: effectiveVocabularyEntries,
+            enableLearningSupport: true,
+            learningSupportMode: LearningSupportMode.rubyAndDictionary,
           ),
           const SizedBox(height: 12),
           _EquationLine(language: selectedLanguage, supports: equationSupports),
@@ -13420,6 +14054,8 @@ class _DivisionResultCard extends StatelessWidget {
                   lines: [equationReading],
                   language: selectedLanguage,
                   showNative: showNative,
+                  vocabularyEntries: vocabularyEntries,
+                  enableLearningSupport: true,
                 ),
               ),
             ],
@@ -13548,13 +14184,30 @@ class _EquationNumber extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  support.label,
-                  style: const TextStyle(
-                    color: Color(0xFF111827),
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        support.label,
+                        style: const TextStyle(
+                          color: Color(0xFF111827),
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    _DictionaryAudioButton(
+                      onPressed: () {
+                        LearningAudio.speakJapanese(
+                          context,
+                          label: support.label,
+                          text: support.label,
+                        );
+                      },
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 14),
                 Text(
@@ -13587,26 +14240,41 @@ class _EquationNumber extends StatelessWidget {
                     ),
                   ),
                 ],
-                const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton.icon(
-                    onPressed: () {
-                      LearningAudio.speakJapanese(
-                        context,
-                        label: support.label,
-                        text: support.label,
-                      );
-                    },
-                    icon: const Icon(Icons.volume_up_rounded),
-                    label: const Text('音声'),
-                  ),
-                ),
               ],
             ),
           ),
         );
       },
+    );
+  }
+}
+
+class _DictionaryAudioButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _DictionaryAudioButton({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: Material(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: const BorderSide(color: Color(0xFFE5E7EB)),
+        ),
+        child: IconButton(
+          tooltip: '音声',
+          onPressed: onPressed,
+          constraints: const BoxConstraints.tightFor(width: 40, height: 40),
+          padding: EdgeInsets.zero,
+          iconSize: 20,
+          color: const Color(0xFF374151),
+          icon: const Icon(Icons.volume_up_rounded),
+        ),
+      ),
     );
   }
 }
@@ -13759,6 +14427,8 @@ class _EqualShareStoryMode extends StatelessWidget {
           isSuccess: complete,
           language: AppLanguage.japanese,
           showNative: false,
+          vocabularyEntries: vocabularyEntries,
+          learningSupportMode: LearningSupportMode.rubyAndDictionary,
           onToggleNative: () {},
         ),
         const SizedBox(height: 14),
@@ -14157,12 +14827,17 @@ class _VocabularyAudioButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Tooltip(
-      message: '$word の音声',
-      child: SizedBox(
-        width: 44,
-        height: 44,
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: Material(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: const BorderSide(color: Color(0xFFE5E7EB)),
+        ),
         child: IconButton(
+          tooltip: '$word の音声',
           onPressed: () {
             final normalizedReading = reading.replaceAll(' ', '');
             LearningAudio.speakJapanese(
@@ -14171,15 +14846,11 @@ class _VocabularyAudioButton extends StatelessWidget {
               text: normalizedReading.isEmpty ? word : normalizedReading,
             );
           },
-          style: IconButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: const Color(0xFF4B5563),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: const BorderSide(color: Color(0xFFE5E7EB)),
-            ),
-          ),
-          icon: const Icon(Icons.volume_up_rounded, size: 22),
+          constraints: const BoxConstraints.tightFor(width: 40, height: 40),
+          padding: EdgeInsets.zero,
+          iconSize: 20,
+          color: const Color(0xFF374151),
+          icon: const Icon(Icons.volume_up_rounded),
         ),
       ),
     );
@@ -14675,11 +15346,7 @@ class _StrawberryPainter extends CustomPainter {
     final bodyPaint = Paint()
       ..shader = RadialGradient(
         center: const Alignment(-0.35, -0.35),
-        colors: const [
-          Color(0xFFFF7A7A),
-          Color(0xFFEF4444),
-          Color(0xFFB91C1C),
-        ],
+        colors: const [Color(0xFFFF7A7A), Color(0xFFEF4444), Color(0xFFB91C1C)],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     final borderPaint = Paint()
       ..color = const Color(0xFFB91C1C)
@@ -14977,7 +15644,7 @@ class _LessonTopBar extends StatelessWidget {
                 minHeight: 12,
                 backgroundColor: const Color(0xFFE5E7EB),
                 valueColor: const AlwaysStoppedAnimation<Color>(
-                  Color(0xFF8B5CF6),
+                  Color(0xFF2563EB),
                 ),
               ),
             ),
@@ -15739,7 +16406,11 @@ class _MiniStrawberryPainter extends CustomPainter {
       Paint()
         ..shader = RadialGradient(
           center: const Alignment(-0.35, -0.35),
-          colors: const [Color(0xFFFF8A8A), Color(0xFFEF4444), Color(0xFFB91C1C)],
+          colors: const [
+            Color(0xFFFF8A8A),
+            Color(0xFFEF4444),
+            Color(0xFFB91C1C),
+          ],
         ).createShader(Rect.fromLTWH(0, 0, size.width, size.height)),
     );
     for (final p in const [
@@ -15788,7 +16459,11 @@ class _MiniCookiePainter extends CustomPainter {
       Paint()
         ..shader = RadialGradient(
           center: const Alignment(-0.3, -0.3),
-          colors: const [Color(0xFFFDE68A), Color(0xFFF59E0B), Color(0xFFB45309)],
+          colors: const [
+            Color(0xFFFDE68A),
+            Color(0xFFF59E0B),
+            Color(0xFFB45309),
+          ],
         ).createShader(Rect.fromCircle(center: center, radius: radius)),
     );
     final chipPaint = Paint()..color = const Color(0xFF7C2D12);
@@ -15832,13 +16507,23 @@ class _MiniPencilPainter extends CustomPainter {
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.width * 0.02, y - bodyHeight * 0.55, size.width * 0.13, bodyHeight * 1.1),
+        Rect.fromLTWH(
+          size.width * 0.02,
+          y - bodyHeight * 0.55,
+          size.width * 0.13,
+          bodyHeight * 1.1,
+        ),
         Radius.circular(bodyHeight * 0.18),
       ),
       Paint()..color = const Color(0xFFFCA5A5),
     );
     canvas.drawRect(
-      Rect.fromLTWH(size.width * 0.14, y - bodyHeight * 0.55, size.width * 0.035, bodyHeight * 1.1),
+      Rect.fromLTWH(
+        size.width * 0.14,
+        y - bodyHeight * 0.55,
+        size.width * 0.035,
+        bodyHeight * 1.1,
+      ),
       Paint()..color = const Color(0xFFCBD5E1),
     );
     canvas.drawRect(
@@ -15847,7 +16532,11 @@ class _MiniPencilPainter extends CustomPainter {
         ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: const [Color(0xFFFFF1A8), Color(0xFFFBBF24), Color(0xFFD97706)],
+          colors: const [
+            Color(0xFFFFF1A8),
+            Color(0xFFFBBF24),
+            Color(0xFFD97706),
+          ],
         ).createShader(bodyRect),
     );
     canvas.drawLine(
@@ -15883,7 +16572,12 @@ class _MiniCardItemPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final rect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(size.width * 0.22, size.height * 0.14, size.width * 0.56, size.height * 0.72),
+      Rect.fromLTWH(
+        size.width * 0.22,
+        size.height * 0.14,
+        size.width * 0.56,
+        size.height * 0.72,
+      ),
       Radius.circular(size.width * 0.08),
     );
     canvas.drawRRect(rect, Paint()..color = Colors.white);
@@ -15913,7 +16607,11 @@ class _MiniMarblePainter extends CustomPainter {
       Paint()
         ..shader = RadialGradient(
           center: const Alignment(-0.35, -0.35),
-          colors: const [Color(0xFFE0F7FA), Color(0xFF22D3EE), Color(0xFF0891B2)],
+          colors: const [
+            Color(0xFFE0F7FA),
+            Color(0xFF22D3EE),
+            Color(0xFF0891B2),
+          ],
         ).createShader(Rect.fromCircle(center: center, radius: radius)),
     );
     canvas.drawCircle(

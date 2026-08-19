@@ -212,6 +212,7 @@ enum QuestionVisualType {
 
 class VocabularyEntry {
   final String term;
+  final List<String> surfaces;
   final String reading;
   final String simpleJapanese;
   final Map<AppLanguage, String> translations;
@@ -220,6 +221,7 @@ class VocabularyEntry {
 
   const VocabularyEntry({
     required this.term,
+    this.surfaces = const [],
     required this.reading,
     required this.simpleJapanese,
     this.translations = const {},
