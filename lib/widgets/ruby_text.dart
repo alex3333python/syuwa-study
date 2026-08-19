@@ -156,7 +156,59 @@ class RubyText extends StatelessWidget {
       index = end + 1;
     }
 
-    return parts;
+    return _attachSpanningVocabulary(parts, entries);
+  }
+
+  List<_RubyPart> _attachSpanningVocabulary(
+    List<_RubyPart> parts,
+    List<VocabularyEntry> entries,
+  ) {
+    if (parts.isEmpty || entries.isEmpty) return parts;
+
+    final ranked = entries.toList()
+      ..sort((a, b) {
+        final aLen = _longestSurfaceLength(a);
+        final bLen = _longestSurfaceLength(b);
+        return bLen.compareTo(aLen);
+      });
+    final attached = List<_RubyPart>.from(parts);
+    var index = 0;
+    while (index < attached.length) {
+      var combined = '';
+      VocabularyEntry? matched;
+      var matchEnd = index;
+      for (var end = index; end < attached.length; end++) {
+        combined += attached[end].base;
+        for (final entry in ranked) {
+          if (_surfaceSet(entry).contains(combined)) {
+            matched = entry;
+            matchEnd = end;
+            break;
+          }
+        }
+      }
+      if (matched != null) {
+        for (var i = index; i <= matchEnd; i++) {
+          attached[i] = attached[i].withEntry(matched);
+        }
+        index = matchEnd + 1;
+      } else {
+        index++;
+      }
+    }
+    return attached;
+  }
+
+  int _longestSurfaceLength(VocabularyEntry entry) {
+    var longest = entry.term.length;
+    for (final surface in entry.surfaces) {
+      if (surface.length > longest) longest = surface.length;
+    }
+    return longest;
+  }
+
+  Set<String> _surfaceSet(VocabularyEntry entry) {
+    return {entry.term, ...entry.surfaces};
   }
 
   void _addPlainText(
@@ -173,6 +225,12 @@ class RubyText extends StatelessWidget {
       String? matchedSurface;
       for (final entry in entries) {
         for (final surface in <String>[entry.term, ...entry.surfaces]) {
+          if (surface == 'はかり' && value.startsWith('はかりま', cursor)) {
+            continue;
+          }
+          if (surface == '長い' && value.startsWith('長いす', cursor)) {
+            continue;
+          }
           if (surface.isEmpty || !value.startsWith(surface, cursor)) continue;
           if (matchedSurface == null || surface.length > matchedSurface.length) {
             matched = entry;
@@ -711,11 +769,12 @@ class _RubyPiece extends StatelessWidget {
                 ],
                 const SizedBox(height: 18),
                 _VocabularyBlock(title: '意味', text: entry.simpleJapanese),
-                if (language != AppLanguage.japanese) ...[
+                if (language != AppLanguage.japanese &&
+                    nativeMeaningFor(entry, language).isNotEmpty) ...[
                   const SizedBox(height: 14),
                   _VocabularyBlock(
                     title: '$nativeLabelで',
-                    text: entry.translationFor(language),
+                    text: nativeMeaningFor(entry, language),
                   ),
                 ],
                 if (entry.exampleSentence.isNotEmpty) ...[
@@ -782,6 +841,10 @@ class _RubyPart {
   final VocabularyEntry? entry;
 
   const _RubyPart({required this.base, this.ruby, this.entry});
+
+  _RubyPart withEntry(VocabularyEntry next) {
+    return _RubyPart(base: base, ruby: ruby, entry: next);
+  }
 }
 
 class _RubySegment {

@@ -1651,7 +1651,7 @@ class _SupportedInstruction extends StatelessWidget {
               language: language,
               showNative: showNative,
               vocabularyEntries: vocabularyEntries,
-              learningSupportMode: LearningSupportMode.rubyOnly,
+              learningSupportMode: LearningSupportMode.rubyAndDictionary,
             ),
           ),
           const SizedBox(width: 10),
@@ -3131,6 +3131,7 @@ class _LengthMeasureLearnState extends State<_LengthMeasureLearn> {
     return _RemainderLearnShell(
       icon: Icons.straighten_rounded,
       title: '長さに合う道具を選ぼう',
+      titleVocabularyEntries: _lengthVocabularyEntries,
       selectedLanguage: widget.selectedLanguage,
       showNative: _showNative,
       onToggleNative: () => setState(() => _showNative = !_showNative),
@@ -5523,6 +5524,7 @@ final _lengthVocabularyEntries = [
   ),
   VocabularyEntry(
     term: 'はかる',
+    surfaces: const ['はかる', 'はかります', 'はかりましょう', 'はかって'],
     reading: 'はかる',
     simpleJapanese: '長さなどを調べること。',
     translations: nativeText(
@@ -8695,7 +8697,10 @@ class _RemainderLearnShell extends StatelessWidget {
                   text: titleRuby ?? title,
                   language: selectedLanguage,
                   vocabularyEntries: titleVocabularyEntries,
-                  learningSupportMode: LearningSupportMode.rubyOnly,
+                  enableLearningSupport: titleVocabularyEntries.isNotEmpty,
+                  learningSupportMode: titleVocabularyEntries.isEmpty
+                      ? LearningSupportMode.rubyOnly
+                      : LearningSupportMode.rubyAndDictionary,
                   style: const TextStyle(
                     fontFamily: AppFonts.display,
                     fontSize: 24,

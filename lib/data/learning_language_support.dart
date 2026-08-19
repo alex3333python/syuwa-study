@@ -1,3 +1,4 @@
+import '../models/app_language.dart';
 import '../models/question.dart';
 import 'native_text.dart';
 
@@ -15,14 +16,18 @@ List<VocabularyEntry> mergeLearningVocabulary(
         ? local
         : VocabularyEntry(
             term: local.term,
-            surfaces: local.surfaces.isNotEmpty
-                ? local.surfaces
-                : existing.surfaces,
+            surfaces: {
+              ...existing.surfaces,
+              ...local.surfaces,
+            }.toList(growable: false),
             reading: local.reading.isNotEmpty ? local.reading : existing.reading,
             simpleJapanese: local.simpleJapanese.isNotEmpty
                 ? local.simpleJapanese
                 : existing.simpleJapanese,
-            translations: {...existing.translations, ...local.translations},
+            translations: _mergedTranslations(
+              existing.translations,
+              local.translations,
+            ),
             exampleSentence: local.exampleSentence.isNotEmpty
                 ? local.exampleSentence
                 : existing.exampleSentence,
@@ -32,6 +37,48 @@ List<VocabularyEntry> mergeLearningVocabulary(
           );
   }
   return entries.values.toList(growable: false);
+}
+
+Map<AppLanguage, String> _mergedTranslations(
+  Map<AppLanguage, String> existing,
+  Map<AppLanguage, String> local,
+) {
+  final merged = Map<AppLanguage, String>.from(existing);
+  local.forEach((language, value) {
+    if (value.isNotEmpty) {
+      merged[language] = value;
+    }
+  });
+  return merged;
+}
+
+/// Native-language gloss for a dictionary card. Never falls back to Japanese.
+String nativeMeaningFor(VocabularyEntry entry, AppLanguage language) {
+  if (language == AppLanguage.japanese) return '';
+
+  bool usable(String? value) {
+    return value != null &&
+        value.isNotEmpty &&
+        value != entry.simpleJapanese;
+  }
+
+  if (usable(entry.translations[language])) {
+    return entry.translations[language]!;
+  }
+
+  for (final term in _learningTerms) {
+    if (term.term != entry.term && !term.surfaces.contains(entry.term)) {
+      continue;
+    }
+    final mapped = switch (language) {
+      AppLanguage.portuguese => term.portuguese,
+      AppLanguage.tagalog => term.tagalog,
+      AppLanguage.vietnamese => term.vietnamese,
+      AppLanguage.japanese => '',
+    };
+    if (usable(mapped)) return mapped;
+  }
+  return '';
 }
 
 /// Adds ruby markup to common school-math words while preserving existing
@@ -465,6 +512,15 @@ const _learningTerms = <_LearningTerm>[
   ),
   _LearningTerm(
     term: '測る',
+    surfaces: const [
+      '測る',
+      '測ります',
+      'はかる',
+      'はかります',
+      'はかりましょう',
+      'はかって',
+      'はかった',
+    ],
     reading: 'はかる',
     simpleJapanese: '長さや重さを調べることです。',
     portuguese: 'medir',
@@ -782,7 +838,7 @@ const _learningTerms = <_LearningTerm>[
   ),
   _LearningTerm(
     term: '長いす',
-    surfaces: const ['長いす'],
+    surfaces: const ['長いす', '長椅子'],
     reading: 'ながいす',
     simpleJapanese: '何人かがいっしょにすわれる、長いいすです。',
     portuguese: 'banco comprido',
@@ -1142,6 +1198,9 @@ final _rubyRules = <_RubyRule>[
   const _RubyRule('重さ', 'おもさ'),
   const _RubyRule('重い', 'おもい'),
   const _RubyRule('軽い', 'かるい'),
+  const _RubyRule('はかりましょう', 'はかりましょう'),
+  const _RubyRule('はかります', 'はかります'),
+  const _RubyRule('はかって', 'はかって'),
   const _RubyRule('はかり', 'はかり'),
   const _RubyRule('目盛り', 'めもり'),
   const _RubyRule('グラム', 'ぐらむ'),
@@ -1190,6 +1249,8 @@ final _rubyRules = <_RubyRule>[
   const _RubyRule('わる', 'わる'),
   const _RubyRule('表す', 'あらわす'),
   const _RubyRule('短い', 'みじかい'),
+  const _RubyRule('長いす', 'ながいす'),
+  const _RubyRule('長椅子', 'ながいす'),
   const _RubyRule('長い', 'ながい'),
   const _RubyRule('道具', 'どうぐ'),
   const _RubyRule('単位', 'たんい'),
@@ -1197,7 +1258,6 @@ final _rubyRules = <_RubyRule>[
   const _RubyRule('数', 'かず'),
   const _RubyRule('もらう', 'もらう'),
   const _RubyRule('もと', 'もと'),
-  const _RubyRule('長椅子', 'ながいす'),
   const _RubyRule('必要', 'ひつよう'),
   const _RubyRule('木', 'き'),
   const _RubyRule('幹', 'みき'),
@@ -1213,7 +1273,6 @@ final _rubyRules = <_RubyRule>[
   const _RubyRule('分ける', 'わける'),
   const _RubyRule('書く', 'かく'),
   const _RubyRule('小さい', 'ちいさい'),
-  const _RubyRule('長いす', 'ながいす'),
   const _RubyRule('見つける', 'みつける'),
   const _RubyRule('すわる', 'すわる'),
 ];
