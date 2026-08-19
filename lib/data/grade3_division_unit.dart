@@ -1556,7 +1556,249 @@ const _divisionSharingVocabulary = [
 
 Map<AppLanguage, String> _nativeText(String fallback) {
   final portuguese = _portugueseText(fallback);
-  return portuguese == null ? const {} : {AppLanguage.portuguese: portuguese};
+  if (portuguese == null) return const {};
+  return {
+    AppLanguage.portuguese: portuguese,
+    AppLanguage.tagalog: _tagalogText(fallback) ?? portuguese,
+    AppLanguage.vietnamese: _vietnameseText(fallback) ?? portuguese,
+  };
+}
+
+String? _tagalogText(String source) {
+  return switch (source) {
+    'りんごが6こあります。2人に同じ数で分けます。1人は何こもらいますか。' =>
+      'May 6 na mansanas. Hatiin nang pantay sa 2 tao. Ilang mansanas ang para sa bawat isa?',
+    '6こを2人で同じ数ずつ分けるので、6 ÷ 2 = 3。1人分は3こです。' =>
+      'Dahil hinati ang 6 mansanas nang pantay sa 2 tao, 6 ÷ 2 = 3. 3 mansanas ang sa bawat isa.',
+    'クッキー8こを4人に同じ数で分けます。どの式ですか。' =>
+      'May 8 biskwit. Hatiin nang pantay sa 4 tao. Alin ang tamang pahayag?',
+    '全部の8こを4人で分けるので、式は8 ÷ 4です。' =>
+      'Dahil hinati ang lahat ng 8 biskwit sa 4 tao, ang pahayag ay 8 ÷ 4.',
+    'あめが12こあります。3人に同じ数で分けます。1人は何こですか。' =>
+      'May 12 kendi. Hatiin nang pantay sa 3 tao. Ilan ang para sa bawat isa?',
+    '12 ÷ 3 = 4。1人分は4こです。' => '12 ÷ 3 = 4. 4 ang sa bawat isa.',
+    'カード15こを5人で分けます。15 ÷ □ の□は何ですか。' =>
+      'May 15 kard. Hatiin sa 5 tao. Anong numero ang papasok sa □ ng 15 ÷ □?',
+    '分ける人数は5人なので、式は15 ÷ 5です。' =>
+      'Dahil 5 ang bilang ng tao, ang pahayag ay 15 ÷ 5.',
+    'みかん20こを4人に同じ数で分けます。どの式ですか。' =>
+      'May 20 dalanghita. Hatiin nang pantay sa 4 tao. Alin ang tamang pahayag?',
+    '20は全部の数、4は分ける人数です。式は20 ÷ 4。答えは5こです。' =>
+      '20 ang kabuuan, at 4 ang bilang ng tao. Ang pahayag ay 20 ÷ 4. Ang sagot ay 5.',
+    'いちごが6こあります。3人で分けます。全部で何こありますか。' =>
+      'May 6 na strawberry. Hatiin sa 3 tao. Ilan lahat ang strawberry?',
+    'はじめにあるいちごは6こです。6こを3人で分けるので、式は6 ÷ 3です。' =>
+      'Sa simula, may 6 na strawberry. Dahil hinati ang 6 sa 3 tao, ang pahayag ay 6 ÷ 3.',
+    'シール9こを3人に同じ数で分けます。合う図はどれですか。' =>
+      'May 9 na sticker. Hatiin nang pantay sa 3 tao. Aling larawan ang tumutugma?',
+    '3人に3こずつ入っている図が正しいです。' =>
+      'Tama ang larawang may 3 sticker para sa bawat isa sa 3 tao.',
+    'えんぴつ18本を6人に同じ数で分けます。1人は何本ですか。' =>
+      'May 18 lapis. Hatiin nang pantay sa 6 tao. Ilang lapis ang sa bawat isa?',
+    '18 ÷ 6 = 3。1人分は3本です。' => '18 ÷ 6 = 3. 3 lapis ang sa bawat isa.',
+    'クッキー8こを、1人に2こずつ分けます。何人分できますか。' =>
+      'May 8 biskwit. Kung 2 biskwit ang sa bawat tao, para sa ilang tao iyon?',
+    '8 ÷ 2 = 4。2こずつのまとまりが4つできるので、4人です。' =>
+      '8 ÷ 2 = 4. Dahil 4 na grupong tig-2, sapat sa 4 na tao.',
+    'あめ12こを、1人に3こずつ分けます。どの式ですか。' =>
+      'May 12 kendi. Kung 3 kendi ang sa bawat tao, alin ang tamang pahayag?',
+    '全部の12こを、3こずつのまとまりにするので、12 ÷ 3です。' =>
+      'Dahil ginawang grupong tig-3 ang 12 kendi, ang pahayag ay 12 ÷ 3.',
+    'カード15まいを、1人に5まいずつ分けます。何人分できますか。' =>
+      'May 15 kard. Kung 5 kard ang sa bawat tao, para sa ilang tao iyon?',
+    '15 ÷ 5 = 3。3人に分けられます。' => '15 ÷ 5 = 3. Mahahati sa 3 tao.',
+    'ビー玉18こを、1人に6こずつ分けます。18 ÷ □ の□は何ですか。' =>
+      'May 18 bolitas. Kung 6 bolitas ang sa bawat tao, anong numero ang papasok sa □ ng 18 ÷ □?',
+    '1人に6こずつ分けるので、式は18 ÷ 6です。' =>
+      'Dahil 6 ang ibinibigay sa bawat tao, ang pahayag ay 18 ÷ 6.',
+    'シール24こを、1人に4こずつ分けます。どの式ですか。' =>
+      'May 24 na sticker. Kung 4 na sticker ang sa bawat tao, alin ang tamang pahayag?',
+    '全部の24こを、1人分の4こで分けるので、式は24 ÷ 4です。' =>
+      'Dahil hinati ang 24 sticker sa bahaging tig-4, ang pahayag ay 24 ÷ 4.',
+    'いちご6こを、1人に2こずつ分けます。何人分できますか。' =>
+      'May 6 na strawberry. Kung 2 strawberry ang sa bawat tao, para sa ilang tao iyon?',
+    '6こを2こずつのまとまりにすると、3つのまとまりができます。だから、3人に分けられます。' =>
+      'Kung gagawing grupong tig-2 ang 6 strawberry, 3 grupo ang magagawa. Kaya mahahati sa 3 tao.',
+    'あめ10こを、1人に2こずつ分けます。合う図はどれですか。' =>
+      'May 10 kendi. Kung 2 kendi ang sa bawat tao, aling larawan ang tumutugma?',
+    '10 ÷ 2 = 5。2こずつの組が5つある図です。' =>
+      '10 ÷ 2 = 5. Iyon ang larawang may 5 grupong tig-2.',
+    'えんぴつ21本を、1人に3本ずつ分けます。何人分できますか。' =>
+      'May 21 lapis. Kung 3 lapis ang sa bawat tao, para sa ilang tao iyon?',
+    '21 ÷ 3 = 7。答えの単位は人です。' => '21 ÷ 3 = 7. Tao ang yunit ng sagot.',
+    '0こを3人で分けます。1人分は何こですか。' =>
+      'May 0 strawberry. Kung hahatiin sa 3 tao, ilan ang sa bawat isa?',
+    '0こを分けるので、1人分も0こです。0 ÷ 3 = 0 です。' =>
+      'Dahil 0 ang hinahati, 0 din ang sa bawat isa. 0 ÷ 3 = 0.',
+    '6こを1人で分けます。1人分は何こですか。' =>
+      'May 6 na strawberry. Kung 1 tao lang ang hahatiin, ilan ang sa taong iyon?',
+    '6こを1人で分けるので、全部その人の分です。6 ÷ 1 = 6 です。' =>
+      'Dahil 1 tao ang pinaghahatian, lahat ay sa kanya. 6 ÷ 1 = 6.',
+    '6こを6人で分けます。1人分は何こですか。' =>
+      'May 6 na strawberry. Hatiin sa 6 tao. Ilan ang sa bawat isa?',
+    '6こを6人で同じ数ずつ分けると、1人分は1こです。6 ÷ 6 = 1 です。' =>
+      'Kung hahatiin nang pantay ang 6 sa 6 tao, 1 ang sa bawat isa. 6 ÷ 6 = 1.',
+    'あめが0こです。4人で分けます。どの式ですか。' =>
+      'May 0 kendi. Hatiin sa 4 tao. Alin ang tamang pahayag?',
+    '全部の数が0こなので、式は0 ÷ 4です。0でわる式は選びません。' =>
+      'Dahil 0 ang kabuuan, ang pahayag ay 0 ÷ 4. Huwag pumili ng pahayag na hinahati sa 0.',
+    '9こを1人で分けます。1人分は何こですか。' =>
+      'May 9 piraso. Kung 1 tao lang, ilan ang sa kanya?',
+    '1人で分けるので、9こ全部がその人の分です。9 ÷ 1 = 9 です。' =>
+      'Dahil 1 tao, lahat ng 9 ay sa kanya. 9 ÷ 1 = 9.',
+    '8こを8人で分けます。1人分は何こですか。' =>
+      'May 8 piraso. Hatiin sa 8 tao. Ilan ang sa bawat isa?',
+    '8こを8人で分けると、1人分は1こです。8 ÷ 8 = 1 です。' =>
+      'Kung hahatiin ang 8 sa 8 tao, 1 ang sa bawat isa. 8 ÷ 8 = 1.',
+    '7を7でわります。答えは何ですか。' => 'Hatiin ang 7 sa 7. Ano ang sagot?',
+    '同じ数でわると、答えは1です。7 ÷ 7 = 1 です。' =>
+      'Kapag hinati sa parehong numero, 1 ang sagot. 7 ÷ 7 = 1.',
+    '6 ÷ 1 = 6 の1は、どんな数ですか。' =>
+      'Sa 6 ÷ 1 = 6, anong numero ang kinakatawan ng 1?',
+    '6 ÷ 1 = 6 の1は、分ける人数です。1人で分けるので、1人分は6こです。' =>
+      'Sa 6 ÷ 1 = 6, ang 1 ay bilang ng tao. Dahil 1 tao, 6 ang sa kanya.',
+    '6を0でわることについて、正しいものを選びます。' =>
+      'Piliin ang tamang pangungusap tungkol sa paghahati ng 6 sa 0.',
+    '0人には分けられないので、6 ÷ 0 の答えはありません。' =>
+      'Hindi mahahati sa 0 tao, kaya walang sagot ang 6 ÷ 0.',
+    '24 ÷ 6 の答えを、かけ算で見つけます。どのかけ算を使いますか。' =>
+      'Hanapin ang sagot ng 24 ÷ 6 gamit ang multiplikasyon. Aling multiplikasyon ang gagamitin?',
+    '6 × 4 = 24だから、24 ÷ 6 = 4です。' => 'Dahil 6 × 4 = 24, kaya 24 ÷ 6 = 4.',
+    '18 ÷ 3 と 3 × □ = 18 を見ます。□に入る数はどれですか。' =>
+      'Tingnan ang 18 ÷ 3 at 3 × □ = 18. Anong numero ang papasok sa □?',
+    '□には同じ6が入ります。18 ÷ 3 = 6、3 × 6 = 18です。' =>
+      'Parehong 6 ang papasok sa dalawang lugar. 18 ÷ 3 = 6 at 3 × 6 = 18.',
+    'りんご21こを7人で同じ数ずつ分けます。1人分は何こですか。' =>
+      'May 21 mansanas. Hatiin nang pantay sa 7 tao. Ilang mansanas ang sa bawat isa?',
+    '7 × 3 = 21だから、21 ÷ 7 = 3です。1人分は3こです。' =>
+      'Dahil 7 × 3 = 21, kaya 21 ÷ 7 = 3. 3 mansanas ang sa bawat isa.',
+    'わり算とかけ算のつながりを、図と式で見ます。' =>
+      'Tingnan natin ang ugnayan ng dibisyon at multiplikasyon sa larawan at pahayag.',
+    'かけ算を使って、□に入る数を見つけます。' =>
+      'Ginagamit ang multiplikasyon para hanapin ang numerong papasok sa □.',
+    'かけ算を使うと、わり算の答えを見つけられます。' =>
+      'Sa multiplikasyon, mahanap ang sagot ng dibisyon.',
+    '36 ÷ 6 の答えを、かけ算で見つけます。' =>
+      'Hanapin ang sagot ng 36 ÷ 6 gamit ang multiplikasyon.',
+    '6 × 6 = 36だから、36 ÷ 6 = 6です。' => 'Dahil 6 × 6 = 36, kaya 36 ÷ 6 = 6.',
+    '28 ÷ 4 と 4 × □ = 28 を見ます。' => 'Tingnan ang 28 ÷ 4 at 4 × □ = 28.',
+    '4 × 7 = 28だから、28 ÷ 4 = 7です。' => 'Dahil 4 × 7 = 28, kaya 28 ÷ 4 = 7.',
+    _ => null,
+  };
+}
+
+String? _vietnameseText(String source) {
+  return switch (source) {
+    'りんごが6こあります。2人に同じ数で分けます。1人は何こもらいますか。' =>
+      'Có 6 quả táo. Chia đều cho 2 người. Mỗi người nhận bao nhiêu quả táo?',
+    '6こを2人で同じ数ずつ分けるので、6 ÷ 2 = 3。1人分は3こです。' =>
+      'Vì chia đều 6 quả táo cho 2 người nên 6 ÷ 2 = 3. Mỗi người được 3 quả.',
+    'クッキー8こを4人に同じ数で分けます。どの式ですか。' =>
+      'Có 8 cái bánh quy. Chia đều cho 4 người. Phép tính nào đúng?',
+    '全部の8こを4人で分けるので、式は8 ÷ 4です。' =>
+      'Vì chia hết 8 cái bánh cho 4 người nên phép tính là 8 ÷ 4.',
+    'あめが12こあります。3人に同じ数で分けます。1人は何こですか。' =>
+      'Có 12 viên kẹo. Chia đều cho 3 người. Mỗi người được bao nhiêu?',
+    '12 ÷ 3 = 4。1人分は4こです。' => '12 ÷ 3 = 4. Mỗi người được 4.',
+    'カード15こを5人で分けます。15 ÷ □ の□は何ですか。' =>
+      'Có 15 tấm thẻ. Chia cho 5 người. Số nào điền vào □ trong 15 ÷ □?',
+    '分ける人数は5人なので、式は15 ÷ 5です。' => 'Vì số người là 5 nên phép tính là 15 ÷ 5.',
+    'みかん20こを4人に同じ数で分けます。どの式ですか。' =>
+      'Có 20 quả quýt. Chia đều cho 4 người. Phép tính nào đúng?',
+    '20は全部の数、4は分ける人数です。式は20 ÷ 4。答えは5こです。' =>
+      '20 là tổng, 4 là số người. Phép tính là 20 ÷ 4. Đáp án là 5.',
+    'いちごが6こあります。3人で分けます。全部で何こありますか。' =>
+      'Có 6 quả dâu. Chia cho 3 người. Tổng cộng có bao nhiêu quả?',
+    'はじめにあるいちごは6こです。6こを3人で分けるので、式は6 ÷ 3です。' =>
+      'Lúc đầu có 6 quả dâu. Vì chia 6 cho 3 người nên phép tính là 6 ÷ 3.',
+    'シール9こを3人に同じ数で分けます。合う図はどれですか。' =>
+      'Có 9 tem. Chia đều cho 3 người. Hình nào khớp?',
+    '3人に3こずつ入っている図が正しいです。' => 'Hình đúng là mỗi người trong 3 người có 3 tem.',
+    'えんぴつ18本を6人に同じ数で分けます。1人は何本ですか。' =>
+      'Có 18 cây bút chì. Chia đều cho 6 người. Mỗi người được bao nhiêu cây?',
+    '18 ÷ 6 = 3。1人分は3本です。' => '18 ÷ 6 = 3. Mỗi người được 3 cây bút chì.',
+    'クッキー8こを、1人に2こずつ分けます。何人分できますか。' =>
+      'Có 8 cái bánh. Mỗi người 2 cái thì đủ cho bao nhiêu người?',
+    '8 ÷ 2 = 4。2こずつのまとまりが4つできるので、4人です。' =>
+      '8 ÷ 2 = 4. Vì có 4 nhóm 2 cái nên đủ cho 4 người.',
+    'あめ12こを、1人に3こずつ分けます。どの式ですか。' =>
+      'Có 12 viên kẹo. Mỗi người 3 viên thì phép tính nào đúng?',
+    '全部の12こを、3こずつのまとまりにするので、12 ÷ 3です。' =>
+      'Vì gom 12 viên thành nhóm 3 nên phép tính là 12 ÷ 3.',
+    'カード15まいを、1人に5まいずつ分けます。何人分できますか。' =>
+      'Có 15 tấm thẻ. Mỗi người 5 tấm thì đủ cho bao nhiêu người?',
+    '15 ÷ 5 = 3。3人に分けられます。' => '15 ÷ 5 = 3. Chia được cho 3 người.',
+    'ビー玉18こを、1人に6こずつ分けます。18 ÷ □ の□は何ですか。' =>
+      'Có 18 viên bi. Mỗi người 6 viên thì số nào điền vào □ trong 18 ÷ □?',
+    '1人に6こずつ分けるので、式は18 ÷ 6です。' => 'Vì mỗi người được 6 nên phép tính là 18 ÷ 6.',
+    'シール24こを、1人に4こずつ分けます。どの式ですか。' =>
+      'Có 24 tem. Mỗi người 4 tem thì phép tính nào đúng?',
+    '全部の24こを、1人分の4こで分けるので、式は24 ÷ 4です。' =>
+      'Vì chia 24 tem thành phần 4 nên phép tính là 24 ÷ 4.',
+    'いちご6こを、1人に2こずつ分けます。何人分できますか。' =>
+      'Có 6 quả dâu. Mỗi người 2 quả thì đủ cho bao nhiêu người?',
+    '6こを2こずつのまとまりにすると、3つのまとまりができます。だから、3人に分けられます。' =>
+      'Gom 6 quả thành nhóm 2 thì được 3 nhóm. Vì vậy chia được cho 3 người.',
+    'あめ10こを、1人に2こずつ分けます。合う図はどれですか。' =>
+      'Có 10 viên kẹo. Mỗi người 2 viên thì hình nào khớp?',
+    '10 ÷ 2 = 5。2こずつの組が5つある図です。' => '10 ÷ 2 = 5. Đó là hình có 5 nhóm 2.',
+    'えんぴつ21本を、1人に3本ずつ分けます。何人分できますか。' =>
+      'Có 21 cây bút chì. Mỗi người 3 cây thì đủ cho bao nhiêu người?',
+    '21 ÷ 3 = 7。答えの単位は人です。' => '21 ÷ 3 = 7. Đơn vị đáp án là người.',
+    '0こを3人で分けます。1人分は何こですか。' =>
+      'Có 0 quả dâu. Chia cho 3 người thì mỗi người được bao nhiêu?',
+    '0こを分けるので、1人分も0こです。0 ÷ 3 = 0 です。' =>
+      'Vì chia 0 nên mỗi người được 0. 0 ÷ 3 = 0.',
+    '6こを1人で分けます。1人分は何こですか。' =>
+      'Có 6 quả dâu. Chia cho 1 người thì người đó được bao nhiêu?',
+    '6こを1人で分けるので、全部その人の分です。6 ÷ 1 = 6 です。' =>
+      'Vì chia cho 1 người nên tất cả thuộc người đó. 6 ÷ 1 = 6.',
+    '6こを6人で分けます。1人分は何こですか。' =>
+      'Có 6 quả dâu. Chia cho 6 người. Mỗi người được bao nhiêu?',
+    '6こを6人で同じ数ずつ分けると、1人分は1こです。6 ÷ 6 = 1 です。' =>
+      'Chia đều 6 cho 6 người thì mỗi người được 1. 6 ÷ 6 = 1.',
+    'あめが0こです。4人で分けます。どの式ですか。' =>
+      'Có 0 viên kẹo. Chia cho 4 người. Phép tính nào đúng?',
+    '全部の数が0こなので、式は0 ÷ 4です。0でわる式は選びません。' =>
+      'Vì tổng là 0 nên phép tính là 0 ÷ 4. Không chọn phép chia cho 0.',
+    '9こを1人で分けます。1人分は何こですか。' =>
+      'Có 9 món. Chia cho 1 người thì người đó được bao nhiêu?',
+    '1人で分けるので、9こ全部がその人の分です。9 ÷ 1 = 9 です。' =>
+      'Vì chia cho 1 người nên cả 9 món thuộc người đó. 9 ÷ 1 = 9.',
+    '8こを8人で分けます。1人分は何こですか。' =>
+      'Có 8 món. Chia cho 8 người. Mỗi người được bao nhiêu?',
+    '8こを8人で分けると、1人分は1こです。8 ÷ 8 = 1 です。' =>
+      'Chia 8 cho 8 người thì mỗi người được 1. 8 ÷ 8 = 1.',
+    '7を7でわります。答えは何ですか。' => 'Chia 7 cho 7. Đáp án là bao nhiêu?',
+    '同じ数でわると、答えは1です。7 ÷ 7 = 1 です。' =>
+      'Chia một số cho chính nó thì đáp án là 1. 7 ÷ 7 = 1.',
+    '6 ÷ 1 = 6 の1は、どんな数ですか。' => 'Trong 6 ÷ 1 = 6, số 1 đại diện cho gì?',
+    '6 ÷ 1 = 6 の1は、分ける人数です。1人で分けるので、1人分は6こです。' =>
+      'Trong 6 ÷ 1 = 6, số 1 là số người. Vì chia cho 1 người nên người đó được 6.',
+    '6を0でわることについて、正しいものを選びます。' => 'Chọn câu đúng về việc chia 6 cho 0.',
+    '0人には分けられないので、6 ÷ 0 の答えはありません。' =>
+      'Không thể chia cho 0 người nên 6 ÷ 0 không có đáp án.',
+    '24 ÷ 6 の答えを、かけ算で見つけます。どのかけ算を使いますか。' =>
+      'Tìm đáp án 24 ÷ 6 bằng phép nhân. Dùng phép nhân nào?',
+    '6 × 4 = 24だから、24 ÷ 6 = 4です。' => 'Vì 6 × 4 = 24 nên 24 ÷ 6 = 4.',
+    '18 ÷ 3 と 3 × □ = 18 を見ます。□に入る数はどれですか。' =>
+      'Nhìn 18 ÷ 3 và 3 × □ = 18. Số nào điền vào □?',
+    '□には同じ6が入ります。18 ÷ 3 = 6、3 × 6 = 18です。' =>
+      'Cùng số 6 điền vào cả hai chỗ. 18 ÷ 3 = 6 và 3 × 6 = 18.',
+    'りんご21こを7人で同じ数ずつ分けます。1人分は何こですか。' =>
+      'Có 21 quả táo. Chia đều cho 7 người. Mỗi người được bao nhiêu quả?',
+    '7 × 3 = 21だから、21 ÷ 7 = 3です。1人分は3こです。' =>
+      'Vì 7 × 3 = 21 nên 21 ÷ 7 = 3. Mỗi người được 3 quả táo.',
+    'わり算とかけ算のつながりを、図と式で見ます。' =>
+      'Hãy xem mối liên hệ giữa phép chia và phép nhân bằng hình và phép tính.',
+    'かけ算を使って、□に入る数を見つけます。' => 'Dùng phép nhân để tìm số điền vào □.',
+    'かけ算を使うと、わり算の答えを見つけられます。' => 'Nhờ phép nhân, ta tìm được đáp án phép chia.',
+    '36 ÷ 6 の答えを、かけ算で見つけます。' => 'Tìm đáp án 36 ÷ 6 bằng phép nhân.',
+    '6 × 6 = 36だから、36 ÷ 6 = 6です。' => 'Vì 6 × 6 = 36 nên 36 ÷ 6 = 6.',
+    '28 ÷ 4 と 4 × □ = 28 を見ます。' => 'Nhìn 28 ÷ 4 và 4 × □ = 28.',
+    '4 × 7 = 28だから、28 ÷ 4 = 7です。' => 'Vì 4 × 7 = 28 nên 28 ÷ 4 = 7.',
+    _ => null,
+  };
 }
 
 String? _portugueseText(String source) {

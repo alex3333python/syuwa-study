@@ -49,10 +49,18 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             native: {
               AppLanguage.portuguese:
                   'Dividimos 5 balas em grupos de 2. Quantas balas sobram?',
+              AppLanguage.tagalog:
+                  'Hatiin ang 5 kendi nang tig-2. Ilang kendi ang matitira?',
+              AppLanguage.vietnamese:
+                  'Chia 5 viên kẹo thành nhóm 2. Còn lại bao nhiêu viên?',
             },
             nativeExplanation: {
               AppLanguage.portuguese:
                   'Conseguimos fazer 2 grupos de 2, e sobra 1 bala.',
+              AppLanguage.tagalog:
+                  'Nakagawa tayo ng 2 grupong tig-2, at 1 kendi ang natira.',
+              AppLanguage.vietnamese:
+                  'Làm được 2 nhóm 2, còn dư 1 viên kẹo.',
             },
             equationHint: '5 ÷ 2 = 2 あまり 1',
             visualHint: '2こずつのまとまりを作り、残った1こを見る。',
@@ -79,10 +87,18 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             native: {
               AppLanguage.portuguese:
                   'Dividimos 10 biscoitos em grupos de 4. Quantos biscoitos sobram?',
+              AppLanguage.tagalog:
+                  'Hatiin ang 10 biskwit nang tig-4. Ilang biskwit ang matitira?',
+              AppLanguage.vietnamese:
+                  'Chia 10 cái bánh thành nhóm 4. Còn lại bao nhiêu cái?',
             },
             nativeExplanation: {
               AppLanguage.portuguese:
                   'Conseguimos fazer 2 grupos de 4, e sobram 2 biscoitos.',
+              AppLanguage.tagalog:
+                  'Nakagawa tayo ng 2 grupong tig-4, at 2 biskwit ang natira.',
+              AppLanguage.vietnamese:
+                  'Làm được 2 nhóm 4, còn dư 2 cái bánh.',
             },
             equationHint: '10 ÷ 4 = 2 あまり 2',
             visualType: QuestionVisualType.divisionRemainder,
@@ -112,10 +128,16 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             tags: ['select_word_meaning', 'vocabulary'],
             native: {
               AppLanguage.portuguese: 'O que significa “resto” na divisão?',
+              AppLanguage.tagalog: 'Ano ang ibig sabihin ng “sobra” sa dibisyon?',
+              AppLanguage.vietnamese: '「Số dư」trong phép chia nghĩa là gì?',
             },
             nativeExplanation: {
               AppLanguage.portuguese:
                   'O resto é o número que sobra depois de dividir.',
+              AppLanguage.tagalog:
+                  'Ang sobra ay ang numerong natitira pagkatapos maghati.',
+              AppLanguage.vietnamese:
+                  'Số dư là số còn lại sau khi chia.',
             },
           ),
         ],
@@ -142,10 +164,18 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             native: {
               AppLanguage.portuguese:
                   'Se dividirmos 12 biscoitos em grupos de 4, sobra algum biscoito?',
+              AppLanguage.tagalog:
+                  'Kung hatiin ang 12 biskwit nang tig-4, may matitira ba?',
+              AppLanguage.vietnamese:
+                  'Nếu chia 12 cái bánh thành nhóm 4 thì còn dư không?',
             },
             nativeExplanation: {
               AppLanguage.portuguese:
                   'Fazemos 3 grupos de 4 biscoitos. Não sobra nenhum biscoito.',
+              AppLanguage.tagalog:
+                  '3 grupong tig-4 na biskwit. Walang natitirang biskwit.',
+              AppLanguage.vietnamese:
+                  'Làm 3 nhóm 4 cái bánh. Không còn cái nào.',
             },
             equationHint: '12 ÷ 4 = 3',
             visualType: QuestionVisualType.divisionSharing,
@@ -172,10 +202,18 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             native: {
               AppLanguage.portuguese:
                   'Se dividirmos 14 balas em grupos de 4, sobra alguma bala?',
+              AppLanguage.tagalog:
+                  'Kung hatiin ang 14 kendi nang tig-4, may matitira ba?',
+              AppLanguage.vietnamese:
+                  'Nếu chia 14 viên kẹo thành nhóm 4 thì còn dư không?',
             },
             nativeExplanation: {
               AppLanguage.portuguese:
                   'Fazemos 3 grupos de 4 balas, e sobram 2 balas.',
+              AppLanguage.tagalog:
+                  '3 grupong tig-4 na kendi, at 2 kendi ang natira.',
+              AppLanguage.vietnamese:
+                  'Làm 3 nhóm 4 viên kẹo, còn dư 2 viên.',
             },
             equationHint: '14 ÷ 4 = 3 あまり 2',
             visualType: QuestionVisualType.divisionRemainder,
@@ -201,10 +239,18 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             native: {
               AppLanguage.portuguese:
                   'Dividimos 13 adesivos em grupos de 5. Quantos adesivos sobram?',
+              AppLanguage.tagalog:
+                  'Hatiin ang 13 sticker nang tig-5. Ilang sticker ang matitira?',
+              AppLanguage.vietnamese:
+                  'Chia 13 tem thành nhóm 5. Còn lại bao nhiêu tem?',
             },
             nativeExplanation: {
               AppLanguage.portuguese:
                   'Conseguimos fazer 2 grupos de 5, e sobram 3 adesivos.',
+              AppLanguage.tagalog:
+                  'Nakagawa tayo ng 2 grupong tig-5, at 3 sticker ang natira.',
+              AppLanguage.vietnamese:
+                  'Làm được 2 nhóm 5, còn dư 3 tem.',
             },
             equationHint: '13 ÷ 5 = 2 あまり 3',
             visualType: QuestionVisualType.divisionRemainder,
@@ -260,6 +306,10 @@ final List<Lesson> grade3DivisionRemainderLessons = [
         native: {
           AppLanguage.portuguese:
               'O número que sobra depois de dividir é chamado de resto.',
+          AppLanguage.tagalog:
+              'Ang numerong natitira pagkatapos maghati ay tinatawag na sobra.',
+          AppLanguage.vietnamese:
+              'Số còn lại sau khi chia được gọi là số dư.',
         },
       ),
     ],
@@ -641,10 +691,18 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             native: {
               AppLanguage.portuguese:
                   'Com 17 biscoitos, fazemos sacos com 5 biscoitos cada. Quantos sacos cheios conseguimos fazer?',
+              AppLanguage.tagalog:
+                  'Sa 17 biskwit, gumagawa tayo ng bag na tig-5. Ilang punong bag ang magagawa?',
+              AppLanguage.vietnamese:
+                  'Với 17 cái bánh, làm túi đựng 5 cái. Được bao nhiêu túi đầy?',
             },
             nativeExplanation: {
               AppLanguage.portuguese:
                   '17 ÷ 5 = 3, resto 2. Conseguimos fazer 3 sacos cheios.',
+              AppLanguage.tagalog:
+                  '17 ÷ 5 = 3, sobra 2. 3 punong bag ang nagawa.',
+              AppLanguage.vietnamese:
+                  '17 ÷ 5 = 3 dư 2. Làm được 3 túi đầy.',
             },
             equationHint: '17 ÷ 5 = 3 あまり 2',
             visualType: QuestionVisualType.divisionRemainder,
@@ -673,10 +731,18 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             native: {
               AppLanguage.portuguese:
                   '17 pessoas entram em carros com 5 pessoas em cada carro. Quantos carros são necessários?',
+              AppLanguage.tagalog:
+                  '17 tao ang sasakay sa kotse na tig-5. Ilang kotse ang kailangan?',
+              AppLanguage.vietnamese:
+                  '17 người lên xe 5 chỗ. Cần bao nhiêu xe?',
             },
             nativeExplanation: {
               AppLanguage.portuguese:
                   '17 ÷ 5 = 3, resto 2. Como ainda sobram 2 pessoas, é necessário mais 1 carro.',
+              AppLanguage.tagalog:
+                  '17 ÷ 5 = 3, sobra 2. Dahil 2 tao pa ang natira, kailangan pa ng 1 kotse.',
+              AppLanguage.vietnamese:
+                  '17 ÷ 5 = 3 dư 2. Còn 2 người nên cần thêm 1 xe.',
             },
             equationHint: '17 ÷ 5 = 3 あまり 2',
             thinkingHint: 'あまった人も乗る必要があります。',
@@ -704,10 +770,18 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             native: {
               AppLanguage.portuguese:
                   'Cortamos uma fita de 17 cm em pedaços de 5 cm. Quantos pedaços de 5 cm conseguimos fazer?',
+              AppLanguage.tagalog:
+                  'Hatiin ang lasong 17 cm nang tig-5 cm. Ilang pirasong 5 cm ang magagawa?',
+              AppLanguage.vietnamese:
+                  'Cắt ruy-băng 17 cm thành đoạn 5 cm. Được bao nhiêu đoạn 5 cm?',
             },
             nativeExplanation: {
               AppLanguage.portuguese:
                   '17 ÷ 5 = 3, resto 2. Os 2 cm que sobram não chegam a 5 cm, então são 3 pedaços.',
+              AppLanguage.tagalog:
+                  '17 ÷ 5 = 3, sobra 2. Ang 2 cm ay kulang sa 5 cm, kaya 3 piraso.',
+              AppLanguage.vietnamese:
+                  '17 ÷ 5 = 3 dư 2. 2 cm không đủ 5 cm nên được 3 đoạn.',
             },
             equationHint: '17 ÷ 5 = 3 あまり 2',
             visualType: QuestionVisualType.divisionRemainder,
@@ -743,10 +817,18 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             native: {
               AppLanguage.portuguese:
                   'Se 22 pessoas entram em carros com 4 pessoas em cada carro, quantos carros são necessários?',
+              AppLanguage.tagalog:
+                  'Kung 22 tao ang sasakay sa kotse na tig-4, ilang kotse ang kailangan?',
+              AppLanguage.vietnamese:
+                  'Nếu 22 người lên xe 4 chỗ thì cần bao nhiêu xe?',
             },
             nativeExplanation: {
               AppLanguage.portuguese:
                   '22 ÷ 4 = 5, resto 2. Como ainda sobram 2 pessoas, é necessário mais 1 carro.',
+              AppLanguage.tagalog:
+                  '22 ÷ 4 = 5, sobra 2. Dahil 2 tao pa ang natira, kailangan pa ng 1 kotse.',
+              AppLanguage.vietnamese:
+                  '22 ÷ 4 = 5 dư 2. Còn 2 người nên cần thêm 1 xe.',
             },
             equationHint: '22 ÷ 4 = 5 あまり 2',
             visualType: QuestionVisualType.divisionRemainder,
@@ -774,10 +856,18 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             native: {
               AppLanguage.portuguese:
                   'Com 22 maçãs, fazemos sacos com 4 maçãs cada. Quantos sacos cheios conseguimos fazer?',
+              AppLanguage.tagalog:
+                  'Sa 22 mansanas, gumagawa tayo ng bag na tig-4. Ilang punong bag ang magagawa?',
+              AppLanguage.vietnamese:
+                  'Với 22 quả táo, làm túi đựng 4 quả. Được bao nhiêu túi đầy?',
             },
             nativeExplanation: {
               AppLanguage.portuguese:
                   '22 ÷ 4 = 5, resto 2. Conseguimos fazer 5 sacos cheios.',
+              AppLanguage.tagalog:
+                  '22 ÷ 4 = 5, sobra 2. 5 punong bag ang nagawa.',
+              AppLanguage.vietnamese:
+                  '22 ÷ 4 = 5 dư 2. Làm được 5 túi đầy.',
             },
             equationHint: '22 ÷ 4 = 5 あまり 2',
             visualType: QuestionVisualType.divisionRemainder,
@@ -804,10 +894,18 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             native: {
               AppLanguage.portuguese:
                   'Cortamos uma corda de 22 cm em pedaços de 5 cm. Quantos pedaços de 5 cm conseguimos fazer?',
+              AppLanguage.tagalog:
+                  'Hatiin ang lubid na 22 cm nang tig-5 cm. Ilang pirasong 5 cm ang magagawa?',
+              AppLanguage.vietnamese:
+                  'Cắt dây 22 cm thành đoạn 5 cm. Được bao nhiêu đoạn 5 cm?',
             },
             nativeExplanation: {
               AppLanguage.portuguese:
                   '22 ÷ 5 = 4, resto 2. Os 2 cm que sobram não chegam a 5 cm, então são 4 pedaços.',
+              AppLanguage.tagalog:
+                  '22 ÷ 5 = 4, sobra 2. Ang 2 cm ay kulang sa 5 cm, kaya 4 piraso.',
+              AppLanguage.vietnamese:
+                  '22 ÷ 5 = 4 dư 2. 2 cm không đủ 5 cm nên được 4 đoạn.',
             },
             equationHint: '22 ÷ 5 = 4 あまり 2',
             visualType: QuestionVisualType.divisionRemainder,
@@ -856,6 +954,10 @@ final List<Lesson> grade3DivisionRemainderLessons = [
         native: {
           AppLanguage.portuguese:
               'Quando aparece resto, decidimos o que fazer olhando a situação do problema.',
+          AppLanguage.tagalog:
+              'Kapag may sobra, tinitingnan ang sitwasyon ng problema para magpasya.',
+          AppLanguage.vietnamese:
+              'Khi có số dư, ta nhìn tình huống bài toán để quyết định.',
         },
       ),
     ],
@@ -1077,7 +1179,7 @@ Question _q({
     unitId: 'grade3_division_remainder',
     promptSchoolJa: school,
     promptEasyJa: easy,
-    promptNative: native,
+    promptNative: native.isNotEmpty ? native : _nativeText(easy),
     choices: choices,
     questionTextRuby: questionTextRuby,
     choicesRuby: choicesRuby,
@@ -1092,7 +1194,9 @@ Question _q({
     languagePoint: languagePoint,
     languagePointRuby: languagePointRuby,
     vocabularyEntries: vocabularyEntries,
-    explanationNative: nativeExplanation,
+    explanationNative: nativeExplanation.isNotEmpty
+        ? nativeExplanation
+        : _nativeText(explanation),
     tags: ['grade3', 'math', 'division', 'remainder', ...tags],
     equationHint: equationHint,
     thinkingHint: thinkingHint,
@@ -1192,5 +1296,472 @@ const _remainderVocabulary = [
 ];
 
 Map<AppLanguage, String> _nativeText(String fallback) {
-  return const {};
+  return switch (fallback) {
+    '13-12=1 なので、13÷4=3 あまり1です。' => {
+      AppLanguage.portuguese: 'Como 13 − 12 = 1, então 13 ÷ 4 = 3 resto 1.',
+      AppLanguage.tagalog: 'Dahil 13 − 12 = 1, kaya 13 ÷ 4 = 3 sobra 1.',
+      AppLanguage.vietnamese: 'Vì 13 − 12 = 1 nên 13 ÷ 4 = 3 dư 1.',
+    },
+    '13を4でわります。4×3=12。残りはいくつですか。' => {
+      AppLanguage.portuguese: 'Dividimos 13 por 4. 4 × 3 = 12. Quanto sobra?',
+      AppLanguage.tagalog: 'Hatiin ang 13 sa 4. 4 × 3 = 12. Ilan ang natira?',
+      AppLanguage.vietnamese: 'Chia 13 cho 4. 4 × 3 = 12. Còn lại bao nhiêu?',
+    },
+    '14を3でわります。答えはどれですか。' => {
+      AppLanguage.portuguese: 'Dividimos 14 por 3. Qual é a resposta?',
+      AppLanguage.tagalog: 'Hatiin ang 14 sa 3. Ano ang sagot?',
+      AppLanguage.vietnamese: 'Chia 14 cho 3. Đáp án nào đúng?',
+    },
+    '17cmを5cmずつに切ります。5cmに足りない残りは数えません。' => {
+      AppLanguage.portuguese: 'Cortamos 17 cm de 5 em 5 cm. O resto menor que 5 cm não conta.',
+      AppLanguage.tagalog: 'Hatiin ang 17 cm nang tig-5 cm. Hindi binibilang ang natirang kulang sa 5 cm.',
+      AppLanguage.vietnamese: 'Cắt 17 cm thành từng đoạn 5 cm. Phần còn lại không đủ 5 cm thì không tính.',
+    },
+    '17÷5=3 あまり2。2人が残るので、もう1台必要です。' => {
+      AppLanguage.portuguese: '17 ÷ 5 = 3 resto 2. Como 2 pessoas sobram, precisamos de mais 1 carro.',
+      AppLanguage.tagalog: '17 ÷ 5 = 3 sobra 2. Dahil 2 tao ang natira, kailangan pa ng 1 kotse.',
+      AppLanguage.vietnamese: '17 ÷ 5 = 3 dư 2. Còn 2 người nên cần thêm 1 xe.',
+    },
+    '17÷5=3 あまり2。3ふくろできて、2こあまります。' => {
+      AppLanguage.portuguese: '17 ÷ 5 = 3 resto 2. Dá para 3 sacos e sobram 2.',
+      AppLanguage.tagalog: '17 ÷ 5 = 3 sobra 2. 3 bag ang magagawa at 2 ang matitira.',
+      AppLanguage.vietnamese: '17 ÷ 5 = 3 dư 2. Làm được 3 túi và còn 2.',
+    },
+    '17÷5=3 あまり2。5こ入りの袋は3袋できます。' => {
+      AppLanguage.portuguese: '17 ÷ 5 = 3 resto 2. Dá para 3 sacos de 5.',
+      AppLanguage.tagalog: '17 ÷ 5 = 3 sobra 2. 3 bag na tig-5 ang magagawa.',
+      AppLanguage.vietnamese: '17 ÷ 5 = 3 dư 2. Làm được 3 túi loại 5 cái.',
+    },
+    '17÷5=3 あまり2。あまり2cmは5cmに足りないので、3本です。' => {
+      AppLanguage.portuguese: '17 ÷ 5 = 3 resto 2. Os 2 cm não chegam a 5 cm, então são 3 pedaços.',
+      AppLanguage.tagalog: '17 ÷ 5 = 3 sobra 2. Ang 2 cm ay kulang sa 5 cm, kaya 3 piraso.',
+      AppLanguage.vietnamese: '17 ÷ 5 = 3 dư 2. 2 cm không đủ 5 cm nên được 3 đoạn.',
+    },
+    '17を5でわると、3こずつ作れて、何こ残りますか。' => {
+      AppLanguage.portuguese: 'Ao dividir 17 por 5, formamos grupos de 3. Quantos sobram?',
+      AppLanguage.tagalog: 'Kung hatiin ang 17 sa 5, makakagawa ng tig-3. Ilan ang matitira?',
+      AppLanguage.vietnamese: 'Chia 17 cho 5 thì làm được nhóm 3. Còn lại bao nhiêu?',
+    },
+    '19÷6=3 あまり1。3人に配れて、1まいあまります。' => {
+      AppLanguage.portuguese: '19 ÷ 6 = 3 resto 1. Dá para 3 pessoas e sobra 1 carta.',
+      AppLanguage.tagalog: '19 ÷ 6 = 3 sobra 1. Naipamahagi sa 3 tao at 1 ang natira.',
+      AppLanguage.vietnamese: '19 ÷ 6 = 3 dư 1. Phát được cho 3 người và còn 1 tấm.',
+    },
+    '20を6でわります。答えはどれですか。' => {
+      AppLanguage.portuguese: 'Dividimos 20 por 6. Qual é a resposta?',
+      AppLanguage.tagalog: 'Hatiin ang 20 sa 6. Ano ang sagot?',
+      AppLanguage.vietnamese: 'Chia 20 cho 6. Đáp án nào đúng?',
+    },
+    '22÷4=5 あまり2。2人が残るので、もう1台必要です。' => {
+      AppLanguage.portuguese: '22 ÷ 4 = 5 resto 2. Como 2 pessoas sobram, precisamos de mais 1 carro.',
+      AppLanguage.tagalog: '22 ÷ 4 = 5 sobra 2. Dahil 2 tao ang natira, kailangan pa ng 1 kotse.',
+      AppLanguage.vietnamese: '22 ÷ 4 = 5 dư 2. Còn 2 người nên cần thêm 1 xe.',
+    },
+    '22÷4=5 あまり2。4こ入りの袋は5袋できます。' => {
+      AppLanguage.portuguese: '22 ÷ 4 = 5 resto 2. Dá para 5 sacos de 4.',
+      AppLanguage.tagalog: '22 ÷ 4 = 5 sobra 2. 5 bag na tig-4 ang magagawa.',
+      AppLanguage.vietnamese: '22 ÷ 4 = 5 dư 2. Làm được 5 túi loại 4 cái.',
+    },
+    '22÷5=4 あまり2。あまり2cmは5cmに足りないので、4本です。' => {
+      AppLanguage.portuguese: '22 ÷ 5 = 4 resto 2. Os 2 cm não chegam a 5 cm, então são 4 pedaços.',
+      AppLanguage.tagalog: '22 ÷ 5 = 4 sobra 2. Ang 2 cm ay kulang sa 5 cm, kaya 4 piraso.',
+      AppLanguage.vietnamese: '22 ÷ 5 = 4 dư 2. 2 cm không đủ 5 cm nên được 4 đoạn.',
+    },
+    '23-20=3 なので、23÷4=5 あまり3です。' => {
+      AppLanguage.portuguese: 'Como 23 − 20 = 3, então 23 ÷ 4 = 5 resto 3.',
+      AppLanguage.tagalog: 'Dahil 23 − 20 = 3, kaya 23 ÷ 4 = 5 sobra 3.',
+      AppLanguage.vietnamese: 'Vì 23 − 20 = 3 nên 23 ÷ 4 = 5 dư 3.',
+    },
+    '23÷4=5 あまり3。1人分は5こで、3こあまります。' => {
+      AppLanguage.portuguese: '23 ÷ 4 = 5 resto 3. Cada pessoa recebe 5 e sobram 3.',
+      AppLanguage.tagalog: '23 ÷ 4 = 5 sobra 3. 5 ang sa bawat isa at 3 ang natira.',
+      AppLanguage.vietnamese: '23 ÷ 4 = 5 dư 3. Mỗi người được 5, còn 3.',
+    },
+    '29÷6=4 あまり5。5人が残るので、車は5台必要です。' => {
+      AppLanguage.portuguese: '29 ÷ 6 = 4 resto 5. Como 5 pessoas sobram, precisamos de 5 carros.',
+      AppLanguage.tagalog: '29 ÷ 6 = 4 sobra 5. Dahil 5 tao ang natira, 5 kotse ang kailangan.',
+      AppLanguage.vietnamese: '29 ÷ 6 = 4 dư 5. Còn 5 người nên cần 5 xe.',
+    },
+    '29÷6=4 あまり5。6こ入りの袋は4袋できます。' => {
+      AppLanguage.portuguese: '29 ÷ 6 = 4 resto 5. Dá para 4 sacos de 6.',
+      AppLanguage.tagalog: '29 ÷ 6 = 4 sobra 5. 4 bag na tig-6 ang magagawa.',
+      AppLanguage.vietnamese: '29 ÷ 6 = 4 dư 5. Làm được 4 túi loại 6 cái.',
+    },
+    '29÷6=4 あまり5。あまり5cmは6cmに足りないので、4本です。' => {
+      AppLanguage.portuguese: '29 ÷ 6 = 4 resto 5. Os 5 cm não chegam a 6 cm, então são 4 pedaços.',
+      AppLanguage.tagalog: '29 ÷ 6 = 4 sobra 5. Ang 5 cm ay kulang sa 6 cm, kaya 4 piraso.',
+      AppLanguage.vietnamese: '29 ÷ 6 = 4 dư 5. 5 cm không đủ 6 cm nên được 4 đoạn.',
+    },
+    '2こずつのまとまりが2つできて、1こ残ります。' => {
+      AppLanguage.portuguese: 'Formamos 2 grupos de 2 e sobra 1.',
+      AppLanguage.tagalog: '2 grupong tig-2 ang nagawa at 1 ang natira.',
+      AppLanguage.vietnamese: 'Làm được 2 nhóm 2 cái và còn 1.',
+    },
+    '31÷7=4 あまり3。1人分は4こで、3こあまります。' => {
+      AppLanguage.portuguese: '31 ÷ 7 = 4 resto 3. Cada pessoa recebe 4 e sobram 3.',
+      AppLanguage.tagalog: '31 ÷ 7 = 4 sobra 3. 4 ang sa bawat isa at 3 ang natira.',
+      AppLanguage.vietnamese: '31 ÷ 7 = 4 dư 3. Mỗi người được 4, còn 3.',
+    },
+    '34を5でわります。答えはどれですか。' => {
+      AppLanguage.portuguese: 'Dividimos 34 por 5. Qual é a resposta?',
+      AppLanguage.tagalog: 'Hatiin ang 34 sa 5. Ano ang sagot?',
+      AppLanguage.vietnamese: 'Chia 34 cho 5. Đáp án nào đúng?',
+    },
+    '38÷5=7 あまり3。3人が残るので、もう1グループ必要です。' => {
+      AppLanguage.portuguese: '38 ÷ 5 = 7 resto 3. Como 3 pessoas sobram, precisamos de mais 1 grupo.',
+      AppLanguage.tagalog: '38 ÷ 5 = 7 sobra 3. Dahil 3 tao ang natira, kailangan pa ng 1 grupo.',
+      AppLanguage.vietnamese: '38 ÷ 5 = 7 dư 3. Còn 3 người nên cần thêm 1 nhóm.',
+    },
+    '3×4=12、14-12=2 なので、4 あまり2です。' => {
+      AppLanguage.portuguese: 'Como 3 × 4 = 12 e 14 − 12 = 2, a resposta é 4 resto 2.',
+      AppLanguage.tagalog: 'Dahil 3 × 4 = 12 at 14 − 12 = 2, ang sagot ay 4 sobra 2.',
+      AppLanguage.vietnamese: 'Vì 3 × 4 = 12 và 14 − 12 = 2 nên đáp án là 4 dư 2.',
+    },
+    '4×5=20。23から20をひくといくつですか。' => {
+      AppLanguage.portuguese: '4 × 5 = 20. Quanto é 23 menos 20?',
+      AppLanguage.tagalog: '4 × 5 = 20. Magkano ang 23 minus 20?',
+      AppLanguage.vietnamese: '4 × 5 = 20. 23 trừ 20 bằng bao nhiêu?',
+    },
+    '4こずつのまとまりが2つできて、2こ残ります。' => {
+      AppLanguage.portuguese: 'Formamos 2 grupos de 4 e sobram 2.',
+      AppLanguage.tagalog: '2 grupong tig-4 ang nagawa at 2 ang natira.',
+      AppLanguage.vietnamese: 'Làm được 2 nhóm 4 cái và còn 2.',
+    },
+    '4こ入った袋を作ります。いっぱいの袋はいくつできますか。' => {
+      AppLanguage.portuguese: 'Fazemos sacos de 4. Quantos sacos cheios dá para fazer?',
+      AppLanguage.tagalog: 'Gumagawa tayo ng bag na tig-4. Ilang punong bag ang magagawa?',
+      AppLanguage.vietnamese: 'Làm túi đựng 4 cái. Được bao nhiêu túi đầy?',
+    },
+    '4人乗りの車に22人が乗ります。みんなが乗るには何台いりますか。' => {
+      AppLanguage.portuguese: 'Um carro leva 4 pessoas e há 22 pessoas. Quantos carros precisamos para todos?',
+      AppLanguage.tagalog: '4 tao ang kasya sa isang kotse at 22 ang tao. Ilang kotse para masakyan lahat?',
+      AppLanguage.vietnamese: 'Xe 4 chỗ, có 22 người. Cần bao nhiêu xe để mọi người lên?',
+    },
+    '5cmに足りない残りは数えません。何本できますか。' => {
+      AppLanguage.portuguese: 'O resto menor que 5 cm não conta. Quantos pedaços dá para fazer?',
+      AppLanguage.tagalog: 'Hindi binibilang ang natirang kulang sa 5 cm. Ilang piraso ang magagawa?',
+      AppLanguage.vietnamese: 'Phần còn lại không đủ 5 cm thì không tính. Được bao nhiêu đoạn?',
+    },
+    '5×3=15、17-15=2 なので、あまりは2です。' => {
+      AppLanguage.portuguese: 'Como 5 × 3 = 15 e 17 − 15 = 2, o resto é 2.',
+      AppLanguage.tagalog: 'Dahil 5 × 3 = 15 at 17 − 15 = 2, ang sobra ay 2.',
+      AppLanguage.vietnamese: 'Vì 5 × 3 = 15 và 17 − 15 = 2 nên số dư là 2.',
+    },
+    '5×6=30、34-30=4 なので、6 あまり4です。' => {
+      AppLanguage.portuguese: 'Como 5 × 6 = 30 e 34 − 30 = 4, a resposta é 6 resto 4.',
+      AppLanguage.tagalog: 'Dahil 5 × 6 = 30 at 34 − 30 = 4, ang sagot ay 6 sobra 4.',
+      AppLanguage.vietnamese: 'Vì 5 × 6 = 30 và 34 − 30 = 4 nên đáp án là 6 dư 4.',
+    },
+    '5こずつのまとまりが2つできて、3こ残ります。' => {
+      AppLanguage.portuguese: 'Formamos 2 grupos de 5 e sobram 3.',
+      AppLanguage.tagalog: '2 grupong tig-5 ang nagawa at 3 ang natira.',
+      AppLanguage.vietnamese: 'Làm được 2 nhóm 5 cái và còn 3.',
+    },
+    '5こ入った袋を作ります。いっぱいの袋はいくつできますか。' => {
+      AppLanguage.portuguese: 'Fazemos sacos de 5. Quantos sacos cheios dá para fazer?',
+      AppLanguage.tagalog: 'Gumagawa tayo ng bag na tig-5. Ilang punong bag ang magagawa?',
+      AppLanguage.vietnamese: 'Làm túi đựng 5 cái. Được bao nhiêu túi đầy?',
+    },
+    '5人ずつのグループに38人が入ります。残った人も入るには、何グループ必要ですか。' => {
+      AppLanguage.portuguese: 'Grupos de 5 pessoas para 38 pessoas. Quantos grupos precisamos para incluir quem sobrou?',
+      AppLanguage.tagalog: 'Grupo-grupo ng tig-5 para sa 38 tao. Ilang grupo para maisama ang natira?',
+      AppLanguage.vietnamese: 'Nhóm 5 người cho 38 người. Cần bao nhiêu nhóm để người còn lại cũng vào?',
+    },
+    '5人乗りの車に17人が乗ります。みんなが乗るには何台いりますか。' => {
+      AppLanguage.portuguese: 'Um carro leva 5 pessoas e há 17 pessoas. Quantos carros precisamos para todos?',
+      AppLanguage.tagalog: '5 tao ang kasya sa isang kotse at 17 ang tao. Ilang kotse para masakyan lahat?',
+      AppLanguage.vietnamese: 'Xe 5 chỗ, có 17 người. Cần bao nhiêu xe để mọi người lên?',
+    },
+    '6cmに足りない残りは数えません。何本できますか。' => {
+      AppLanguage.portuguese: 'O resto menor que 6 cm não conta. Quantos pedaços dá para fazer?',
+      AppLanguage.tagalog: 'Hindi binibilang ang natirang kulang sa 6 cm. Ilang piraso ang magagawa?',
+      AppLanguage.vietnamese: 'Phần còn lại không đủ 6 cm thì không tính. Được bao nhiêu đoạn?',
+    },
+    '6×3=18、20-18=2 なので、3 あまり2です。' => {
+      AppLanguage.portuguese: 'Como 6 × 3 = 18 e 20 − 18 = 2, a resposta é 3 resto 2.',
+      AppLanguage.tagalog: 'Dahil 6 × 3 = 18 at 20 − 18 = 2, ang sagot ay 3 sobra 2.',
+      AppLanguage.vietnamese: 'Vì 6 × 3 = 18 và 20 − 18 = 2 nên đáp án là 3 dư 2.',
+    },
+    '6こ入りの袋を作ります。いっぱいの袋はいくつできますか。' => {
+      AppLanguage.portuguese: 'Fazemos sacos de 6. Quantos sacos cheios dá para fazer?',
+      AppLanguage.tagalog: 'Gumagawa tayo ng bag na tig-6. Ilang punong bag ang magagawa?',
+      AppLanguage.vietnamese: 'Làm túi đựng 6 cái. Được bao nhiêu túi đầy?',
+    },
+    '6人乗りの車に29人が乗ります。みんなが乗るには何台いりますか。' => {
+      AppLanguage.portuguese: 'Um carro leva 6 pessoas e há 29 pessoas. Quantos carros precisamos para todos?',
+      AppLanguage.tagalog: '6 tao ang kasya sa isang kotse at 29 ang tao. Ilang kotse para masakyan lahat?',
+      AppLanguage.vietnamese: 'Xe 6 chỗ, có 29 người. Cần bao nhiêu xe để mọi người lên?',
+    },
+    '「あまり」は、どの数のことですか。' => {
+      AppLanguage.portuguese: 'O «resto» é qual número?',
+      AppLanguage.tagalog: 'Aling numero ang «sobra»?',
+      AppLanguage.vietnamese: '「Số dư」là số nào?',
+    },
+    '「ぴったり分けられる」は、どういうことですか。' => {
+      AppLanguage.portuguese: 'O que significa «dividir exatamente»?',
+      AppLanguage.tagalog: 'Ano ang ibig sabihin ng «pantay na mahahati»?',
+      AppLanguage.vietnamese: '「Chia vừa khít」nghĩa là gì?',
+    },
+    '「商」は、わり算の答えの大きい数です。「あまり」は残った数です。' => {
+      AppLanguage.portuguese: 'O quociente é o número grande da resposta. O resto é o que sobrou.',
+      AppLanguage.tagalog: 'Ang quotient ay ang malaking numero sa sagot. Ang sobra ay ang natirang numero.',
+      AppLanguage.vietnamese: 'Thương là số lớn trong đáp án phép chia. Số dư là số còn lại.',
+    },
+    'あまった人も乗る必要があるので、車を1台増やします。' => {
+      AppLanguage.portuguese: 'As pessoas que sobraram também precisam ir, então aumentamos 1 carro.',
+      AppLanguage.tagalog: 'Kailangan ding sumakay ang natirang tao, kaya dagdag tayo ng 1 kotse.',
+      AppLanguage.vietnamese: 'Người còn lại cũng cần lên xe nên thêm 1 xe.',
+    },
+    'あまり7は、わる数4より大きいです。もう1つまとまりを作れます。' => {
+      AppLanguage.portuguese: 'O resto 7 é maior que o divisor 4. Dá para formar mais um grupo.',
+      AppLanguage.tagalog: 'Mas malaki ang sobrang 7 kaysa panghating 4. Makakagawa pa ng isa pang grupo.',
+      AppLanguage.vietnamese: 'Số dư 7 lớn hơn số chia 4. Còn làm thêm được một nhóm.',
+    },
+    'あまり7は、わる数4より小さいですか。' => {
+      AppLanguage.portuguese: 'O resto 7 é menor que o divisor 4?',
+      AppLanguage.tagalog: 'Mas maliit ba ang sobrang 7 kaysa panghating 4?',
+      AppLanguage.vietnamese: 'Số dư 7 có nhỏ hơn số chia 4 không?',
+    },
+    'あまりがわる数以上なら、まだもう1つまとまりを作れます。' => {
+      AppLanguage.portuguese: 'Se o resto for maior ou igual ao divisor, ainda dá para formar mais um grupo.',
+      AppLanguage.tagalog: 'Kung ang sobra ay mas malaki o pareho sa panghati, makakagawa pa ng isa pang grupo.',
+      AppLanguage.vietnamese: 'Nếu số dư lớn hơn hoặc bằng số chia thì còn làm thêm được một nhóm.',
+    },
+    'あまりが大きすぎたら、もう1つまとまりを作れるか考えます。' => {
+      AppLanguage.portuguese: 'Se o resto estiver grande demais, pensamos se dá para formar mais um grupo.',
+      AppLanguage.tagalog: 'Kung sobrang laki ng natira, isipin kung makakagawa pa ng isa pang grupo.',
+      AppLanguage.vietnamese: 'Nếu số dư quá lớn, hãy nghĩ xem còn làm thêm được một nhóm không.',
+    },
+    'あまりのある式を読むためのことばです。' => {
+      AppLanguage.portuguese: 'São palavras para ler contas com resto.',
+      AppLanguage.tagalog: 'Mga salita para basahin ang pahayag na may sobra.',
+      AppLanguage.vietnamese: 'Từ để đọc phép tính có số dư.',
+    },
+    'あまりは5cmに足りないので、5cmのリボンとして数えません。' => {
+      AppLanguage.portuguese: 'O resto não chega a 5 cm, então não conta como uma fita de 5 cm.',
+      AppLanguage.tagalog: 'Kulang sa 5 cm ang natira, kaya hindi ito binibilang na lasong 5 cm.',
+      AppLanguage.vietnamese: 'Phần còn lại không đủ 5 cm nên không tính là một đoạn ruy-băng 5 cm.',
+    },
+    'あまりは、分けたあとに残る数です。' => {
+      AppLanguage.portuguese: 'O resto é o número que fica depois de dividir.',
+      AppLanguage.tagalog: 'Ang sobra ay ang numerong natitira pagkatapos maghati.',
+      AppLanguage.vietnamese: 'Số dư là số còn lại sau khi chia.',
+    },
+    'あまりは必要な長さに足りないので、1本として数えません。' => {
+      AppLanguage.portuguese: 'O resto não chega ao comprimento necessário, então não conta como 1 pedaço.',
+      AppLanguage.tagalog: 'Kulang ang natira sa kailangang haba, kaya hindi ito binibilang na 1 piraso.',
+      AppLanguage.vietnamese: 'Phần còn lại không đủ độ dài cần thiết nên không tính là 1 đoạn.',
+    },
+    'あまりをどうするかは、問題の場面で決めます。' => {
+      AppLanguage.portuguese: 'O que fazer com o resto depende da situação do problema.',
+      AppLanguage.tagalog: 'Ang gagawin sa sobra ay nakadepende sa sitwasyon ng problema.',
+      AppLanguage.vietnamese: 'Xử lý số dư thế nào thì dựa vào tình huống bài toán.',
+    },
+    'あまりを答えにどう使うか考えるためのことばです。' => {
+      AppLanguage.portuguese: 'São palavras para pensar como usar o resto na resposta.',
+      AppLanguage.tagalog: 'Mga salita para isipin kung paano gagamitin ang sobra sa sagot.',
+      AppLanguage.vietnamese: 'Từ để nghĩ cách dùng số dư trong đáp án.',
+    },
+    'あまるものはえんぴつなので、単位は本です。' => {
+      AppLanguage.portuguese: 'O que sobra são lápis, então a unidade é hon (lápis).',
+      AppLanguage.tagalog: 'Lapis ang natitira, kaya hon (lapis) ang yunit.',
+      AppLanguage.vietnamese: 'Cái còn lại là bút chì nên đơn vị là hon (cây).',
+    },
+    'あめ14こを4こずつにします。残りはありますか。' => {
+      AppLanguage.portuguese: 'Há 14 balas em grupos de 4. Sobram algumas?',
+      AppLanguage.tagalog: '14 kendi na tig-4. May natitira ba?',
+      AppLanguage.vietnamese: '14 viên kẹo, nhóm 4 viên. Có còn dư không?',
+    },
+    'あめ19こを6こずつにします。あまりはいくつですか。' => {
+      AppLanguage.portuguese: 'Há 19 balas em grupos de 6. Qual é o resto?',
+      AppLanguage.tagalog: '19 kendi na tig-6. Ilan ang sobra?',
+      AppLanguage.vietnamese: '19 viên kẹo, nhóm 6 viên. Số dư là bao nhiêu?',
+    },
+    'あめ23こを4人で分けます。どの式ですか。' => {
+      AppLanguage.portuguese: 'Há 23 balas para 4 pessoas. Qual é a conta?',
+      AppLanguage.tagalog: '23 kendi para sa 4 tao. Alin ang pahayag?',
+      AppLanguage.vietnamese: '23 viên kẹo chia cho 4 người. Phép tính nào?',
+    },
+    'あめ23こを4人で分けるので、23÷4です。' => {
+      AppLanguage.portuguese: 'Como dividimos 23 balas entre 4 pessoas, a conta é 23 ÷ 4.',
+      AppLanguage.tagalog: 'Dahil hinati ang 23 kendi sa 4 tao, 23 ÷ 4 ang pahayag.',
+      AppLanguage.vietnamese: 'Vì chia 23 viên kẹo cho 4 người nên phép tính là 23 ÷ 4.',
+    },
+    'あめ23こを4人で同じ数ずつ分けます。1人は何こ、残りは何こですか。' => {
+      AppLanguage.portuguese: '23 balas igualmente entre 4 pessoas. Quantas cada um recebe e quanto sobra?',
+      AppLanguage.tagalog: '23 kendi na pantay sa 4 tao. Ilan ang sa bawat isa, at ilan ang natira?',
+      AppLanguage.vietnamese: '23 viên kẹo chia đều cho 4 người. Mỗi người được bao nhiêu, còn dư bao nhiêu?',
+    },
+    'あめ5こを2こずつにします。残るあめは何こですか。' => {
+      AppLanguage.portuguese: 'Há 5 balas em grupos de 2. Quantas balas sobram?',
+      AppLanguage.tagalog: '5 kendi na tig-2. Ilang kendi ang matitira?',
+      AppLanguage.vietnamese: '5 viên kẹo, nhóm 2 viên. Còn lại bao nhiêu viên?',
+    },
+    'あめを4こずつ分けると、3組できて、2こ残ります。' => {
+      AppLanguage.portuguese: 'Dividindo as balas de 4 em 4, formamos 3 grupos e sobram 2.',
+      AppLanguage.tagalog: 'Kung tig-4 ang kendi, 3 grupo ang magagawa at 2 ang matitira.',
+      AppLanguage.vietnamese: 'Chia kẹo từng 4 viên thì được 3 nhóm và còn 2.',
+    },
+    'あめを6こずつ分けると、3組できて、1こ残ります。' => {
+      AppLanguage.portuguese: 'Dividindo as balas de 6 em 6, formamos 3 grupos e sobra 1.',
+      AppLanguage.tagalog: 'Kung tig-6 ang kendi, 3 grupo ang magagawa at 1 ang matitira.',
+      AppLanguage.vietnamese: 'Chia kẹo từng 6 viên thì được 3 nhóm và còn 1.',
+    },
+    'できるまとまりの数を聞いているので、単位は束です。' => {
+      AppLanguage.portuguese: 'Estamos perguntando o número de grupos, então a unidade é feixe.',
+      AppLanguage.tagalog: 'Ang tanong ay ilang grupo, kaya bunso (taba) ang yunit.',
+      AppLanguage.vietnamese: 'Đang hỏi số bó nên đơn vị là bó.',
+    },
+    'なぜあまりのリボンを数えませんか。' => {
+      AppLanguage.portuguese: 'Por que não contamos a fita que sobrou?',
+      AppLanguage.tagalog: 'Bakit hindi binibilang ang natirang laso?',
+      AppLanguage.vietnamese: 'Vì sao không tính đoạn ruy-băng còn lại?',
+    },
+    'なぜ短い残りを1本にしませんか。' => {
+      AppLanguage.portuguese: 'Por que o pedaço curto que sobrou não conta como 1?',
+      AppLanguage.tagalog: 'Bakit hindi binibilang na 1 piraso ang maikling natira?',
+      AppLanguage.vietnamese: 'Vì sao đoạn ngắn còn lại không tính là 1?',
+    },
+    'なぜ車を1台増やしますか。' => {
+      AppLanguage.portuguese: 'Por que aumentamos 1 carro?',
+      AppLanguage.tagalog: 'Bakit dagdag tayo ng 1 kotse?',
+      AppLanguage.vietnamese: 'Vì sao thêm 1 xe?',
+    },
+    'なぜ車をもう1台用意しますか。' => {
+      AppLanguage.portuguese: 'Por que preparamos mais 1 carro?',
+      AppLanguage.tagalog: 'Bakit maghahanda pa tayo ng 1 kotse?',
+      AppLanguage.vietnamese: 'Vì sao chuẩn bị thêm 1 xe?',
+    },
+    'ぴったり分けられるとき、あまりは出ません。' => {
+      AppLanguage.portuguese: 'Quando dá para dividir exatamente, não há resto.',
+      AppLanguage.tagalog: 'Kapag pantay na mahahati, walang sobra.',
+      AppLanguage.vietnamese: 'Khi chia vừa khít thì không có số dư.',
+    },
+    'わる数を何回作れるか考えます。残った数を「あまり」として書きます。' => {
+      AppLanguage.portuguese: 'Pensamos quantas vezes dá para formar o divisor. O que sobra se escreve como resto.',
+      AppLanguage.tagalog: 'Isipin kung ilang beses magagawa ang panghati. Ang natira ay isinusulat na sobra.',
+      AppLanguage.vietnamese: 'Nghĩ xem làm được bao nhiêu lần số chia. Số còn lại viết là số dư.',
+    },
+    'カード19まいを、1人に6まいずつ配ります。何人、残りは何まいですか。' => {
+      AppLanguage.portuguese: '19 cartas, 6 para cada pessoa. Para quantas pessoas dá e quantas sobram?',
+      AppLanguage.tagalog: '19 kard, tig-6 sa bawat tao. Para sa ilang tao, at ilan ang natira?',
+      AppLanguage.vietnamese: '19 tấm thẻ, mỗi người 6 tấm. Đủ cho bao nhiêu người, còn bao nhiêu tấm?',
+    },
+    'クッキー10こを4こずつにします。残りは何こですか。' => {
+      AppLanguage.portuguese: 'Há 10 biscoitos em grupos de 4. Quantos sobram?',
+      AppLanguage.tagalog: '10 biskwit na tig-4. Ilan ang matitira?',
+      AppLanguage.vietnamese: '10 cái bánh, nhóm 4 cái. Còn lại bao nhiêu?',
+    },
+    'クッキー12こを4こずつにします。残りはありますか。' => {
+      AppLanguage.portuguese: 'Há 12 biscoitos em grupos de 4. Sobram alguns?',
+      AppLanguage.tagalog: '12 biskwit na tig-4. May natitira ba?',
+      AppLanguage.vietnamese: '12 cái bánh, nhóm 4 cái. Có còn dư không?',
+    },
+    'クッキー17こを5こずつにします。ふくろはいくつ、残りは何こですか。' => {
+      AppLanguage.portuguese: '17 biscoitos em grupos de 5. Quantos sacos e quanto sobra?',
+      AppLanguage.tagalog: '17 biskwit na tig-5. Ilang bag, at ilan ang natira?',
+      AppLanguage.vietnamese: '17 cái bánh, nhóm 5 cái. Được bao nhiêu túi, còn bao nhiêu?',
+    },
+    'クッキー17こを5こずつにするので、17÷5です。' => {
+      AppLanguage.portuguese: 'Como fazemos grupos de 5 com 17 biscoitos, a conta é 17 ÷ 5.',
+      AppLanguage.tagalog: 'Dahil tig-5 ang 17 biskwit, 17 ÷ 5 ang pahayag.',
+      AppLanguage.vietnamese: 'Vì gom 17 cái bánh thành nhóm 5 nên phép tính là 17 ÷ 5.',
+    },
+    'クッキー17こを、5こずつにします。どの式ですか。' => {
+      AppLanguage.portuguese: 'Há 17 biscoitos em grupos de 5. Qual é a conta?',
+      AppLanguage.tagalog: '17 biskwit na tig-5. Alin ang pahayag?',
+      AppLanguage.vietnamese: '17 cái bánh, nhóm 5 cái. Phép tính nào?',
+    },
+    'クッキー34こを5こずつにします。どの式ですか。' => {
+      AppLanguage.portuguese: 'Há 34 biscoitos em grupos de 5. Qual é a conta?',
+      AppLanguage.tagalog: '34 biskwit na tig-5. Alin ang pahayag?',
+      AppLanguage.vietnamese: '34 cái bánh, nhóm 5 cái. Phép tính nào?',
+    },
+    'クッキーを4こずつ分けると、3組できて、あまりはありません。' => {
+      AppLanguage.portuguese: 'Dividindo os biscoitos de 4 em 4, formamos 3 grupos e não há resto.',
+      AppLanguage.tagalog: 'Kung tig-4 ang biskwit, 3 grupo ang magagawa at walang sobra.',
+      AppLanguage.vietnamese: 'Chia bánh từng 4 cái thì được 3 nhóm và không dư.',
+    },
+    'シール13こを5こずつにします。残りは何こですか。' => {
+      AppLanguage.portuguese: 'Há 13 adesivos em grupos de 5. Quantos sobram?',
+      AppLanguage.tagalog: '13 sticker na tig-5. Ilan ang matitira?',
+      AppLanguage.vietnamese: '13 tem, nhóm 5 cái. Còn lại bao nhiêu?',
+    },
+    'シール15こを5こずつにすると、残りはありません。正しいですか。' => {
+      AppLanguage.portuguese: '15 adesivos em grupos de 5 não deixam resto. Está certo?',
+      AppLanguage.tagalog: '15 sticker na tig-5, walang natitira. Tama ba?',
+      AppLanguage.vietnamese: '15 tem nhóm 5 thì không còn dư. Đúng không?',
+    },
+    'シールを5こずつ分けると、3組できて、あまりはありません。' => {
+      AppLanguage.portuguese: 'Dividindo os adesivos de 5 em 5, formamos 3 grupos e não há resto.',
+      AppLanguage.tagalog: 'Kung tig-5 ang sticker, 3 grupo ang magagawa at walang sobra.',
+      AppLanguage.vietnamese: 'Chia tem từng 5 cái thì được 3 nhóm và không dư.',
+    },
+    'ビー玉31こを7人で分けます。1人は何こ、残りは何こですか。' => {
+      AppLanguage.portuguese: '31 bolinhas entre 7 pessoas. Quantas cada um recebe e quanto sobra?',
+      AppLanguage.tagalog: '31 bolitas sa 7 tao. Ilan ang sa bawat isa, at ilan ang natira?',
+      AppLanguage.vietnamese: '31 viên bi chia cho 7 người. Mỗi người được bao nhiêu, còn bao nhiêu?',
+    },
+    '何を聞かれているかを見ると、答えの単位が分かります。' => {
+      AppLanguage.portuguese: 'Olhando o que a pergunta pede, entendemos a unidade da resposta.',
+      AppLanguage.tagalog: 'Kung titingnan kung ano ang tinatanong, malalaman ang yunit ng sagot.',
+      AppLanguage.vietnamese: 'Nhìn xem câu hỏi đang hỏi gì thì biết đơn vị của đáp án.',
+    },
+    '何束できるかを聞いています。答えの単位はどれですか。' => {
+      AppLanguage.portuguese: 'Estamos perguntando quantos feixes dá para fazer. Qual é a unidade?',
+      AppLanguage.tagalog: 'Tinatanong kung ilang taba. Ano ang yunit ng sagot?',
+      AppLanguage.vietnamese: 'Đang hỏi được bao nhiêu bó. Đơn vị đáp án là gì?',
+    },
+    '全部の34このクッキーを、5こずつ分けるので、式は34÷5です。' => {
+      AppLanguage.portuguese: 'Como dividimos todos os 34 biscoitos de 5 em 5, a conta é 34 ÷ 5.',
+      AppLanguage.tagalog: 'Dahil hinati ang lahat ng 34 biskwit nang tig-5, 34 ÷ 5 ang pahayag.',
+      AppLanguage.vietnamese: 'Vì chia hết 34 cái bánh thành nhóm 5 nên phép tính là 34 ÷ 5.',
+    },
+    '分けたあとに残った数が、あまりです。' => {
+      AppLanguage.portuguese: 'O número que fica depois de dividir é o resto.',
+      AppLanguage.tagalog: 'Ang numerong natira pagkatapos maghati ay ang sobra.',
+      AppLanguage.vietnamese: 'Số còn lại sau khi chia chính là số dư.',
+    },
+    '分けたあとに残る数が、あまりです。' => {
+      AppLanguage.portuguese: 'O número que resta depois de dividir é o resto.',
+      AppLanguage.tagalog: 'Ang numerong natitira pagkatapos maghati ay ang sobra.',
+      AppLanguage.vietnamese: 'Số còn lại sau khi chia là số dư.',
+    },
+    '文章の意味を見て、あまりをどうするか決めます。' => {
+      AppLanguage.portuguese: 'Olhamos o sentido do texto para decidir o que fazer com o resto.',
+      AppLanguage.tagalog: 'Tingnan ang kahulugan ng pangungusap para magpasya sa sobra.',
+      AppLanguage.vietnamese: 'Nhìn nghĩa của câu để quyết định xử lý số dư thế nào.',
+    },
+    '文章を読んで、ぜんぶの数、分ける数、何を聞いているかを見ます。' => {
+      AppLanguage.portuguese: 'Lemos o texto e vemos o total, o número que divide e o que está sendo perguntado.',
+      AppLanguage.tagalog: 'Basahin ang pangungusap at tingnan ang kabuuan, panghati, at kung ano ang tanong.',
+      AppLanguage.vietnamese: 'Đọc câu rồi xem tổng số, số chia, và câu hỏi đang hỏi gì.',
+    },
+    '残りがまだ分けられる数のとき、どう考えますか。' => {
+      AppLanguage.portuguese: 'Quando o que sobrou ainda dá para dividir, como pensamos?',
+      AppLanguage.tagalog: 'Kung ang natira ay mahahati pa, paano tayo mag-iisip?',
+      AppLanguage.vietnamese: 'Khi phần còn lại vẫn chia được nữa thì nghĩ thế nào?',
+    },
+    '残るえんぴつの数を聞いています。単位はどれですか。' => {
+      AppLanguage.portuguese: 'Estamos perguntando o número de lápis que sobram. Qual é a unidade?',
+      AppLanguage.tagalog: 'Tinatanong kung ilang lapis ang matitira. Ano ang yunit?',
+      AppLanguage.vietnamese: 'Đang hỏi số bút chì còn lại. Đơn vị là gì?',
+    },
+    '答えの単位は、聞かれている言葉を見て選びます。' => {
+      AppLanguage.portuguese: 'A unidade da resposta se escolhe olhando as palavras da pergunta.',
+      AppLanguage.tagalog: 'Ang yunit ng sagot ay pinipili ayon sa mga salitang tinatanong.',
+      AppLanguage.vietnamese: 'Đơn vị đáp án chọn theo từ ngữ câu hỏi.',
+    },
+    '車が何台必要かを聞いています。単位はどれですか。' => {
+      AppLanguage.portuguese: 'Estamos perguntando quantos carros são necessários. Qual é a unidade?',
+      AppLanguage.tagalog: 'Tinatanong kung ilang kotse ang kailangan. Ano ang yunit?',
+      AppLanguage.vietnamese: 'Đang hỏi cần bao nhiêu xe. Đơn vị là gì?',
+    },
+    '車の数を聞いているので、単位は台です。' => {
+      AppLanguage.portuguese: 'Estamos perguntando o número de carros, então a unidade é dai (carros).',
+      AppLanguage.tagalog: 'Ang tanong ay bilang ng kotse, kaya dai (kotse) ang yunit.',
+      AppLanguage.vietnamese: 'Đang hỏi số xe nên đơn vị là đài (chiếc).',
+    },
+    _ => const {},
+  };
 }

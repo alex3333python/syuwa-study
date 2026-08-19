@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../data/audio_cues.dart';
 import '../data/equal_share_language_support.dart';
 import '../data/learning_language_support.dart';
+import '../data/native_text.dart';
 import '../models/answer_record.dart';
 import '../models/app_language.dart';
 import '../models/lesson.dart';
@@ -1182,7 +1183,9 @@ const _timeVocabularyEntries = [
     term: '時こく',
     reading: 'じこく',
     simpleJapanese: '時計がさしている、ある1つの時です。',
-    translations: {AppLanguage.portuguese: 'horário'},
+    translations: {AppLanguage.portuguese: 'horário',
+      AppLanguage.tagalog: 'oras / oras ng orasan',
+      AppLanguage.vietnamese: 'thời điểm',},
     exampleSentence: '8時10分は時こくです。',
     category: 'math_language',
   ),
@@ -1190,7 +1193,9 @@ const _timeVocabularyEntries = [
     term: '時間',
     reading: 'じかん',
     simpleJapanese: 'ある時こくから、別の時こくまでの長さです。',
-    translations: {AppLanguage.portuguese: 'tempo / duração'},
+    translations: {AppLanguage.portuguese: 'tempo / duração',
+      AppLanguage.tagalog: 'oras / tagal',
+      AppLanguage.vietnamese: 'thời gian / khoảng thời gian',},
     exampleSentence: '25分は時間です。',
     category: 'math_language',
   ),
@@ -1198,7 +1203,9 @@ const _timeVocabularyEntries = [
     term: '前',
     reading: 'まえ',
     simpleJapanese: '時計を戻して考えることばです。',
-    translations: {AppLanguage.portuguese: 'antes'},
+    translations: {AppLanguage.portuguese: 'antes',
+      AppLanguage.tagalog: 'bago',
+      AppLanguage.vietnamese: 'trước',},
     exampleSentence: '25分前を考えます。',
     category: 'math_language',
   ),
@@ -1206,7 +1213,9 @@ const _timeVocabularyEntries = [
     term: '後',
     reading: 'あと / ご',
     simpleJapanese: '時計を進めて考えることばです。',
-    translations: {AppLanguage.portuguese: 'depois'},
+    translations: {AppLanguage.portuguese: 'depois',
+      AppLanguage.tagalog: 'pagkatapos',
+      AppLanguage.vietnamese: 'sau',},
     exampleSentence: '20分後を考えます。',
     category: 'math_language',
   ),
@@ -1214,7 +1223,9 @@ const _timeVocabularyEntries = [
     term: '出発',
     reading: 'しゅっぱつ',
     simpleJapanese: 'ある場所を出ることです。',
-    translations: {AppLanguage.portuguese: 'partida'},
+    translations: {AppLanguage.portuguese: 'partida',
+      AppLanguage.tagalog: 'alis',
+      AppLanguage.vietnamese: 'xuất phát',},
     exampleSentence: '7時45分に出発します。',
     category: 'school_language',
   ),
@@ -1222,7 +1233,9 @@ const _timeVocabularyEntries = [
     term: '到着',
     reading: 'とうちゃく',
     simpleJapanese: '行き先につくことです。',
-    translations: {AppLanguage.portuguese: 'chegada'},
+    translations: {AppLanguage.portuguese: 'chegada',
+      AppLanguage.tagalog: 'dating',
+      AppLanguage.vietnamese: 'đến nơi',},
     exampleSentence: '8時10分に到着します。',
     category: 'school_language',
   ),
@@ -1230,7 +1243,9 @@ const _timeVocabularyEntries = [
     term: '午前',
     reading: 'ごぜん',
     simpleJapanese: '夜中の12時から、正午までの時こくにつける言葉です。',
-    translations: {AppLanguage.portuguese: 'da manhã / a.m.'},
+    translations: {AppLanguage.portuguese: 'da manhã / a.m.',
+      AppLanguage.tagalog: 'umaga / a.m.',
+      AppLanguage.vietnamese: 'buổi sáng / a.m.',},
     exampleSentence: '午前7時40分に出発します。',
     category: 'time_language',
   ),
@@ -1238,7 +1253,9 @@ const _timeVocabularyEntries = [
     term: '午後',
     reading: 'ごご',
     simpleJapanese: '正午をすぎたあとの時こくにつける言葉です。',
-    translations: {AppLanguage.portuguese: 'da tarde / p.m.'},
+    translations: {AppLanguage.portuguese: 'da tarde / p.m.',
+      AppLanguage.tagalog: 'hapon / p.m.',
+      AppLanguage.vietnamese: 'buổi chiều / p.m.',},
     exampleSentence: '午後3時40分に始まります。',
     category: 'time_language',
   ),
@@ -1246,7 +1263,9 @@ const _timeVocabularyEntries = [
     term: '秒',
     reading: 'びょう',
     simpleJapanese: '分より短い時間の単位です。',
-    translations: {AppLanguage.portuguese: 'segundo'},
+    translations: {AppLanguage.portuguese: 'segundo',
+      AppLanguage.tagalog: 'segundo',
+      AppLanguage.vietnamese: 'giây',},
     exampleSentence: '1分は60秒です。',
     category: 'math_language',
   ),
@@ -1254,7 +1273,9 @@ const _timeVocabularyEntries = [
     term: '秒針',
     reading: 'びょうしん',
     simpleJapanese: '秒を表す時計の針です。',
-    translations: {AppLanguage.portuguese: 'ponteiro dos segundos'},
+    translations: {AppLanguage.portuguese: 'ponteiro dos segundos',
+      AppLanguage.tagalog: 'segundong kamay ng orasan',
+      AppLanguage.vietnamese: 'kim giây',},
     exampleSentence: '秒針が1周します。',
     category: 'math_language',
   ),
@@ -1314,12 +1335,20 @@ class _TimeMainLearnState extends State<_TimeMainLearn> {
           native: {
             AppLanguage.portuguese:
                 'Saiu de casa às 7:40 da manhã e levou 30 minutos para chegar à escola. A que horas chegou?',
+            AppLanguage.tagalog:
+                'Umalis siya sa bahay nang 7:40 ng umaga at 30 minuto ang biyahe papuntang paaralan. Anong oras siya dumating?',
+            AppLanguage.vietnamese:
+                'Rời nhà lúc 7:40 sáng và mất 30 phút để đến trường. Đến lúc mấy giờ?',
           },
         ),
         guide: SupportLine(
           japanese: '時計を30分動かしてみよう。',
           ruby: '{時計|とけい}を30{分|ぷん}{動|うご}かしてみよう。',
-          native: {AppLanguage.portuguese: 'Mova o relógio 30 minutos.'},
+          native: {
+            AppLanguage.portuguese: 'Mova o relógio 30 minutos.',
+            AppLanguage.tagalog: 'Igala ang orasan ng 30 minuto.',
+            AppLanguage.vietnamese: 'Hãy xoay đồng hồ thêm 30 phút.',
+          }
         ),
         scenario: _ClockScenario(
           hour: 7,
@@ -1343,12 +1372,20 @@ class _TimeMainLearnState extends State<_TimeMainLearn> {
           native: {
             AppLanguage.portuguese:
                 'O filme começou às 3:40 da tarde e terminou às 4:50 da tarde. Quanto tempo durou?',
+            AppLanguage.tagalog:
+                'Nagsimula ang pelikula nang 3:40 ng hapon at natapos nang 4:50 ng hapon. Gaano katagal?',
+            AppLanguage.vietnamese:
+                'Phim bắt đầu lúc 3:40 chiều và kết thúc lúc 4:50 chiều. Kéo dài bao lâu?',
           },
         ),
         guide: SupportLine(
           japanese: '午後4時50分まで時計を動かしてみよう。',
           ruby: '{午後|ごご}4{時|じ}50{分|ぷん}まで{時計|とけい}を{動|うご}かしてみよう。',
-          native: {AppLanguage.portuguese: 'Mova o relógio até 4:50 da tarde.'},
+          native: {
+            AppLanguage.portuguese: 'Mova o relógio até 4:50 da tarde.',
+            AppLanguage.tagalog: 'Igala ang orasan hanggang 4:50 ng hapon.',
+            AppLanguage.vietnamese: 'Hãy xoay đồng hồ đến 4:50 chiều.',
+          }
         ),
         scenario: _ClockScenario(
           hour: 15,
@@ -1494,6 +1531,10 @@ class _ShortTimeLearnState extends State<_ShortTimeLearn> {
           native: {
             AppLanguage.portuguese:
                 'O segundo é uma unidade de tempo menor que 1 minuto.',
+            AppLanguage.tagalog:
+                'Ang segundo ay yunit ng oras na mas maikli kaysa 1 minuto.',
+            AppLanguage.vietnamese:
+                'Giây là đơn vị thời gian ngắn hơn 1 phút.',
           },
         ),
       ],
@@ -1504,6 +1545,10 @@ class _ShortTimeLearnState extends State<_ShortTimeLearn> {
           native: {
             AppLanguage.portuguese:
                 'No cronômetro, 01:20 mostra 1 minuto e 20 segundos.',
+            AppLanguage.tagalog:
+                'Sa stopwatch, ang 01:20 ay 1 minuto at 20 segundo.',
+            AppLanguage.vietnamese:
+                'Trên đồng hồ bấm giờ, 01:20 là 1 phút 20 giây.',
           },
         ),
       ],
@@ -3003,61 +3048,82 @@ class _LengthMeasureLearnState extends State<_LengthMeasureLearn> {
 
   List<SupportLine> get _pageLines {
     return switch (_page) {
-      0 => const [
+      0 => [
         SupportLine(
           japanese: 'えんぴつの長さをはかりましょう。',
           ruby: 'えんぴつの{長|なが}さをはかりましょう。',
-          native: {
-            AppLanguage.portuguese: 'Vamos medir o comprimento do lápis.',
-          },
+          native: nativeText(
+            portuguese: 'Vamos medir o comprimento do lápis.',
+            tagalog: 'Sukatin natin ang haba ng lapis.',
+            vietnamese: 'Hãy đo chiều dài bút chì.',
+          ),
         ),
       ],
-      1 => const [
+      1 => [
         SupportLine(
           japanese: 'ろうかの長さをまきじゃくではかりましょう。',
           ruby: 'ろうかの{長|なが}さをまきじゃくではかりましょう。',
-          native: {
-            AppLanguage.portuguese:
+          native: nativeText(
+            portuguese:
                 'Vamos medir o comprimento do corredor com uma fita métrica.',
-          },
+            tagalog:
+                'Sukatin natin ang haba ng pasilyo gamit ang tape measure.',
+            vietnamese: 'Hãy đo chiều dài hành lang bằng thước dây.',
+          ),
         ),
       ],
-      2 => const [
+      2 => [
         SupportLine(
           japanese: '木のみきをはかりましょう。',
           ruby: '{木|き}のみきをはかりましょう。',
-          native: {AppLanguage.portuguese: 'Vamos medir o tronco da árvore.'},
+          native: nativeText(
+            portuguese: 'Vamos medir o tronco da árvore.',
+            tagalog: 'Sukatin natin ang puno ng kahoy.',
+            vietnamese: 'Hãy đo thân cây.',
+          ),
         ),
       ],
-      _ => const [
+      _ => [
         SupportLine(
           japanese: 'はかるものに合わせて、ものさしとまきじゃくを選びます。',
           ruby: 'はかるものに{合|あ}わせて、ものさしとまきじゃくを{選|えら}びます。',
-          native: {
-            AppLanguage.portuguese:
+          native: nativeText(
+            portuguese:
                 'Escolhemos régua ou fita métrica de acordo com o que vamos medir.',
-          },
+            tagalog:
+                'Pumili tayo ng ruler o tape measure ayon sa susukatin.',
+            vietnamese:
+                'Chọn thước kẻ hoặc thước dây tùy theo thứ cần đo.',
+          ),
         ),
       ],
     };
   }
 
-  static const _rulerGuide = SupportLine(
+  static final _rulerGuide = SupportLine(
     japanese: 'ものさしを動かして、0をえんぴつの左のはしに合わせよう。',
     ruby: 'ものさしを{動|うご}かして、0をえんぴつの{左|ひだり}のはしに{合|あ}わせよう。',
-    native: {
-      AppLanguage.portuguese:
+    native: nativeText(
+      portuguese:
           'Mova a régua e alinhe o zero com a ponta esquerda do lápis.',
-    },
+      tagalog:
+          'Igagalaw ang ruler at itapat ang 0 sa kaliwang dulo ng lapis.',
+      vietnamese:
+          'Di chuyển thước kẻ và đặt vạch 0 sát mép trái bút chì.',
+    ),
   );
 
-  static const _tapeGuide = SupportLine(
+  static final _tapeGuide = SupportLine(
     japanese: 'まきじゃくの先を引っぱって、ろうかのはしまでのばそう。',
     ruby: 'まきじゃくの{先|さき}を{引|ひ}っぱって、ろうかのはしまでのばそう。',
-    native: {
-      AppLanguage.portuguese:
+    native: nativeText(
+      portuguese:
           'Puxe a ponta da fita métrica até o fim do corredor.',
-    },
+      tagalog:
+          'Hilahin ang dulo ng tape measure hanggang sa dulo ng pasilyo.',
+      vietnamese:
+          'Kéo đầu thước dây đến hết hành lang.',
+    ),
   );
 
   @override
@@ -3118,12 +3184,14 @@ class _LengthMeasureLearnState extends State<_LengthMeasureLearn> {
             0 => _InteractiveRulerPanel(
               rulerPosition: _rulerPosition,
               onChanged: (value) => setState(() => _rulerPosition = value),
+              language: widget.selectedLanguage,
             ),
             1 => _InteractiveTapeMeasurePanel(
               value: _tapeValue,
               onChanged: (value) => setState(() => _tapeValue = value),
+              language: widget.selectedLanguage,
             ),
-            2 => const _CurvedTapePanel(),
+            2 => _CurvedTapePanel(language: widget.selectedLanguage),
             _ => const _ToolChoiceSummaryPanel(),
           },
         ],
@@ -3135,10 +3203,12 @@ class _LengthMeasureLearnState extends State<_LengthMeasureLearn> {
 class _InteractiveRulerPanel extends StatelessWidget {
   final Offset rulerPosition;
   final ValueChanged<Offset> onChanged;
+  final AppLanguage language;
 
   const _InteractiveRulerPanel({
     required this.rulerPosition,
     required this.onChanged,
+    required this.language,
   });
 
   @override
@@ -3225,7 +3295,7 @@ class _InteractiveRulerPanel extends StatelessWidget {
             ),
             if (isMeasured) ...[
               const SizedBox(height: 12),
-              const _PencilMeasuredResult(),
+              _PencilMeasuredResult(language: language),
             ],
           ],
         );
@@ -3469,23 +3539,40 @@ class _MiniRulerPainter extends CustomPainter {
 }
 
 class _PencilMeasuredResult extends StatelessWidget {
-  const _PencilMeasuredResult();
+  final AppLanguage language;
+
+  const _PencilMeasuredResult({required this.language});
 
   @override
   Widget build(BuildContext context) {
-    return const _LengthResultBox(
+    return _LengthResultBox(
+      language: language,
       titlePrefix: 'えんぴつの長さは ',
       answer: '8cm',
       titleSuffix: ' です。',
-      portugueseTitle: 'O comprimento do lápis é 8 cm.',
-      japaneseLines: [
+      nativeTitle: nativeText(
+        portuguese: 'O comprimento do lápis é 8 cm.',
+        tagalog: '8 cm ang haba ng lapis.',
+        vietnamese: 'Chiều dài bút chì là 8 cm.',
+      ),
+      japaneseLines: const [
         '長い目もりは5cmずつ、小さい目もりは1cmずつです。',
         '短いものは、ものさしやまきじゃくを使ってはかれます。',
       ],
-      portugueseLines: [
-        'As marcas longas ficam a cada 5 cm, e as marcas pequenas ficam a cada 1 cm.',
-        'Para medir coisas curtas, podemos usar régua ou fita métrica.',
-      ],
+      nativeLines: {
+        AppLanguage.portuguese: const [
+          'As marcas longas ficam a cada 5 cm, e as marcas pequenas ficam a cada 1 cm.',
+          'Para medir coisas curtas, podemos usar régua ou fita métrica.',
+        ],
+        AppLanguage.tagalog: const [
+          'Ang mahahabang marka ay tig-5 cm, at ang maliliit na marka ay tig-1 cm.',
+          'Ang maiikling bagay ay masusukat gamit ang ruler o tape measure.',
+        ],
+        AppLanguage.vietnamese: const [
+          'Vạch dài cách nhau 5 cm, vạch nhỏ cách nhau 1 cm.',
+          'Đồ ngắn có thể đo bằng thước kẻ hoặc thước dây.',
+        ],
+      },
       audioText:
           'えんぴつの長さは8センチメートルです。長い目もりは5センチメートルずつ、小さい目もりは1センチメートルずつです。短いものは、ものさしやまきじゃくを使ってはかれます。',
     );
@@ -3493,21 +3580,23 @@ class _PencilMeasuredResult extends StatelessWidget {
 }
 
 class _LengthResultBox extends StatefulWidget {
+  final AppLanguage language;
   final String titlePrefix;
   final String answer;
   final String titleSuffix;
-  final String? portugueseTitle;
+  final Map<AppLanguage, String> nativeTitle;
   final List<String> japaneseLines;
-  final List<String> portugueseLines;
+  final Map<AppLanguage, List<String>> nativeLines;
   final String audioText;
 
   const _LengthResultBox({
+    required this.language,
     required this.titlePrefix,
     required this.answer,
     required this.titleSuffix,
-    this.portugueseTitle,
+    required this.nativeTitle,
     required this.japaneseLines,
-    required this.portugueseLines,
+    required this.nativeLines,
     required this.audioText,
   });
 
@@ -3575,10 +3664,12 @@ class _LengthResultBoxState extends State<_LengthResultBox> {
                           ],
                         ),
                       ),
-                      if (_showNative && widget.portugueseTitle != null) ...[
+                      if (_showNative &&
+                          widget.language != AppLanguage.japanese &&
+                          widget.nativeTitle[widget.language] != null) ...[
                         const SizedBox(height: 2),
                         Text(
-                          widget.portugueseTitle!,
+                          widget.nativeTitle[widget.language]!,
                           style: const TextStyle(
                             color: Color(0xFF475569),
                             fontSize: 15,
@@ -3592,9 +3683,9 @@ class _LengthResultBoxState extends State<_LengthResultBox> {
                 ),
                 const SizedBox(width: 10),
                 _IconSupportActions(
-                  language: AppLanguage.portuguese,
+                  language: widget.language,
                   showNative: _showNative,
-                  translateLabel: 'Português',
+                  translateLabel: widget.language.label,
                   audioLabel: '音声',
                   onToggleNative: () {
                     setState(() => _showNative = !_showNative);
@@ -3613,7 +3704,8 @@ class _LengthResultBoxState extends State<_LengthResultBox> {
             for (final line in widget.japaneseLines) Text(line),
             if (_showNative) ...[
               const SizedBox(height: 8),
-              for (final line in widget.portugueseLines)
+              for (final line in widget.nativeLines[widget.language] ??
+                  const <String>[])
                 Text(
                   line,
                   style: const TextStyle(
@@ -3632,10 +3724,12 @@ class _LengthResultBoxState extends State<_LengthResultBox> {
 class _InteractiveTapeMeasurePanel extends StatelessWidget {
   final double value;
   final ValueChanged<double> onChanged;
+  final AppLanguage language;
 
   const _InteractiveTapeMeasurePanel({
     required this.value,
     required this.onChanged,
+    required this.language,
   });
 
   @override
@@ -3657,17 +3751,30 @@ class _InteractiveTapeMeasurePanel extends StatelessWidget {
           ),
         ),
         if (isMeasured)
-          const Padding(
-            padding: EdgeInsets.only(top: 12),
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
             child: _LengthResultBox(
+              language: language,
               titlePrefix: 'ろうかの長さは ',
               answer: '6m',
               titleSuffix: ' でした。',
-              portugueseTitle: 'O comprimento do corredor é 6 m.',
-              japaneseLines: ['長いものをはかるときには、まきじゃくを使います。'],
-              portugueseLines: [
-                'Para medir coisas compridas, usamos uma fita métrica.',
-              ],
+              nativeTitle: nativeText(
+                portuguese: 'O comprimento do corredor é 6 m.',
+                tagalog: '6 m ang haba ng pasilyo.',
+                vietnamese: 'Chiều dài hành lang là 6 m.',
+              ),
+              japaneseLines: const ['長いものをはかるときには、まきじゃくを使います。'],
+              nativeLines: {
+                AppLanguage.portuguese: const [
+                  'Para medir coisas compridas, usamos uma fita métrica.',
+                ],
+                AppLanguage.tagalog: const [
+                  'Para sa mahahabang bagay, gumagamit tayo ng tape measure.',
+                ],
+                AppLanguage.vietnamese: const [
+                  'Khi đo đồ dài, ta dùng thước dây.',
+                ],
+              },
               audioText: 'ろうかの長さは6メートルでした。長いものをはかるときには、まきじゃくを使います。',
             ),
           ),
@@ -3940,7 +4047,9 @@ class _HallwayTapeMeasurePainter extends CustomPainter {
 }
 
 class _CurvedTapePanel extends StatefulWidget {
-  const _CurvedTapePanel();
+  final AppLanguage language;
+
+  const _CurvedTapePanel({required this.language});
 
   @override
   State<_CurvedTapePanel> createState() => _CurvedTapePanelState();
@@ -3987,15 +4096,28 @@ class _CurvedTapePanelState extends State<_CurvedTapePanel> {
         ),
         const SizedBox(height: 12),
         if (isMeasured)
-          const _LengthResultBox(
+          _LengthResultBox(
+            language: widget.language,
             titlePrefix: '木のみきのまわりは ',
             answer: '80cm',
             titleSuffix: ' でした。',
-            portugueseTitle: 'A volta do tronco da árvore tem 80 cm.',
-            japaneseLines: ['まきじゃくは、まるいもののまわりをはかるときに便利です。'],
-            portugueseLines: [
-              'A fita métrica é útil para medir ao redor de coisas redondas.',
-            ],
+            nativeTitle: nativeText(
+              portuguese: 'A volta do tronco da árvore tem 80 cm.',
+              tagalog: '80 cm ang paligid ng puno ng kahoy.',
+              vietnamese: 'Chu vi thân cây là 80 cm.',
+            ),
+            japaneseLines: const ['まきじゃくは、まるいもののまわりをはかるときに便利です。'],
+            nativeLines: {
+              AppLanguage.portuguese: const [
+                'A fita métrica é útil para medir ao redor de coisas redondas.',
+              ],
+              AppLanguage.tagalog: const [
+                'Maginhawa ang tape measure sa pagsukat sa paligid ng bilog na bagay.',
+              ],
+              AppLanguage.vietnamese: const [
+                'Thước dây tiện khi đo vòng quanh đồ tròn.',
+              ],
+            },
             audioText: '木のみきのまわりは80センチメートルでした。まきじゃくは、まるいもののまわりをはかるときに便利です。',
           )
         else
@@ -4590,6 +4712,10 @@ class _KilometerLearnState extends State<_KilometerLearn> {
           native: {
             AppLanguage.portuguese:
                 'Vamos caminhar pelo caminho da casa até o parque.',
+            AppLanguage.tagalog:
+                'Maglakad tayo sa daan mula sa bahay hanggang parke.',
+            AppLanguage.vietnamese:
+                'Hãy đi theo đường từ nhà đến công viên.',
           },
         ),
       ],
@@ -4601,6 +4727,10 @@ class _KilometerLearnState extends State<_KilometerLearn> {
           native: {
             AppLanguage.portuguese:
                 '1 km são 1000 m. km se lê quilômetro. Caminhos longos ficam mais fáceis de entender em km.',
+            AppLanguage.tagalog:
+                '1 km ay 1000 m. Binabasa ang km na kilometro. Mas madaling intindihin ang mahahabang daan sa km.',
+            AppLanguage.vietnamese:
+                '1 km bằng 1000 m. km đọc là kilômét. Đường dài dễ hiểu hơn khi dùng km.',
           },
         ),
       ],
@@ -5378,12 +5508,16 @@ class _SoftResultLine extends StatelessWidget {
   }
 }
 
-const _lengthVocabularyEntries = [
+final _lengthVocabularyEntries = [
   VocabularyEntry(
     term: '長さ',
     reading: 'ながさ',
     simpleJapanese: 'もののはしからはしまでの大きさ。',
-    translations: {AppLanguage.portuguese: 'comprimento'},
+    translations: nativeText(
+      portuguese: 'comprimento',
+      tagalog: 'haba',
+      vietnamese: 'độ dài',
+    ),
     exampleSentence: 'つくえの長さをはかります。',
     category: 'math_language',
   ),
@@ -5391,7 +5525,11 @@ const _lengthVocabularyEntries = [
     term: 'はかる',
     reading: 'はかる',
     simpleJapanese: '長さなどを調べること。',
-    translations: {AppLanguage.portuguese: 'medir'},
+    translations: nativeText(
+      portuguese: 'medir',
+      tagalog: 'sukatin',
+      vietnamese: 'đo',
+    ),
     exampleSentence: 'まきじゃくで長さをはかります。',
     category: 'math_language',
   ),
@@ -5399,7 +5537,11 @@ const _lengthVocabularyEntries = [
     term: '目もり',
     reading: 'めもり',
     simpleJapanese: 'ものさしについている小さなしるし。',
-    translations: {AppLanguage.portuguese: 'marca / escala'},
+    translations: nativeText(
+      portuguese: 'marca / escala',
+      tagalog: 'marka',
+      vietnamese: 'vạch chia',
+    ),
     exampleSentence: '目もりを読みます。',
     category: 'math_language',
   ),
@@ -5407,7 +5549,11 @@ const _lengthVocabularyEntries = [
     term: '道のり',
     reading: 'みちのり',
     simpleJapanese: '実際に通る道の長さ。',
-    translations: {AppLanguage.portuguese: 'caminho / percurso'},
+    translations: nativeText(
+      portuguese: 'caminho / percurso',
+      tagalog: 'daan / ruta',
+      vietnamese: 'quãng đường',
+    ),
     exampleSentence: '学校から公園までの道のりを考えます。',
     category: 'math_language',
   ),
@@ -5415,7 +5561,11 @@ const _lengthVocabularyEntries = [
     term: 'キロメートル',
     reading: 'きろめーとる',
     simpleJapanese: '長い長さを表す単位。1kmは1000m。',
-    translations: {AppLanguage.portuguese: 'quilômetro'},
+    translations: nativeText(
+      portuguese: 'quilômetro',
+      tagalog: 'kilometro',
+      vietnamese: 'kilômét',
+    ),
     exampleSentence: '1000mは1kmです。',
     category: 'math_language',
   ),
@@ -5586,6 +5736,10 @@ class _MultiplicationDivisionLearnState
               native: {
                 AppLanguage.portuguese:
                     'Vamos dividir 12 biscoitos igualmente entre 3 pessoas.',
+                AppLanguage.tagalog:
+                    'Hatiin natin ang 12 biskwit nang pantay sa 3 tao.',
+                AppLanguage.vietnamese:
+                    'Hãy chia đều 12 cái bánh quy cho 3 người.',
               },
             ),
           ],
@@ -5611,6 +5765,10 @@ class _MultiplicationDivisionLearnState
               native: {
                 AppLanguage.portuguese:
                     'Com os mesmos três números, podemos fazer uma conta de divisão e uma de multiplicação.',
+                AppLanguage.tagalog:
+                    'Gamit ang parehong tatlong numero, makakagawa tayo ng dibisyon at multiplikasyon.',
+                AppLanguage.vietnamese:
+                    'Với cùng ba số, ta có thể viết phép chia và phép nhân.',
               },
             ),
             SupportLine(
@@ -5620,6 +5778,10 @@ class _MultiplicationDivisionLearnState
               native: {
                 AppLanguage.portuguese:
                     'A resposta da divisão pode ser encontrada usando a multiplicação.',
+                AppLanguage.tagalog:
+                    'Ang sagot sa dibisyon ay mahanap gamit ang multiplikasyon.',
+                AppLanguage.vietnamese:
+                    'Có thể tìm đáp án phép chia nhờ phép nhân.',
               },
             ),
           ],
@@ -5699,7 +5861,11 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
         SupportLine(
           japanese: 'いちごが7こあります。',
           ruby: 'いちごが7こあります。',
-          native: {AppLanguage.portuguese: 'Há 7 morangos.'},
+          native: {
+            AppLanguage.portuguese: 'Há 7 morangos.',
+            AppLanguage.tagalog: 'May 7 na strawberry.',
+            AppLanguage.vietnamese: 'Có 7 quả dâu.',
+          }
         ),
         SupportLine(
           japanese: '3人で同じ数ずつ分けると、1人分は2こで、1こ残ります。',
@@ -5708,6 +5874,10 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
           native: {
             AppLanguage.portuguese:
                 'Dividindo igualmente entre 3 pessoas, cada pessoa recebe 2 e sobra 1.',
+            AppLanguage.tagalog:
+                'Kapag hinati nang pantay sa 3 tao, 2 ang sa bawat isa at 1 ang natira.',
+            AppLanguage.vietnamese:
+                'Chia đều cho 3 người thì mỗi người được 2, còn dư 1.',
           },
         ),
       ],
@@ -5722,6 +5892,10 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
           native: {
             AppLanguage.portuguese:
                 'Ao dividir entre 3 pessoas, o resto pode ser 0, 1 ou 2.',
+            AppLanguage.tagalog:
+                'Kapag hinati sa 3 tao, ang sobra ay maaaring 0, 1, o 2.',
+            AppLanguage.vietnamese:
+                'Khi chia cho 3 người, số dư có thể là 0, 1 hoặc 2.',
           },
         ),
         SupportLine(
@@ -5730,6 +5904,10 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
           native: {
             AppLanguage.portuguese:
                 'Se sobrassem 3, daria para formar mais uma parte.',
+            AppLanguage.tagalog:
+                'Kung 3 ang natira, makakagawa pa ng isa pang bahagi.',
+            AppLanguage.vietnamese:
+                'Nếu dư 3 thì còn làm thêm được một phần nữa.',
           },
         ),
       ],
@@ -5823,7 +6001,11 @@ class _RemainderContextLearnState extends State<_RemainderContextLearn> {
         SupportLine(
           japanese: '4人がけの長いすがあります。',
           ruby: '4{人|にん}がけの{長|なが}いすがあります。',
-          native: {AppLanguage.portuguese: 'Há bancos para 4 pessoas.'},
+          native: {
+            AppLanguage.portuguese: 'Há bancos para 4 pessoas.',
+            AppLanguage.tagalog: 'May bangko para sa 4 na tao.',
+            AppLanguage.vietnamese: 'Có ghế dài cho 4 người.',
+          }
         ),
         SupportLine(
           japanese: '9人がすわるには、長いすは何台いるかな？',
@@ -5831,6 +6013,10 @@ class _RemainderContextLearnState extends State<_RemainderContextLearn> {
           native: {
             AppLanguage.portuguese:
                 'Para 9 pessoas se sentarem, quantos bancos são necessários?',
+            AppLanguage.tagalog:
+                'Ilang bangko ang kailangan para makaupo ang 9 na tao?',
+            AppLanguage.vietnamese:
+                'Cần bao nhiêu ghế để 9 người ngồi?',
           },
         ),
       ],
@@ -5841,6 +6027,10 @@ class _RemainderContextLearnState extends State<_RemainderContextLearn> {
           native: {
             AppLanguage.portuguese:
                 'A pessoa que sobrou também precisa se sentar, então precisamos de mais 1 banco.',
+            AppLanguage.tagalog:
+                'Kailangan ding umupo ang natirang tao, kaya kailangan pa ng 1 bangko.',
+            AppLanguage.vietnamese:
+                'Người còn lại cũng cần ngồi, nên cần thêm 1 ghế.',
           },
         ),
       ],
@@ -5851,6 +6041,10 @@ class _RemainderContextLearnState extends State<_RemainderContextLearn> {
           native: {
             AppLanguage.portuguese:
                 'Quando aparece resto, voltamos à situação do problema e pensamos.',
+            AppLanguage.tagalog:
+                'Kapag may sobra, bumalik tayo sa sitwasyon ng problema at mag-isip.',
+            AppLanguage.vietnamese:
+                'Khi có số dư, ta quay lại tình huống bài toán rồi suy nghĩ.',
           },
         ),
         SupportLine(
@@ -5859,6 +6053,10 @@ class _RemainderContextLearnState extends State<_RemainderContextLearn> {
           native: {
             AppLanguage.portuguese:
                 'Em problemas com pessoas sentando, às vezes aumentamos 1 para quem sobrou.',
+            AppLanguage.tagalog:
+                'Sa problemang umuupo ang tao, minsan dagdag tayo ng 1 para sa natira.',
+            AppLanguage.vietnamese:
+                'Ở bài toán chỗ ngồi, đôi khi ta cộng thêm 1 cho người còn lại.',
           },
         ),
       ],
@@ -5931,6 +6129,10 @@ class _WeightGramKgLearnState extends State<_WeightGramKgLearn> {
           native: {
             AppLanguage.portuguese:
                 'A maçã e o lápis: qual você acha que é mais pesado?',
+            AppLanguage.tagalog:
+                'Mansanas at lapis: alin sa palagay mo ang mas mabigat?',
+            AppLanguage.vietnamese:
+                'Quả táo và bút chì: bạn nghĩ cái nào nặng hơn?',
           },
         ),
       ],
@@ -5938,7 +6140,11 @@ class _WeightGramKgLearnState extends State<_WeightGramKgLearn> {
         SupportLine(
           japanese: 'りんごの重さをはかってみよう。',
           ruby: 'りんごの{重|おも}さをはかってみよう。',
-          native: {AppLanguage.portuguese: 'Vamos medir o peso da maçã.'},
+          native: {
+            AppLanguage.portuguese: 'Vamos medir o peso da maçã.',
+            AppLanguage.tagalog: 'Sukatin natin ang timbang ng mansanas.',
+            AppLanguage.vietnamese: 'Hãy đo khối lượng quả táo.',
+          }
         ),
       ],
       2 => const [
@@ -5962,6 +6168,10 @@ class _WeightGramKgLearnState extends State<_WeightGramKgLearn> {
           native: {
             AppLanguage.portuguese:
                 'Para coisas um pouco pesadas, podemos usar kg e g juntos.',
+            AppLanguage.tagalog:
+                'Para sa medyo mabibigat, puwedeng gamitin nang magkasama ang kg at g.',
+            AppLanguage.vietnamese:
+                'Với đồ hơi nặng, có thể dùng cả kg và g.',
           },
         ),
       ],
@@ -6864,6 +7074,10 @@ class _WeightTonLearnState extends State<_WeightTonLearn> {
           native: {
             AppLanguage.portuguese:
                 'Coisas muito pesadas podem ser mostradas em toneladas.',
+            AppLanguage.tagalog:
+                'Ang napakabibigat ay puwedeng ipakita sa tonelada.',
+            AppLanguage.vietnamese:
+                'Đồ rất nặng có thể ghi bằng tấn.',
           },
         ),
       ],
@@ -6874,6 +7088,10 @@ class _WeightTonLearnState extends State<_WeightTonLearn> {
           native: {
             AppLanguage.portuguese:
                 'Ao colocar 10 cargas de 100 kg no caminhão, quantos quilogramas serão ao todo?',
+            AppLanguage.tagalog:
+                'Kung magkarga ng 10 pirasong 100 kg sa trak, ilang kilogramo lahat?',
+            AppLanguage.vietnamese:
+                'Khi chất 10 kiện 100 kg lên xe tải, tổng cộng bao nhiêu kilôgam?',
           },
         ),
       ],
@@ -6884,6 +7102,10 @@ class _WeightTonLearnState extends State<_WeightTonLearn> {
           native: {
             AppLanguage.portuguese:
                 'Ao colocar 10 cargas de 100 kg no caminhão, quantos quilogramas serão ao todo?',
+            AppLanguage.tagalog:
+                'Kung magkarga ng 10 pirasong 100 kg sa trak, ilang kilogramo lahat?',
+            AppLanguage.vietnamese:
+                'Khi chất 10 kiện 100 kg lên xe tải, tổng cộng bao nhiêu kilôgam?',
           },
         ),
       ],
@@ -7433,6 +7655,10 @@ class _TonLoadPanel extends StatelessWidget {
     native: {
       AppLanguage.portuguese:
           'Vamos colocar as cargas de 100 kg no caminhão, uma por vez.',
+      AppLanguage.tagalog:
+          'Ilagay natin ang mga kargang 100 kg sa trak, isa-isa.',
+      AppLanguage.vietnamese:
+          'Hãy chất từng kiện 100 kg lên xe tải.',
     },
   );
 
@@ -7442,6 +7668,10 @@ class _TonLoadPanel extends StatelessWidget {
     native: {
       AppLanguage.portuguese:
           'Dez cargas de 100 kg fazem 1000 kg. Chamamos 1000 kg de 1 tonelada.',
+      AppLanguage.tagalog:
+          'Sampung kargang 100 kg ay 1000 kg. Ang 1000 kg ay 1 tonelada.',
+      AppLanguage.vietnamese:
+          'Mười kiện 100 kg thành 1000 kg. 1000 kg gọi là 1 tấn.',
     },
   );
 
@@ -7500,7 +7730,9 @@ class _TonLoadPanel extends StatelessWidget {
           const SizedBox(height: 18),
           _WeightSupportedResultBox(
             title: '1000kg = 1t',
-            nativeTitle: const {AppLanguage.portuguese: '1000 kg = 1 t'},
+            nativeTitle: const {AppLanguage.portuguese: '1000 kg = 1 t',
+      AppLanguage.tagalog: '1000 kg = 1 t',
+      AppLanguage.vietnamese: '1000 kg = 1 t',},
             explanation: _resultExplanation,
             selectedLanguage: selectedLanguage,
             showNative: showResultNative,
@@ -8312,7 +8544,9 @@ const _weightVocabularyEntries = [
     term: '重い',
     reading: 'おもい',
     simpleJapanese: '持ったときに、力がたくさんいる感じです。',
-    translations: {AppLanguage.portuguese: 'pesado'},
+    translations: {AppLanguage.portuguese: 'pesado',
+      AppLanguage.tagalog: 'mabigat',
+      AppLanguage.vietnamese: 'nặng',},
     exampleSentence: 'りんごはえんぴつより重いです。',
     category: 'math_language',
   ),
@@ -8320,7 +8554,9 @@ const _weightVocabularyEntries = [
     term: '軽い',
     reading: 'かるい',
     simpleJapanese: '持ったときに、力があまりいらない感じです。',
-    translations: {AppLanguage.portuguese: 'leve'},
+    translations: {AppLanguage.portuguese: 'leve',
+      AppLanguage.tagalog: 'magaan',
+      AppLanguage.vietnamese: 'nhẹ',},
     exampleSentence: 'えんぴつは軽いです。',
     category: 'math_language',
   ),
@@ -8328,7 +8564,9 @@ const _weightVocabularyEntries = [
     term: '重さ',
     reading: 'おもさ',
     simpleJapanese: 'ものがどれくらい重いかです。',
-    translations: {AppLanguage.portuguese: 'peso'},
+    translations: {AppLanguage.portuguese: 'peso',
+      AppLanguage.tagalog: 'timbang / bigat',
+      AppLanguage.vietnamese: 'khối lượng',},
     exampleSentence: '重さをはかります。',
     category: 'math_language',
   ),
@@ -8336,7 +8574,9 @@ const _weightVocabularyEntries = [
     term: 'はかり',
     reading: 'はかり',
     simpleJapanese: '重さを調べる道具です。',
-    translations: {AppLanguage.portuguese: 'balança'},
+    translations: {AppLanguage.portuguese: 'balança',
+      AppLanguage.tagalog: 'timbangan',
+      AppLanguage.vietnamese: 'cân',},
     exampleSentence: 'りんごをはかりに乗せます。',
     category: 'math_language',
   ),
@@ -8344,7 +8584,9 @@ const _weightVocabularyEntries = [
     term: '目盛り',
     reading: 'めもり',
     simpleJapanese: '量を読むための小さなしるしです。',
-    translations: {AppLanguage.portuguese: 'marcação / escala'},
+    translations: {AppLanguage.portuguese: 'marcação / escala',
+      AppLanguage.tagalog: 'marka / iskala',
+      AppLanguage.vietnamese: 'vạch chia',},
     exampleSentence: '目盛りを見ます。',
     category: 'math_language',
   ),
@@ -8352,7 +8594,9 @@ const _weightVocabularyEntries = [
     term: 'グラム',
     reading: 'ぐらむ',
     simpleJapanese: '重さの単位です。gと書きます。',
-    translations: {AppLanguage.portuguese: 'grama'},
+    translations: {AppLanguage.portuguese: 'grama',
+      AppLanguage.tagalog: 'gramo',
+      AppLanguage.vietnamese: 'gam',},
     exampleSentence: '300gです。',
     category: 'math_language',
   ),
@@ -8360,7 +8604,9 @@ const _weightVocabularyEntries = [
     term: 'キログラム',
     reading: 'きろぐらむ',
     simpleJapanese: '重さの単位です。1kgは1000gです。',
-    translations: {AppLanguage.portuguese: 'quilograma'},
+    translations: {AppLanguage.portuguese: 'quilograma',
+      AppLanguage.tagalog: 'kilogramo',
+      AppLanguage.vietnamese: 'kilôgam',},
     exampleSentence: '1kgは1000gです。',
     category: 'math_language',
   ),
@@ -8368,7 +8614,9 @@ const _weightVocabularyEntries = [
     term: '荷物',
     reading: 'にもつ',
     simpleJapanese: '運んだり、置いたりするものです。',
-    translations: {AppLanguage.portuguese: 'carga / bagagem'},
+    translations: {AppLanguage.portuguese: 'carga / bagagem',
+      AppLanguage.tagalog: 'karga / dala',
+      AppLanguage.vietnamese: 'hàng / vật mang',},
     exampleSentence: '荷物をトラックに積みます。',
     category: 'math_language',
   ),
@@ -8376,7 +8624,9 @@ const _weightVocabularyEntries = [
     term: '積む',
     reading: 'つむ',
     simpleJapanese: 'ものを重ねたり、乗り物に入れたりすることです。',
-    translations: {AppLanguage.portuguese: 'carregar / empilhar'},
+    translations: {AppLanguage.portuguese: 'carregar / empilhar',
+      AppLanguage.tagalog: 'magkarga / magpatong',
+      AppLanguage.vietnamese: 'chất / chất lên',},
     exampleSentence: '荷物をトラックに積みます。',
     category: 'math_language',
   ),
@@ -8384,7 +8634,9 @@ const _weightVocabularyEntries = [
     term: 'トン',
     reading: 'とん',
     simpleJapanese: 'とても重いものに使う単位です。tと書きます。',
-    translations: {AppLanguage.portuguese: 'tonelada'},
+    translations: {AppLanguage.portuguese: 'tonelada',
+      AppLanguage.tagalog: 'tonelada',
+      AppLanguage.vietnamese: 'tấn',},
     exampleSentence: '1000kgは1tです。',
     category: 'math_language',
   ),
@@ -8507,7 +8759,9 @@ const _remainderLearnVocabulary = [
     term: 'あまり',
     reading: 'あまり',
     simpleJapanese: '分けたあとに残る数です。',
-    translations: {AppLanguage.portuguese: 'resto / sobra'},
+    translations: {AppLanguage.portuguese: 'resto / sobra',
+      AppLanguage.tagalog: 'sobra / natira',
+      AppLanguage.vietnamese: 'số dư',},
     exampleSentence: '7 ÷ 3 = 2 あまり 1 です。',
     category: 'math_language',
   ),
@@ -8515,7 +8769,9 @@ const _remainderLearnVocabulary = [
     term: 'わる数',
     reading: 'わるかず',
     simpleJapanese: '何こずつ、または何人で分けるかを表す数です。',
-    translations: {AppLanguage.portuguese: 'divisor'},
+    translations: {AppLanguage.portuguese: 'divisor',
+      AppLanguage.tagalog: 'panghati',
+      AppLanguage.vietnamese: 'số chia',},
     exampleSentence: '7 ÷ 3 の3は、わる数です。',
     category: 'math_language',
   ),
@@ -8523,7 +8779,9 @@ const _remainderLearnVocabulary = [
     term: 'わられる数',
     reading: 'わられるかず',
     simpleJapanese: 'はじめにある全部の数です。',
-    translations: {AppLanguage.portuguese: 'número que será dividido'},
+    translations: {AppLanguage.portuguese: 'número que será dividido',
+      AppLanguage.tagalog: 'bilang na hahatiin',
+      AppLanguage.vietnamese: 'số bị chia',},
     exampleSentence: '7 ÷ 3 の7は、わられる数です。',
     category: 'math_language',
   ),
@@ -8531,7 +8789,9 @@ const _remainderLearnVocabulary = [
     term: '残ります',
     reading: 'のこる',
     simpleJapanese: 'まだある、という意味です。',
-    translations: {AppLanguage.portuguese: 'sobra / fica'},
+    translations: {AppLanguage.portuguese: 'sobra / fica',
+      AppLanguage.tagalog: 'natitira',
+      AppLanguage.vietnamese: 'còn lại',},
     exampleSentence: '1こ残ります。',
     category: 'math_language',
   ),
@@ -8542,7 +8802,9 @@ const _remainderContextVocabulary = [
     term: '長いす',
     reading: 'ながいす',
     simpleJapanese: '何人かがいっしょに座れるいすです。',
-    translations: {AppLanguage.portuguese: 'banco'},
+    translations: {AppLanguage.portuguese: 'banco',
+      AppLanguage.tagalog: 'bangko',
+      AppLanguage.vietnamese: 'ghế dài',},
     exampleSentence: '4人がけの長いすがあります。',
     category: 'noun',
   ),
@@ -8550,7 +8812,9 @@ const _remainderContextVocabulary = [
     term: '何台',
     reading: 'なんだい',
     simpleJapanese: '車や長いすなどの数を聞く言い方です。',
-    translations: {AppLanguage.portuguese: 'quantos'},
+    translations: {AppLanguage.portuguese: 'quantos',
+      AppLanguage.tagalog: 'ilan',
+      AppLanguage.vietnamese: 'bao nhiêu',},
     exampleSentence: '長いすは何台いりますか。',
     category: 'math_language',
   ),
@@ -8558,7 +8822,9 @@ const _remainderContextVocabulary = [
     term: '必要',
     reading: 'ひつよう',
     simpleJapanese: 'なくてはならないことです。',
-    translations: {AppLanguage.portuguese: 'necessário'},
+    translations: {AppLanguage.portuguese: 'necessário',
+      AppLanguage.tagalog: 'kailangan',
+      AppLanguage.vietnamese: 'cần',},
     exampleSentence: 'もう1台必要です。',
     category: 'school_japanese',
   ),
@@ -8566,7 +8832,9 @@ const _remainderContextVocabulary = [
     term: '場面',
     reading: 'ばめん',
     simpleJapanese: '問題で起きていることです。',
-    translations: {AppLanguage.portuguese: 'situação'},
+    translations: {AppLanguage.portuguese: 'situação',
+      AppLanguage.tagalog: 'sitwasyon',
+      AppLanguage.vietnamese: 'tình huống',},
     exampleSentence: '問題の場面に戻って考えます。',
     category: 'school_japanese',
   ),
@@ -8613,6 +8881,10 @@ class _InteractiveRemainderShareState
       native: {
         AppLanguage.portuguese:
             'Vamos dividir os morangos: 2 para cada uma das 3 pessoas.',
+        AppLanguage.tagalog:
+            'Hatiin natin ang strawberry: 2 para sa bawat isa sa 3 tao.',
+        AppLanguage.vietnamese:
+            'Hãy chia dâu: mỗi người trong 3 người được 2 quả.',
       },
     );
 
@@ -8940,6 +9212,10 @@ class _RemainderShareResult extends StatelessWidget {
       native: {
         AppLanguage.portuguese:
             'Ao dividir 2 para cada uma das 3 pessoas, sobrou 1. Esse 1 é o resto.',
+        AppLanguage.tagalog:
+            'Nang bigyan ng 2 ang bawat isa sa 3 tao, 1 ang natira. Iyon ang sobra.',
+        AppLanguage.vietnamese:
+            'Chia 2 cho mỗi người trong 3 người thì còn 1. Đó là số dư.',
       },
     );
     return Container(
@@ -9041,6 +9317,10 @@ class _RemainderEquationBuilderState extends State<_RemainderEquationBuilder> {
       native: {
         AppLanguage.portuguese:
             'Observe os morangos nos pratos e escolha os números para os quadrados.',
+        AppLanguage.tagalog:
+            'Tingnan ang strawberry sa mga plato at piliin ang mga numero para sa mga parisukat.',
+        AppLanguage.vietnamese:
+            'Nhìn dâu trên đĩa và chọn số điền vào ô vuông.',
       },
     );
     return Column(
@@ -9117,6 +9397,10 @@ class _RemainderEquationBuilderState extends State<_RemainderEquationBuilder> {
                 '{1人|ひとり}{分|ぶん}は2こ、{残|のこ}ったのは1こ。だから、7 ÷ 3 = 2 あまり 1 と{書|か}きます。',
             portuguese:
                 'Cada pessoa recebe 2 e sobra 1. Por isso escrevemos 7 ÷ 3 = 2, resto 1.',
+            tagalog:
+                '2 ang sa bawat tao at 1 ang natira. Kaya sinusulat natin 7 ÷ 3 = 2, sobra 1.',
+            vietnamese:
+                'Mỗi người được 2, còn dư 1. Vì vậy viết 7 ÷ 3 = 2 dư 1.',
           ),
         ],
       ],
@@ -9244,6 +9528,10 @@ class _RemainderTimesTableFinderState
       native: {
         AppLanguage.portuguese:
             'Escolha a maior conta da tabuada do 3 que não passa de 7.',
+        AppLanguage.tagalog:
+            'Piliin ang pinakamalaking 3-times table na hindi lalampas ng 7.',
+        AppLanguage.vietnamese:
+            'Chọn phép nhân 3 lớn nhất mà không vượt quá 7.',
       },
     );
     final correct = _selected == 2;
@@ -9306,6 +9594,10 @@ class _RemainderTimesTableFinderState
                 '3 × 2 = 6です。7から6を{使|つか}うと、1こ{残|のこ}ります。だから、7 ÷ 3 = 2 あまり 1です。',
             portuguese:
                 '3 × 2 = 6. Ao usar 6 dos 7, sobra 1. Por isso, 7 ÷ 3 = 2, resto 1.',
+            tagalog:
+                '3 × 2 = 6. Kapag ginamit ang 6 mula sa 7, 1 ang natira. Kaya 7 ÷ 3 = 2, sobra 1.',
+            vietnamese:
+                '3 × 2 = 6. Lấy 6 trong 7 thì còn 1. Vì vậy 7 ÷ 3 = 2 dư 1.',
           ),
         ],
       ],
@@ -9378,6 +9670,10 @@ class _RemainderGrowthExplorerState extends State<_RemainderGrowthExplorer> {
       native: {
         AppLanguage.portuguese:
             'Acrescente um morango de cada vez e veja o que acontece com o resto.',
+        AppLanguage.tagalog:
+            'Dagdagan ng isang strawberry sa bawat pagkakataon at tingnan ang sobra.',
+        AppLanguage.vietnamese:
+            'Thêm từng quả dâu một và xem số dư thay đổi thế nào.',
       },
     );
     final reachedNine = _total == 9;
@@ -9426,6 +9722,10 @@ class _RemainderGrowthExplorerState extends State<_RemainderGrowthExplorer> {
                 'あまりが3こになる{前|まえ}に、3{人|にん}にもう1こずつ{分|わ}けられました。あまりは、{わる数|わる かず}の3より{小|ちい}さくなります。',
             portuguese:
                 'Antes de o resto chegar a 3, conseguimos dar mais 1 para cada uma das 3 pessoas. O resto é menor que 3.',
+            tagalog:
+                'Bago maging 3 ang sobra, nakapagbigay pa tayo ng 1 sa bawat isa sa 3 tao. Mas maliit sa 3 ang sobra.',
+            vietnamese:
+                'Trước khi số dư thành 3, ta còn chia thêm 1 cho mỗi người trong 3 người. Số dư nhỏ hơn 3.',
           ),
         ],
       ],
@@ -9526,6 +9826,8 @@ class _RemainderGreenExplanation extends StatelessWidget {
   final String japanese;
   final String ruby;
   final String portuguese;
+  final String tagalog;
+  final String vietnamese;
 
   const _RemainderGreenExplanation({
     required this.language,
@@ -9534,6 +9836,8 @@ class _RemainderGreenExplanation extends StatelessWidget {
     required this.japanese,
     required this.ruby,
     required this.portuguese,
+    required this.tagalog,
+    required this.vietnamese,
   });
 
   @override
@@ -9541,7 +9845,11 @@ class _RemainderGreenExplanation extends StatelessWidget {
     final line = SupportLine(
       japanese: japanese,
       ruby: ruby,
-      native: {AppLanguage.portuguese: portuguese},
+      native: {
+        AppLanguage.portuguese: portuguese,
+        AppLanguage.tagalog: tagalog,
+        AppLanguage.vietnamese: vietnamese,
+      },
     );
     return Container(
       width: double.infinity,
@@ -11043,6 +11351,10 @@ class _InteractiveCookieShareState extends State<_InteractiveCookieShare> {
       native: {
         AppLanguage.portuguese:
             'Leve os biscoitos para que cada pessoa fique com 4.',
+        AppLanguage.tagalog:
+            'Dalhin ang mga biskwit para 4 ang maging bahagi ng bawat tao.',
+        AppLanguage.vietnamese:
+            'Chuyển bánh quy sao cho mỗi người có 4 cái.',
       },
     );
 
@@ -11140,6 +11452,10 @@ class _InteractiveCookieResult extends StatelessWidget {
             native: {
               AppLanguage.portuguese:
                   'Há 3 pessoas com 4 biscoitos cada uma, por isso 3 × 4 = 12.',
+              AppLanguage.tagalog:
+                  'May 3 tao na tig-4 na biskwit, kaya 3 × 4 = 12.',
+              AppLanguage.vietnamese:
+                  'Có 3 người, mỗi người 4 cái bánh, nên 3 × 4 = 12.',
             },
           )
         : const SupportLine(
@@ -11148,6 +11464,10 @@ class _InteractiveCookieResult extends StatelessWidget {
             native: {
               AppLanguage.portuguese:
                   'Dividimos 12 biscoitos entre 3 pessoas, por isso 12 ÷ 3 = 4.',
+              AppLanguage.tagalog:
+                  'Hinati ang 12 biskwit sa 3 tao, kaya 12 ÷ 3 = 4.',
+              AppLanguage.vietnamese:
+                  'Chia 12 cái bánh cho 3 người, nên 12 ÷ 3 = 4.',
             },
           );
 
