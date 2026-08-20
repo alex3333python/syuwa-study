@@ -722,9 +722,7 @@ class _RubyPiece extends StatelessWidget {
             ? '母国語'
             : sheetLanguage.label;
         final nativeMeaning = nativeMeaningFor(entry, sheetLanguage);
-        return LessonLanguageScope(
-          language: sheetLanguage,
-          child: SafeArea(
+        return SafeArea(
           child: SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(
               24,
