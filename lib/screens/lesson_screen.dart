@@ -1956,7 +1956,7 @@ class _TimeResultBoxState extends State<_TimeResultBox> {
       AppLanguage.tagalog =>
         isArrival ? '8:10 ng umaga' : '1 oras at 10 minuto',
       AppLanguage.vietnamese =>
-        isArrival ? '8 gio 10 phut sang' : '1 gio 10 phut',
+        isArrival ? '8 giờ 10 phút sáng' : '1 giờ 10 phút',
       AppLanguage.japanese => '',
     };
   }
@@ -1974,8 +1974,8 @@ class _TimeResultBoxState extends State<_TimeResultBox> {
             : '20 minuto mula 3:40 hanggang 4:00 at 50 minuto mula 4:00 hanggang 4:50. Ang 20 + 50 ay 70 minuto, o 1 oras at 10 minuto.',
       AppLanguage.vietnamese =>
         isArrival
-            ? 'Can 20 phut den 8 gio va 10 phut tu 8 gio den 8 gio 10. Vi vay den truong luc 8 gio 10 sang.'
-            : 'Tu 3 gio 40 den 4 gio la 20 phut, va tu 4 gio den 4 gio 50 la 50 phut. 20 + 50 = 70 phut, hay 1 gio 10 phut.',
+            ? 'Cần 20 phút đến 8 giờ và 10 phút từ 8 giờ đến 8 giờ 10. Vì vậy đến trường lúc 8 giờ 10 sáng.'
+            : 'Từ 3 giờ 40 đến 4 giờ là 20 phút, và từ 4 giờ đến 4 giờ 50 là 50 phút. 20 + 50 = 70 phút, hay 1 giờ 10 phút.',
       AppLanguage.japanese => '',
     };
   }
@@ -2497,7 +2497,7 @@ class _SecondHandPanel extends StatelessWidget {
                 AppLanguage.tagalog:
                     'Kapag umusad ng isang marka ang segundo na kamay, isang segundo ang lumilipas. Kapag nadagdagan ng 1 ang numero ng stopwatch, isang segundo ang lumilipas.',
                 AppLanguage.vietnamese:
-                    'Kim giay tien mot vach la 1 giay. So tren dong ho bam gio tang them 1 la 1 giay.',
+                    'Kim giây tiến một vạch là 1 giây. Số trên đồng hồ bấm giờ tăng thêm 1 là 1 giây.',
               },
             ),
             language: selectedLanguage,
@@ -2852,7 +2852,7 @@ class _MinuteSecondPanel extends StatelessWidget {
                 AppLanguage.tagalog:
                     'Ang 1 minuto ay 60 segundo. Kaya ang 1 minuto at 20 segundo ay 80 segundo.',
                 AppLanguage.vietnamese:
-                    '1 phut la 60 giay. Vi vay, 1 phut 20 giay la 80 giay.',
+                    '1 phút là 60 giây. Vì vậy, 1 phút 20 giây là 80 giây.',
               },
             ),
             language: selectedLanguage,
@@ -4880,7 +4880,7 @@ class _KilometerLearnState extends State<_KilometerLearn> {
                       AppLanguage.tagalog:
                           'Pindutin ang pindutan at sundan natin ang daan.',
                       AppLanguage.vietnamese:
-                          'Hay bam nut va di theo con duong nhe.',
+                          'Hãy bấm nút và đi theo con đường nhé.',
                     },
                   ),
                   language: widget.selectedLanguage,
@@ -16437,6 +16437,7 @@ class _AnswerCard extends StatelessWidget {
                         textAlign: TextAlign.center,
                         vocabularyEntries: vocabularyEntries,
                         language: language,
+                        learningSupportMode: LearningSupportMode.rubyOnly,
                         style: TextStyle(
                           fontSize: 29,
                           height: 1.25,
@@ -16537,6 +16538,7 @@ class _CompactChoiceText extends StatelessWidget {
             textAlign: TextAlign.center,
             vocabularyEntries: vocabularyEntries,
             language: language,
+            learningSupportMode: LearningSupportMode.rubyOnly,
             style: TextStyle(
               color: color,
               fontSize: 36,
@@ -16670,6 +16672,7 @@ class _ImageAnswerCard extends StatelessWidget {
                       text: labelRuby,
                       vocabularyEntries: vocabularyEntries,
                       language: language,
+                      learningSupportMode: LearningSupportMode.rubyOnly,
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,

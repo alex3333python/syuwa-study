@@ -737,7 +737,7 @@ const _learningTerms = <_LearningTerm>[
     simpleJapanese: 'ガラスでできた小さな玉です。',
     portuguese: 'bolinha de gude',
     tagalog: 'bolang salamin',
-    vietnamese: 'bi ve',
+    vietnamese: 'viên bi',
     example: 'ビー玉が18こあります。',
   ),
   _LearningTerm(
