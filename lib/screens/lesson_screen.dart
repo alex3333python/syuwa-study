@@ -12,6 +12,7 @@ import '../models/lesson.dart';
 import '../models/question.dart';
 import '../services/audio_service.dart';
 import '../theme/app_fonts.dart';
+import '../widgets/lesson_language_scope.dart';
 import '../widgets/question_visual.dart';
 import '../widgets/ruby_text.dart';
 import '../widgets/sign_video_player.dart';
@@ -225,7 +226,9 @@ class _LessonScreenState extends State<LessonScreen> {
       promptModeForQuestion,
     );
     final optionRubies = question.resolvedChoicesRuby;
-    return Stack(
+    return LessonLanguageScope(
+      language: widget.selectedLanguage,
+      child: Stack(
       children: [
         Column(
           children: [
@@ -418,6 +421,7 @@ class _LessonScreenState extends State<LessonScreen> {
             },
           ),
       ],
+      ),
     );
   }
 
@@ -436,7 +440,9 @@ class _LessonScreenState extends State<LessonScreen> {
         ? '完了'
         : '次へ';
 
-    return Column(
+    return LessonLanguageScope(
+      language: widget.selectedLanguage,
+      child: Column(
       children: [
         _LessonTopBar(
           progress: progress,
@@ -538,6 +544,7 @@ class _LessonScreenState extends State<LessonScreen> {
           ),
         ),
       ],
+      ),
     );
   }
 
@@ -14073,8 +14080,10 @@ class _SupportedTextLines extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final nativeScope = LearnNativeScope.maybeOf(context);
-    final effectiveLanguage = nativeScope?.language ?? language;
-    final effectiveShowNative = nativeScope?.showNative ?? showNative;
+    final effectiveLanguage = LessonLanguageScope.of(
+      context,
+      nativeScope?.language ?? language,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -14093,8 +14102,7 @@ class _SupportedTextLines extends StatelessWidget {
               fontWeight: fontWeight,
             ),
           ),
-          if (effectiveShowNative &&
-              effectiveLanguage != AppLanguage.japanese &&
+          if (effectiveLanguage != AppLanguage.japanese &&
               line.nativeFor(effectiveLanguage).isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(

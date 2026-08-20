@@ -5,6 +5,7 @@ import '../data/learning_language_support.dart';
 import '../models/app_language.dart';
 import '../models/question.dart';
 import '../services/audio_service.dart';
+import 'lesson_language_scope.dart';
 
 /// Makes the intent of learning support explicit at each call site.
 enum LearningSupportMode { off, rubyOnly, rubyAndDictionary }
@@ -58,6 +59,7 @@ class RubyText extends StatelessWidget {
       effectiveVocabularyEntries = mergeLearningVocabulary(vocabularyEntries);
     }
     final lines = supportedText.split('\n');
+    final effectiveLanguage = LessonLanguageScope.of(context, language);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -69,7 +71,7 @@ class RubyText extends StatelessWidget {
             style: effectiveStyle,
             rubyStyle: effectiveRubyStyle,
             alignment: _wrapAlignment,
-            language: language,
+            language: effectiveLanguage,
           ),
           if (i < lines.length - 1)
             SizedBox(height: effectiveStyle.fontSize ?? 16),
@@ -715,11 +717,14 @@ class _RubyPiece extends StatelessWidget {
       showDragHandle: true,
       isScrollControlled: true,
       builder: (context) {
-        final nativeLabel = language == AppLanguage.japanese
+        final sheetLanguage = language;
+        final nativeLabel = sheetLanguage == AppLanguage.japanese
             ? '母国語'
-            : language.label;
-        final nativeMeaning = nativeMeaningFor(entry, language);
-        return SafeArea(
+            : sheetLanguage.label;
+        final nativeMeaning = nativeMeaningFor(entry, sheetLanguage);
+        return LessonLanguageScope(
+          language: sheetLanguage,
+          child: SafeArea(
           child: SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(
               24,
@@ -770,8 +775,10 @@ class _RubyPiece extends StatelessWidget {
                 ],
                 const SizedBox(height: 18),
                 _VocabularyBlock(title: '意味', text: entry.simpleJapanese),
-                if (language != AppLanguage.japanese &&
-                    nativeMeaning.isNotEmpty) ...[
+                if (sheetLanguage != AppLanguage.japanese &&
+                    nativeMeaning.isNotEmpty &&
+                    nativeMeaning != entry.simpleJapanese &&
+                    !looksLikeJapaneseGloss(nativeMeaning)) ...[
                   const SizedBox(height: 14),
                   _VocabularyBlock(
                     title: '$nativeLabelで',
