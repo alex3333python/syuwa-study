@@ -5502,7 +5502,9 @@ class _SoftResultLine extends StatelessWidget {
   final String text;
   final bool good;
 
-  const _SoftResultLine({required this.text, this.good = false});
+  const _SoftResultLine({required String text, bool good = false})
+      : text = text,
+        good = good;
 
   @override
   Widget build(BuildContext context) {
@@ -8083,8 +8085,8 @@ class _SoftResultBox extends StatelessWidget {
   const _SoftResultBox({
     required this.text,
     required this.emphasized,
-    this.highlightedTerm,
-  });
+    String? highlightedTerm,
+  }) : highlightedTerm = highlightedTerm;
 
   @override
   Widget build(BuildContext context) {
@@ -13438,16 +13440,21 @@ class _EqualShareInteractiveLearn extends StatefulWidget {
     this.title = '同じ数ずつ分けてみよう',
     this.problemLines = equalShareProblemLines,
     this.instructionLine = equalShareInstruction,
-    this.resultLines = equalShareResultLines,
-    this.equationReading = equalShareEquationReading,
-    this.equationSupports = equalShareEquationSupports,
-    this.vocabularyEntries = equalShareVocabularyEntries,
+    List<SupportLine> resultLines = equalShareResultLines,
+    SupportLine equationReading = equalShareEquationReading,
+    List<EquationSupport> equationSupports = equalShareEquationSupports,
+    List<VocabularyEntry> vocabularyEntries = equalShareVocabularyEntries,
     this.storyOrder = const [0, 1, 2, 0, 1, 2],
     this.successMessage = '同じ数ずつ分けられたね！',
     this.retryMessage = '同じ数になっているかな？ お皿ごとの数を見てみよう。',
-    this.storyMessage = '1こずつ順番に置いていきます。',
-    this.storyCompleteMessage = 'どのお皿も2こずつになりました。',
-  });
+    String storyMessage = '1こずつ順番に置いていきます。',
+    String storyCompleteMessage = 'どのお皿も2こずつになりました。',
+  }) : resultLines = resultLines,
+       equationReading = equationReading,
+       equationSupports = equationSupports,
+       vocabularyEntries = vocabularyEntries,
+       storyMessage = storyMessage,
+       storyCompleteMessage = storyCompleteMessage;
 
   @override
   State<_EqualShareInteractiveLearn> createState() =>
@@ -14049,9 +14056,9 @@ class _SupportedTextLines extends StatelessWidget {
     this.vocabularyEntries = const [],
     this.fontWeight = FontWeight.w800,
     this.enableLearningSupport = false,
-    this.learningSupportRubyOnly = false,
+    bool learningSupportRubyOnly = false,
     this.learningSupportMode,
-  });
+  }) : learningSupportRubyOnly = learningSupportRubyOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -14793,15 +14800,20 @@ class _EqualShareStoryMode extends StatelessWidget {
   const _EqualShareStoryMode({
     required this.step,
     required this.placements,
-    this.storyMessage = '1こずつ順番に置いていきます。',
-    this.storyCompleteMessage = 'どのお皿も2こずつになりました。',
-    this.resultLines = equalShareResultLines,
-    this.equationReading = equalShareEquationReading,
-    this.equationSupports = equalShareEquationSupports,
-    this.vocabularyEntries = equalShareVocabularyEntries,
+    String storyMessage = '1こずつ順番に置いていきます。',
+    String storyCompleteMessage = 'どのお皿も2こずつになりました。',
+    List<SupportLine> resultLines = equalShareResultLines,
+    SupportLine equationReading = equalShareEquationReading,
+    List<EquationSupport> equationSupports = equalShareEquationSupports,
+    List<VocabularyEntry> vocabularyEntries = equalShareVocabularyEntries,
     required this.onNext,
     required this.onBack,
-  });
+  }) : storyMessage = storyMessage,
+       storyCompleteMessage = storyCompleteMessage,
+       resultLines = resultLines,
+       equationReading = equationReading,
+       equationSupports = equationSupports,
+       vocabularyEntries = vocabularyEntries;
 
   @override
   Widget build(BuildContext context) {
