@@ -718,6 +718,7 @@ class _RubyPiece extends StatelessWidget {
         final nativeLabel = language == AppLanguage.japanese
             ? '母国語'
             : language.label;
+        final nativeMeaning = nativeMeaningFor(entry, language);
         return SafeArea(
           child: SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(
@@ -770,11 +771,11 @@ class _RubyPiece extends StatelessWidget {
                 const SizedBox(height: 18),
                 _VocabularyBlock(title: '意味', text: entry.simpleJapanese),
                 if (language != AppLanguage.japanese &&
-                    nativeMeaningFor(entry, language).isNotEmpty) ...[
+                    nativeMeaning.isNotEmpty) ...[
                   const SizedBox(height: 14),
                   _VocabularyBlock(
                     title: '$nativeLabelで',
-                    text: nativeMeaningFor(entry, language),
+                    text: nativeMeaning,
                   ),
                 ],
                 if (entry.exampleSentence.isNotEmpty) ...[

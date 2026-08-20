@@ -1419,7 +1419,9 @@ class _TimeMainLearnState extends State<_TimeMainLearn> {
       showNative: _showNative,
       onToggleNative: () {
         setState(() {
-          _showNative = !_showNative;
+          final next = !_showNative;
+          _showNative = next;
+          _showGuideNative = next;
         });
       },
       onAudio: _speak,
@@ -1646,12 +1648,15 @@ class _SupportedInstruction extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: _SupportedTextLines(
-              lines: [line],
-              language: language,
-              showNative: showNative,
-              vocabularyEntries: vocabularyEntries,
-              learningSupportMode: LearningSupportMode.rubyAndDictionary,
+            child: ClipRect(
+              clipBehavior: Clip.hardEdge,
+              child: _SupportedTextLines(
+                lines: [line],
+                language: language,
+                showNative: showNative,
+                vocabularyEntries: vocabularyEntries,
+                learningSupportMode: LearningSupportMode.rubyAndDictionary,
+              ),
             ),
           ),
           const SizedBox(width: 10),
@@ -3134,7 +3139,12 @@ class _LengthMeasureLearnState extends State<_LengthMeasureLearn> {
       titleVocabularyEntries: _lengthVocabularyEntries,
       selectedLanguage: widget.selectedLanguage,
       showNative: _showNative,
-      onToggleNative: () => setState(() => _showNative = !_showNative),
+      onToggleNative: () => setState(() {
+        final next = !_showNative;
+        _showNative = next;
+        _showRulerGuideNative = next;
+        _showTapeGuideNative = next;
+      }),
       onAudio: _speak,
       page: _page,
       lastPage: _lastPage,
@@ -8693,20 +8703,26 @@ class _RemainderLearnShell extends StatelessWidget {
               _LearnHeaderIcon(icon: icon),
               const SizedBox(width: 14),
               Expanded(
-                child: RubyText(
-                  text: titleRuby ?? title,
-                  language: selectedLanguage,
-                  vocabularyEntries: titleVocabularyEntries,
-                  enableLearningSupport: titleVocabularyEntries.isNotEmpty,
-                  learningSupportMode: titleVocabularyEntries.isEmpty
-                      ? LearningSupportMode.rubyOnly
-                      : LearningSupportMode.rubyAndDictionary,
-                  style: const TextStyle(
-                    fontFamily: AppFonts.display,
-                    fontSize: 24,
-                    height: 1.25,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF111827),
+                child: IgnorePointer(
+                  ignoring: titleVocabularyEntries.isEmpty,
+                  child: ClipRect(
+                    clipBehavior: Clip.hardEdge,
+                    child: RubyText(
+                      text: titleRuby ?? title,
+                      language: selectedLanguage,
+                      vocabularyEntries: titleVocabularyEntries,
+                      enableLearningSupport: titleVocabularyEntries.isNotEmpty,
+                      learningSupportMode: titleVocabularyEntries.isEmpty
+                          ? LearningSupportMode.rubyOnly
+                          : LearningSupportMode.rubyAndDictionary,
+                      style: const TextStyle(
+                        fontFamily: AppFonts.display,
+                        fontSize: 24,
+                        height: 1.25,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -8802,14 +8818,17 @@ const _remainderLearnVocabulary = [
   ),
 ];
 
-const _remainderContextVocabulary = [
+final _remainderContextVocabulary = [
   VocabularyEntry(
     term: '長いす',
+    surfaces: const ['長いす', '長椅子'],
     reading: 'ながいす',
     simpleJapanese: '何人かがいっしょに座れるいすです。',
-    translations: {AppLanguage.portuguese: 'banco',
-      AppLanguage.tagalog: 'bangko',
-      AppLanguage.vietnamese: 'ghế dài',},
+    translations: nativeText(
+      portuguese: 'banco comprido',
+      tagalog: 'mahabang upuan / bangko',
+      vietnamese: 'ghế dài',
+    ),
     exampleSentence: '4人がけの長いすがあります。',
     category: 'noun',
   ),
@@ -14016,10 +14035,10 @@ class _SupportedTextLines extends StatelessWidget {
             Text(
               line.nativeFor(language),
               style: const TextStyle(
-                color: Color(0xFF6B7280),
-                fontSize: 14,
+                color: Color(0xFF1D4ED8),
+                fontSize: 16,
                 height: 1.35,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w800,
               ),
             ),
           ],
@@ -14086,25 +14105,29 @@ class _SupportIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final background = selected ? const Color(0xFFEFF6FF) : Colors.white;
+    final foreground = selected
+        ? const Color(0xFF2563EB)
+        : const Color(0xFF374151);
     return Tooltip(
       message: label,
-      child: SizedBox(
-        width: 40,
-        height: 40,
-        child: IconButton(
-          onPressed: onPressed,
-          style: IconButton.styleFrom(
-            padding: EdgeInsets.zero,
-            backgroundColor: selected ? const Color(0xFFEFF6FF) : Colors.white,
-            foregroundColor: selected
-                ? const Color(0xFF2563EB)
-                : const Color(0xFF374151),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(11),
-              side: const BorderSide(color: Color(0xFFE5E7EB)),
-            ),
+      child: Material(
+        color: background,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(11),
+          side: const BorderSide(color: Color(0xFFE5E7EB)),
+        ),
+        child: InkWell(
+          onTap: onPressed,
+          behavior: HitTestBehavior.opaque,
+          customBorder: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(11),
           ),
-          icon: Icon(icon, size: 21),
+          child: SizedBox(
+            width: 48,
+            height: 48,
+            child: Icon(icon, size: 22, color: foreground),
+          ),
         ),
       ),
     );

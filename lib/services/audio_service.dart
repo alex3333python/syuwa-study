@@ -32,12 +32,12 @@ class LearningAudio {
     final text = resolvedCue.japaneseText.trim();
     if (text.isEmpty) return;
 
-    final messenger = ScaffoldMessenger.of(context);
+    final messenger = ScaffoldMessenger.maybeOf(context);
     final view = View.of(context);
     final direction = Directionality.of(context);
     await SemanticsService.sendAnnouncement(view, text, direction);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
+    messenger?.hideCurrentSnackBar();
+    messenger?.showSnackBar(
       SnackBar(
         content: Text('音声「${resolvedCue.label}」を再生します。'),
         duration: const Duration(seconds: 2),

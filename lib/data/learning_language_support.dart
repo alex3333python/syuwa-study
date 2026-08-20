@@ -45,38 +45,57 @@ Map<AppLanguage, String> _mergedTranslations(
 ) {
   final merged = Map<AppLanguage, String>.from(existing);
   local.forEach((language, value) {
-    if (value.isNotEmpty) {
+    if (value.isNotEmpty && !_looksLikeJapaneseGloss(value)) {
       merged[language] = value;
     }
   });
   return merged;
 }
 
+bool _looksLikeJapaneseGloss(String value) {
+  return value.contains('です。') ||
+      value.contains('ことです。') ||
+      value.contains('ことです');
+}
+
+String? _mappedNative(_LearningTerm term, AppLanguage language) {
+  return switch (language) {
+    AppLanguage.portuguese => term.portuguese,
+    AppLanguage.tagalog => term.tagalog,
+    AppLanguage.vietnamese => term.vietnamese,
+    AppLanguage.japanese => '',
+  };
+}
+
+bool _usableNativeGloss(String? value, VocabularyEntry entry) {
+  return value != null &&
+      value.isNotEmpty &&
+      value != entry.simpleJapanese &&
+      !_looksLikeJapaneseGloss(value);
+}
+
+bool _sameLearningTerm(_LearningTerm term, VocabularyEntry entry) {
+  if (term.term == entry.term || term.surfaces.contains(entry.term)) {
+    return true;
+  }
+  if (entry.surfaces.contains(term.term)) {
+    return true;
+  }
+  return term.surfaces.any(entry.surfaces.contains);
+}
+
 /// Native-language gloss for a dictionary card. Never falls back to Japanese.
 String nativeMeaningFor(VocabularyEntry entry, AppLanguage language) {
   if (language == AppLanguage.japanese) return '';
 
-  bool usable(String? value) {
-    return value != null &&
-        value.isNotEmpty &&
-        value != entry.simpleJapanese;
-  }
-
-  if (usable(entry.translations[language])) {
-    return entry.translations[language]!;
-  }
-
   for (final term in _learningTerms) {
-    if (term.term != entry.term && !term.surfaces.contains(entry.term)) {
-      continue;
-    }
-    final mapped = switch (language) {
-      AppLanguage.portuguese => term.portuguese,
-      AppLanguage.tagalog => term.tagalog,
-      AppLanguage.vietnamese => term.vietnamese,
-      AppLanguage.japanese => '',
-    };
-    if (usable(mapped)) return mapped;
+    if (!_sameLearningTerm(term, entry)) continue;
+    final mapped = _mappedNative(term, language);
+    if (_usableNativeGloss(mapped, entry)) return mapped!;
+  }
+
+  if (_usableNativeGloss(entry.translations[language], entry)) {
+    return entry.translations[language]!;
   }
   return '';
 }
@@ -842,7 +861,7 @@ const _learningTerms = <_LearningTerm>[
     reading: 'ながいす',
     simpleJapanese: '何人かがいっしょにすわれる、長いいすです。',
     portuguese: 'banco comprido',
-    tagalog: 'mahabang upuan',
+    tagalog: 'mahabang upuan / bangko',
     vietnamese: 'ghế dài',
     example: '4人がけの長いすがあります。',
   ),
@@ -1016,7 +1035,7 @@ const _learningTerms = <_LearningTerm>[
     reading: 'ながいす',
     simpleJapanese: '何人かがすわれる長いいすです。',
     portuguese: 'banco comprido',
-    tagalog: 'mahabang upuan',
+    tagalog: 'mahabang upuan / bangko',
     vietnamese: 'ghế dài',
     example: '長椅子に4人すわります。',
   ),
