@@ -45,33 +45,44 @@ Map<AppLanguage, String> _mergedTranslations(
 ) {
   final merged = Map<AppLanguage, String>.from(existing);
   local.forEach((language, value) {
-    if (value.isNotEmpty && !_looksLikeJapaneseGloss(value)) {
-      merged[language] = value;
+    final usable = lookupNative({language: value}, language);
+    if (usable.isNotEmpty) {
+      merged[language] = usable;
     }
   });
   return merged;
 }
 
-bool _looksLikeJapaneseGloss(String value) {
-  return value.contains('です。') ||
-      value.contains('ことです。') ||
-      value.contains('ことです');
-}
+String nativeMeaningFor(VocabularyEntry entry, AppLanguage language) {
+  if (language == AppLanguage.japanese) return '';
 
-String? _mappedNative(_LearningTerm term, AppLanguage language) {
-  return switch (language) {
-    AppLanguage.portuguese => term.portuguese,
-    AppLanguage.tagalog => term.tagalog,
-    AppLanguage.vietnamese => term.vietnamese,
-    AppLanguage.japanese => '',
-  };
-}
+  if (entry.term == '長いす' ||
+      entry.term == '長椅子' ||
+      entry.reading == 'ながいす' ||
+      entry.surfaces.contains('長いす') ||
+      entry.surfaces.contains('長椅子')) {
+    return switch (language) {
+      AppLanguage.portuguese => 'banco comprido',
+      AppLanguage.tagalog => 'mahabang upuan / bangko',
+      AppLanguage.vietnamese => 'ghế dài',
+      AppLanguage.japanese => '',
+    };
+  }
 
-bool _usableNativeGloss(String? value, VocabularyEntry entry) {
-  return value != null &&
-      value.isNotEmpty &&
-      value != entry.simpleJapanese &&
-      !_looksLikeJapaneseGloss(value);
+  for (final term in _learningTerms) {
+    if (!_sameLearningTerm(term, entry)) continue;
+    final mapped = lookupNative(
+      nativeText(
+        portuguese: term.portuguese,
+        tagalog: term.tagalog,
+        vietnamese: term.vietnamese,
+      ),
+      language,
+    );
+    if (mapped.isNotEmpty) return mapped;
+  }
+
+  return lookupNative(entry.translations, language);
 }
 
 bool _sameLearningTerm(_LearningTerm term, VocabularyEntry entry) {
@@ -82,22 +93,6 @@ bool _sameLearningTerm(_LearningTerm term, VocabularyEntry entry) {
     return true;
   }
   return term.surfaces.any(entry.surfaces.contains);
-}
-
-/// Native-language gloss for a dictionary card. Never falls back to Japanese.
-String nativeMeaningFor(VocabularyEntry entry, AppLanguage language) {
-  if (language == AppLanguage.japanese) return '';
-
-  for (final term in _learningTerms) {
-    if (!_sameLearningTerm(term, entry)) continue;
-    final mapped = _mappedNative(term, language);
-    if (_usableNativeGloss(mapped, entry)) return mapped!;
-  }
-
-  if (_usableNativeGloss(entry.translations[language], entry)) {
-    return entry.translations[language]!;
-  }
-  return '';
 }
 
 /// Adds ruby markup to common school-math words while preserving existing

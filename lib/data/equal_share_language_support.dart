@@ -15,7 +15,7 @@ class SupportLine {
   String get rubyText => ruby.isNotEmpty ? ruby : japanese;
 
   String nativeFor(AppLanguage language) {
-    return native[language] ?? '';
+    return lookupNative(native, language);
   }
 }
 
@@ -33,7 +33,7 @@ class EquationSupport {
   });
 
   String nativeFor(AppLanguage language) {
-    return native[language] ?? '';
+    return lookupNative(native, language);
   }
 }
 
@@ -68,7 +68,7 @@ class LessonVocabulary {
   });
 
   String translationFor(AppLanguage language) {
-    return translations[language] ?? '';
+    return lookupNative(translations, language);
   }
 }
 
@@ -629,6 +629,17 @@ const remainderBasicLessonVocabulary = [
 ];
 
 const remainderContextLessonVocabulary = [
+  LessonVocabulary(
+    word: '長いす',
+    reading: 'ながいす',
+    explanation: '何人かがいっしょに座れるいすです。',
+    translations: {
+      AppLanguage.portuguese: 'banco comprido',
+      AppLanguage.tagalog: 'mahabang upuan / bangko',
+      AppLanguage.vietnamese: 'ghế dài',
+    },
+    visual: LessonVocabularyVisual.none,
+  ),
   LessonVocabulary(
     word: '必要',
     reading: 'ひつよう',

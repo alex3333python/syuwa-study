@@ -1292,11 +1292,19 @@ class _TimeMainLearn extends StatefulWidget {
 
 class _TimeMainLearnState extends State<_TimeMainLearn> {
   int _page = 0;
-  bool _showNative = false;
-  bool _showGuideNative = false;
+  late bool _showNative;
+  late bool _showGuideNative;
   int _minuteOffset = 0;
 
   static const _lastPage = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    final show = widget.selectedLanguage != AppLanguage.japanese;
+    _showNative = show;
+    _showGuideNative = show;
+  }
 
   void _previous() {
     if (_page == 0) return;
@@ -5819,9 +5827,15 @@ class _RemainderDivisionLearn extends StatefulWidget {
 
 class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
   int _page = 0;
-  bool _showNative = false;
+  late bool _showNative;
 
   static const _lastPage = 3;
+
+  @override
+  void initState() {
+    super.initState();
+    _showNative = widget.selectedLanguage != AppLanguage.japanese;
+  }
 
   void _previous() {
     if (_page == 0) return;
@@ -5960,9 +5974,15 @@ class _RemainderContextLearn extends StatefulWidget {
 
 class _RemainderContextLearnState extends State<_RemainderContextLearn> {
   int _page = 0;
-  bool _showNative = false;
+  late bool _showNative;
 
   static const _lastPage = 2;
+
+  @override
+  void initState() {
+    super.initState();
+    _showNative = widget.selectedLanguage != AppLanguage.japanese;
+  }
 
   void _previous() {
     if (_page == 0) return;
@@ -8654,6 +8674,28 @@ const _weightVocabularyEntries = [
   ),
 ];
 
+class LearnNativeScope extends InheritedWidget {
+  final bool showNative;
+  final AppLanguage language;
+  final VoidCallback toggleNative;
+
+  const LearnNativeScope({
+    required this.showNative,
+    required this.language,
+    required this.toggleNative,
+    required super.child,
+  });
+
+  static LearnNativeScope? maybeOf(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<LearnNativeScope>();
+  }
+
+  @override
+  bool updateShouldNotify(LearnNativeScope oldWidget) {
+    return showNative != oldWidget.showNative || language != oldWidget.language;
+  }
+}
+
 class _RemainderLearnShell extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -8687,7 +8729,11 @@ class _RemainderLearnShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return LearnNativeScope(
+      showNative: showNative,
+      language: selectedLanguage,
+      toggleNative: onToggleNative,
+      child: Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -8769,6 +8815,7 @@ class _RemainderLearnShell extends StatelessWidget {
             ],
           ),
         ],
+      ),
       ),
     );
   }
@@ -13427,14 +13474,18 @@ class _EqualShareInteractiveLearnState
   final List<int?> _berryPlates = List<int?>.filled(_berryCount, null);
   late String _message;
   bool _isCorrect = false;
-  bool _showProblemNative = false;
-  bool _showInstructionNative = false;
-  bool _showResultNative = false;
+  late bool _showProblemNative;
+  late bool _showInstructionNative;
+  late bool _showResultNative;
 
   @override
   void initState() {
     super.initState();
     _message = widget.instructionLine.japanese;
+    final show = widget.selectedLanguage != AppLanguage.japanese;
+    _showProblemNative = show;
+    _showInstructionNative = show;
+    _showResultNative = show;
   }
 
   void _moveBerry(int berryIndex, int? plateIndex) {
@@ -13502,7 +13553,17 @@ class _EqualShareInteractiveLearnState
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return LearnNativeScope(
+      showNative: _showProblemNative,
+      language: widget.selectedLanguage,
+      toggleNative: () {
+        setState(() {
+          _showProblemNative = !_showProblemNative;
+          _showInstructionNative = _showProblemNative;
+          _showResultNative = _showProblemNative;
+        });
+      },
+      child: Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -13630,6 +13691,7 @@ class _EqualShareInteractiveLearnState
                 : const SizedBox.shrink(key: ValueKey('empty-result')),
           ),
         ],
+      ),
       ),
     );
   }
@@ -14010,6 +14072,9 @@ class _SupportedTextLines extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final nativeScope = LearnNativeScope.maybeOf(context);
+    final effectiveLanguage = nativeScope?.language ?? language;
+    final effectiveShowNative = nativeScope?.showNative ?? showNative;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -14017,7 +14082,7 @@ class _SupportedTextLines extends StatelessWidget {
           RubyText(
             text: line.rubyText,
             vocabularyEntries: vocabularyEntries,
-            language: language,
+            language: effectiveLanguage,
             enableLearningSupport: enableLearningSupport,
             learningSupportRubyOnly: learningSupportRubyOnly,
             learningSupportMode: learningSupportMode,
@@ -14028,17 +14093,17 @@ class _SupportedTextLines extends StatelessWidget {
               fontWeight: fontWeight,
             ),
           ),
-          if (showNative &&
-              language != AppLanguage.japanese &&
-              line.nativeFor(language).isNotEmpty) ...[
-            const SizedBox(height: 3),
+          if (effectiveShowNative &&
+              effectiveLanguage != AppLanguage.japanese &&
+              line.nativeFor(effectiveLanguage).isNotEmpty) ...[
+            const SizedBox(height: 4),
             Text(
-              line.nativeFor(language),
+              line.nativeFor(effectiveLanguage),
               style: const TextStyle(
-                color: Color(0xFF1D4ED8),
-                fontSize: 16,
-                height: 1.35,
-                fontWeight: FontWeight.w800,
+                color: Color(0xFF64748B),
+                fontSize: 15,
+                height: 1.4,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -14068,15 +14133,21 @@ class _IconSupportActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final nativeScope = LearnNativeScope.maybeOf(context);
+    final effectiveLanguage = nativeScope?.language ?? language;
+    final effectiveShowNative = nativeScope?.showNative ?? showNative;
+    final onToggle = nativeScope?.toggleNative ?? onToggleNative;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (language != AppLanguage.japanese) ...[
+        if (effectiveLanguage != AppLanguage.japanese) ...[
           _SupportIconButton(
             icon: Icons.translate_rounded,
-            label: translateLabel,
-            selected: showNative,
-            onPressed: onToggleNative,
+            label: effectiveShowNative
+                ? '日本語で見る'
+                : '${effectiveLanguage.label}で見る',
+            selected: effectiveShowNative,
+            onPressed: onToggle,
           ),
           const SizedBox(width: 6),
         ],
@@ -14109,27 +14180,21 @@ class _SupportIconButton extends StatelessWidget {
     final foreground = selected
         ? const Color(0xFF2563EB)
         : const Color(0xFF374151);
-    return Tooltip(
-      message: label,
-      child: Material(
-        color: background,
+    return IconButton(
+      onPressed: onPressed,
+      isSelected: selected,
+      tooltip: label,
+      constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+      style: IconButton.styleFrom(
+        backgroundColor: background,
+        foregroundColor: foreground,
+        disabledBackgroundColor: background,
+        side: const BorderSide(color: Color(0xFFE5E7EB)),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(11),
-          side: const BorderSide(color: Color(0xFFE5E7EB)),
-        ),
-        child: InkWell(
-          onTap: onPressed,
-          behavior: HitTestBehavior.opaque,
-          customBorder: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(11),
-          ),
-          child: SizedBox(
-            width: 48,
-            height: 48,
-            child: Icon(icon, size: 22, color: foreground),
-          ),
         ),
       ),
+      icon: Icon(icon, size: 22),
     );
   }
 }
