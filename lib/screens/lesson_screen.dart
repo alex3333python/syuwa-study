@@ -1299,19 +1299,11 @@ class _TimeMainLearn extends StatefulWidget {
 
 class _TimeMainLearnState extends State<_TimeMainLearn> {
   int _page = 0;
-  late bool _showNative;
-  late bool _showGuideNative;
+  bool _showNative = false;
+  bool _showGuideNative = false;
   int _minuteOffset = 0;
 
   static const _lastPage = 1;
-
-  @override
-  void initState() {
-    super.initState();
-    final show = widget.selectedLanguage != AppLanguage.japanese;
-    _showNative = show;
-    _showGuideNative = show;
-  }
 
   void _previous() {
     if (_page == 0) return;
@@ -5834,15 +5826,9 @@ class _RemainderDivisionLearn extends StatefulWidget {
 
 class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
   int _page = 0;
-  late bool _showNative;
+  bool _showNative = false;
 
   static const _lastPage = 3;
-
-  @override
-  void initState() {
-    super.initState();
-    _showNative = widget.selectedLanguage != AppLanguage.japanese;
-  }
 
   void _previous() {
     if (_page == 0) return;
@@ -5981,15 +5967,9 @@ class _RemainderContextLearn extends StatefulWidget {
 
 class _RemainderContextLearnState extends State<_RemainderContextLearn> {
   int _page = 0;
-  late bool _showNative;
+  bool _showNative = false;
 
   static const _lastPage = 2;
-
-  @override
-  void initState() {
-    super.initState();
-    _showNative = widget.selectedLanguage != AppLanguage.japanese;
-  }
 
   void _previous() {
     if (_page == 0) return;
@@ -13481,18 +13461,14 @@ class _EqualShareInteractiveLearnState
   final List<int?> _berryPlates = List<int?>.filled(_berryCount, null);
   late String _message;
   bool _isCorrect = false;
-  late bool _showProblemNative;
-  late bool _showInstructionNative;
-  late bool _showResultNative;
+  bool _showProblemNative = false;
+  bool _showInstructionNative = false;
+  bool _showResultNative = false;
 
   @override
   void initState() {
     super.initState();
     _message = widget.instructionLine.japanese;
-    final show = widget.selectedLanguage != AppLanguage.japanese;
-    _showProblemNative = show;
-    _showInstructionNative = show;
-    _showResultNative = show;
   }
 
   void _moveBerry(int berryIndex, int? plateIndex) {
@@ -14084,6 +14060,7 @@ class _SupportedTextLines extends StatelessWidget {
       context,
       nativeScope?.language ?? language,
     );
+    final effectiveShowNative = nativeScope?.showNative ?? showNative;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -14102,7 +14079,8 @@ class _SupportedTextLines extends StatelessWidget {
               fontWeight: fontWeight,
             ),
           ),
-          if (effectiveLanguage != AppLanguage.japanese &&
+          if (effectiveShowNative &&
+              effectiveLanguage != AppLanguage.japanese &&
               line.nativeFor(effectiveLanguage).isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
