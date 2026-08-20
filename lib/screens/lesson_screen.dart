@@ -1310,6 +1310,7 @@ class _TimeMainLearnState extends State<_TimeMainLearn> {
     setState(() {
       _page--;
       _minuteOffset = 0;
+      _showNative = false;
       _showGuideNative = false;
     });
   }
@@ -1319,6 +1320,7 @@ class _TimeMainLearnState extends State<_TimeMainLearn> {
     setState(() {
       _page++;
       _minuteOffset = 0;
+      _showNative = false;
       _showGuideNative = false;
     });
   }
@@ -1581,12 +1583,14 @@ class _ShortTimeLearnState extends State<_ShortTimeLearn> {
         if (_page == 0) return;
         setState(() {
           _page--;
+          _showNative = false;
         });
       },
       onNext: () {
         if (_page == _lastPage) return;
         setState(() {
           _page++;
+          _showNative = false;
         });
       },
       child: Column(
@@ -1941,6 +1945,14 @@ class _TimeResultBox extends StatefulWidget {
 
 class _TimeResultBoxState extends State<_TimeResultBox> {
   bool _showNative = false;
+
+  @override
+  void didUpdateWidget(covariant _TimeResultBox oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.page.answer != widget.page.answer) {
+      _showNative = false;
+    }
+  }
 
   String get _nativeAnswer {
     final isArrival = widget.page.answer == '午前8時10分';
@@ -2875,6 +2887,14 @@ class _InlineExplanationSupportState extends State<_InlineExplanationSupport> {
   bool _showNative = false;
 
   @override
+  void didUpdateWidget(covariant _InlineExplanationSupport oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.line.japanese != widget.line.japanese) {
+      _showNative = false;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
@@ -3150,11 +3170,21 @@ class _LengthMeasureLearnState extends State<_LengthMeasureLearn> {
       lastPage: _lastPage,
       onPrevious: () {
         if (_page == 0) return;
-        setState(() => _page--);
+        setState(() {
+          _page--;
+          _showNative = false;
+          _showRulerGuideNative = false;
+          _showTapeGuideNative = false;
+        });
       },
       onNext: () {
         if (_page == _lastPage) return;
-        setState(() => _page++);
+        setState(() {
+          _page++;
+          _showNative = false;
+          _showRulerGuideNative = false;
+          _showTapeGuideNative = false;
+        });
       },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -3617,6 +3647,15 @@ class _LengthResultBox extends StatefulWidget {
 
 class _LengthResultBoxState extends State<_LengthResultBox> {
   bool _showNative = false;
+
+  @override
+  void didUpdateWidget(covariant _LengthResultBox oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.audioText != widget.audioText ||
+        oldWidget.answer != widget.answer) {
+      _showNative = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -4768,13 +4807,17 @@ class _KilometerLearnState extends State<_KilometerLearn> {
       lastPage: _lastPage,
       onPrevious: () {
         if (currentPage == 0) return;
-        setState(() => _page = currentPage - 1);
+        setState(() {
+          _page = currentPage - 1;
+          _showNative = false;
+        });
       },
       onNext: () {
         if (currentPage == _lastPage) return;
         setState(() {
           if (currentPage == 0) _routeStep = 0;
           _page = currentPage + 1;
+          _showNative = false;
         });
       },
       child: Column(
@@ -5613,6 +5656,7 @@ class _MultiplicationDivisionLearnState
     if (_page == 0) return;
     setState(() {
       _page--;
+      _showNative = false;
     });
   }
 
@@ -5620,6 +5664,7 @@ class _MultiplicationDivisionLearnState
     if (_page == _lastPage) return;
     setState(() {
       _page++;
+      _showNative = false;
     });
   }
 
@@ -5830,12 +5875,18 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
 
   void _previous() {
     if (_page == 0) return;
-    setState(() => _page--);
+    setState(() {
+      _page--;
+      _showNative = false;
+    });
   }
 
   void _next() {
     if (_page == _lastPage) return;
-    setState(() => _page++);
+    setState(() {
+      _page++;
+      _showNative = false;
+    });
   }
 
   void _speak() {
@@ -5971,12 +6022,18 @@ class _RemainderContextLearnState extends State<_RemainderContextLearn> {
 
   void _previous() {
     if (_page == 0) return;
-    setState(() => _page--);
+    setState(() {
+      _page--;
+      _showNative = false;
+    });
   }
 
   void _next() {
     if (_page == _lastPage) return;
-    setState(() => _page++);
+    setState(() {
+      _page++;
+      _showNative = false;
+    });
   }
 
   void _speak() {
@@ -6214,8 +6271,26 @@ class _WeightGramKgLearnState extends State<_WeightGramKgLearn> {
       onAudio: _speak,
       page: _page,
       lastPage: _lastPage,
-      onPrevious: () => setState(() => _page = math.max(0, _page - 1)),
-      onNext: () => setState(() => _page = math.min(_lastPage, _page + 1)),
+      onPrevious: () => setState(() {
+        _page = math.max(0, _page - 1);
+        _showNative = false;
+        _showComparisonInstructionNative = false;
+        _showComparisonResultNative = false;
+        _showScaleInstructionNative = false;
+        _showScaleResultNative = false;
+        _showThousandInstructionNative = false;
+        _showThousandResultNative = false;
+      }),
+      onNext: () => setState(() {
+        _page = math.min(_lastPage, _page + 1);
+        _showNative = false;
+        _showComparisonInstructionNative = false;
+        _showComparisonResultNative = false;
+        _showScaleInstructionNative = false;
+        _showScaleResultNative = false;
+        _showThousandInstructionNative = false;
+        _showThousandResultNative = false;
+      }),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -7148,8 +7223,18 @@ class _WeightTonLearnState extends State<_WeightTonLearn> {
       onAudio: _speak,
       page: _page,
       lastPage: _lastPage,
-      onPrevious: () => setState(() => _page = math.max(0, _page - 1)),
-      onNext: () => setState(() => _page = math.min(_lastPage, _page + 1)),
+      onPrevious: () => setState(() {
+        _page = math.max(0, _page - 1);
+        _showNative = false;
+        _showLoadInstructionNative = false;
+        _showLoadResultNative = false;
+      }),
+      onNext: () => setState(() {
+        _page = math.min(_lastPage, _page + 1);
+        _showNative = false;
+        _showLoadInstructionNative = false;
+        _showLoadResultNative = false;
+      }),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -8751,7 +8836,12 @@ class _RemainderLearnShell extends StatelessWidget {
           Row(
             children: [
               OutlinedButton(
-                onPressed: page == 0 ? null : onPrevious,
+                onPressed: page == 0
+                    ? null
+                    : () {
+                        if (showNative) onToggleNative();
+                        onPrevious();
+                      },
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size(120, 48),
                   shape: RoundedRectangleBorder(
@@ -8762,7 +8852,12 @@ class _RemainderLearnShell extends StatelessWidget {
               ),
               const Spacer(),
               FilledButton(
-                onPressed: page == lastPage ? null : onNext,
+                onPressed: page == lastPage
+                    ? null
+                    : () {
+                        if (showNative) onToggleNative();
+                        onNext();
+                      },
                 style: FilledButton.styleFrom(
                   minimumSize: const Size(140, 48),
                   shape: RoundedRectangleBorder(
@@ -12190,6 +12285,7 @@ class _ZeroOneDivisionLearnState extends State<_ZeroOneDivisionLearn> {
     setState(() {
       _scenarioIndex = index;
       _showResult = false;
+      _showProblemNative = false;
       _showInstructionNative = false;
       _showResultNative = false;
       for (var i = 0; i < _berryOwners.length; i++) {
@@ -14080,7 +14176,7 @@ class _IconSupportActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final effectiveLanguage = LessonLanguageScope.of(context, language);
-    return Row(
+    return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         if (effectiveLanguage != AppLanguage.japanese) ...[
@@ -14092,7 +14188,7 @@ class _IconSupportActions extends StatelessWidget {
             selected: showNative,
             onPressed: onToggleNative,
           ),
-          const SizedBox(width: 6),
+          const SizedBox(height: 6),
         ],
         _SupportIconButton(
           icon: Icons.volume_up_rounded,
