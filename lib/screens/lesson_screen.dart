@@ -1426,9 +1426,7 @@ class _TimeMainLearnState extends State<_TimeMainLearn> {
       showNative: _showNative,
       onToggleNative: () {
         setState(() {
-          final next = !_showNative;
-          _showNative = next;
-          _showGuideNative = next;
+          _showNative = !_showNative;
         });
       },
       onAudio: _speak,
@@ -1942,7 +1940,8 @@ class _TimeResultBox extends StatefulWidget {
 }
 
 class _TimeResultBoxState extends State<_TimeResultBox> {
-  bool _showNative = false;
+  bool _showAnswerNative = false;
+  bool _showExplanationNative = false;
 
   String get _nativeAnswer {
     final isArrival = widget.page.answer == '午前8時10分';
@@ -2010,13 +2009,13 @@ class _TimeResultBoxState extends State<_TimeResultBox> {
               ),
               _IconSupportActions(
                 language: widget.selectedLanguage,
-                showNative: _showNative,
-                translateLabel: _showNative
+                showNative: _showAnswerNative,
+                translateLabel: _showAnswerNative
                     ? '日本語で見る'
                     : '${widget.selectedLanguage.label}で見る',
                 audioLabel: '答えの説明を聞く',
                 onToggleNative: () {
-                  setState(() => _showNative = !_showNative);
+                  setState(() => _showAnswerNative = !_showAnswerNative);
                 },
                 onAudio: () => LearningAudio.speakJapanese(
                   context,
@@ -2026,7 +2025,7 @@ class _TimeResultBoxState extends State<_TimeResultBox> {
               ),
             ],
           ),
-          if (_showNative && _nativeAnswer.isNotEmpty)
+          if (_showAnswerNative && _nativeAnswer.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(left: 40, top: 2),
               child: Text(
@@ -2040,28 +2039,60 @@ class _TimeResultBoxState extends State<_TimeResultBox> {
               ),
             ),
           const SizedBox(height: 12),
-          Text(
-            widget.page.explanation,
-            style: TextStyle(
-              color: Color(0xFF111827),
-              fontSize: 17,
-              height: 1.55,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          if (_showNative && _nativeExplanation.isNotEmpty) ...[
-            const SizedBox(height: 6),
-            Text(
-              _nativeExplanation,
-              style: const TextStyle(
-                fontFamily: AppFonts.interface,
-                color: Color(0xFF047857),
-                fontSize: 15,
-                height: 1.45,
-                fontWeight: FontWeight.w600,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.page.explanation,
+                      style: TextStyle(
+                        color: Color(0xFF111827),
+                        fontSize: 17,
+                        height: 1.55,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    if (_showExplanationNative &&
+                        _nativeExplanation.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        _nativeExplanation,
+                        style: const TextStyle(
+                          fontFamily: AppFonts.interface,
+                          color: Color(0xFF047857),
+                          fontSize: 15,
+                          height: 1.45,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
-            ),
-          ],
+              if (widget.selectedLanguage != AppLanguage.japanese) ...[
+                const SizedBox(width: 10),
+                _IconSupportActions(
+                  language: widget.selectedLanguage,
+                  showNative: _showExplanationNative,
+                  translateLabel: widget.selectedLanguage.label,
+                  audioLabel: '解説の音声',
+                  onToggleNative: () {
+                    setState(
+                      () => _showExplanationNative = !_showExplanationNative,
+                    );
+                  },
+                  onAudio: () => LearningAudio.speakJapanese(
+                    context,
+                    label: '解説',
+                    text: widget.page.explanation,
+                  ),
+                ),
+              ],
+            ],
+          ),
           const SizedBox(height: 18),
           Wrap(
             spacing: 14,
@@ -3146,12 +3177,7 @@ class _LengthMeasureLearnState extends State<_LengthMeasureLearn> {
       titleVocabularyEntries: _lengthVocabularyEntries,
       selectedLanguage: widget.selectedLanguage,
       showNative: _showNative,
-      onToggleNative: () => setState(() {
-        final next = !_showNative;
-        _showNative = next;
-        _showRulerGuideNative = next;
-        _showTapeGuideNative = next;
-      }),
+      onToggleNative: () => setState(() => _showNative = !_showNative),
       onAudio: _speak,
       page: _page,
       lastPage: _lastPage,
@@ -3623,7 +3649,8 @@ class _LengthResultBox extends StatefulWidget {
 }
 
 class _LengthResultBoxState extends State<_LengthResultBox> {
-  bool _showNative = false;
+  bool _showTitleNative = false;
+  bool _showBodyNative = false;
 
   @override
   Widget build(BuildContext context) {
@@ -3682,12 +3709,15 @@ class _LengthResultBoxState extends State<_LengthResultBox> {
                           ],
                         ),
                       ),
-                      if (_showNative &&
+                      if (_showTitleNative &&
                           widget.language != AppLanguage.japanese &&
-                          widget.nativeTitle[widget.language] != null) ...[
+                          lookupNative(
+                            widget.nativeTitle,
+                            widget.language,
+                          ).isNotEmpty) ...[
                         const SizedBox(height: 2),
                         Text(
-                          widget.nativeTitle[widget.language]!,
+                          lookupNative(widget.nativeTitle, widget.language),
                           style: const TextStyle(
                             color: Color(0xFF475569),
                             fontSize: 15,
@@ -3702,11 +3732,11 @@ class _LengthResultBoxState extends State<_LengthResultBox> {
                 const SizedBox(width: 10),
                 _IconSupportActions(
                   language: widget.language,
-                  showNative: _showNative,
+                  showNative: _showTitleNative,
                   translateLabel: widget.language.label,
                   audioLabel: '音声',
                   onToggleNative: () {
-                    setState(() => _showNative = !_showNative);
+                    setState(() => _showTitleNative = !_showTitleNative);
                   },
                   onAudio: () {
                     LearningAudio.speakJapanese(
@@ -3719,19 +3749,53 @@ class _LengthResultBoxState extends State<_LengthResultBox> {
               ],
             ),
             const SizedBox(height: 8),
-            for (final line in widget.japaneseLines) Text(line),
-            if (_showNative) ...[
-              const SizedBox(height: 8),
-              for (final line in widget.nativeLines[widget.language] ??
-                  const <String>[])
-                Text(
-                  line,
-                  style: const TextStyle(
-                    color: Color(0xFF475569),
-                    fontWeight: FontWeight.w700,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (final line in widget.japaneseLines) Text(line),
+                      if (_showBodyNative) ...[
+                        const SizedBox(height: 8),
+                        for (final line
+                            in widget.nativeLines[widget.language] ??
+                                const <String>[])
+                          Text(
+                            line,
+                            style: const TextStyle(
+                              color: Color(0xFF475569),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                      ],
+                    ],
                   ),
                 ),
-            ],
+                if (widget.language != AppLanguage.japanese &&
+                    (widget.nativeLines[widget.language] ?? const <String>[])
+                        .isNotEmpty) ...[
+                  const SizedBox(width: 10),
+                  _IconSupportActions(
+                    language: widget.language,
+                    showNative: _showBodyNative,
+                    translateLabel: widget.language.label,
+                    audioLabel: '解説の音声',
+                    onToggleNative: () {
+                      setState(() => _showBodyNative = !_showBodyNative);
+                    },
+                    onAudio: () {
+                      LearningAudio.speakJapanese(
+                        context,
+                        label: '長さの解説',
+                        text: widget.japaneseLines.join(' '),
+                      );
+                    },
+                  ),
+                ],
+              ],
+            ),
           ],
         ),
       ),
@@ -8117,7 +8181,7 @@ class _SoftResultBox extends StatelessWidget {
   }
 }
 
-class _WeightSupportedResultBox extends StatelessWidget {
+class _WeightSupportedResultBox extends StatefulWidget {
   final String title;
   final Map<AppLanguage, String> nativeTitle;
   final SupportLine explanation;
@@ -8139,10 +8203,22 @@ class _WeightSupportedResultBox extends StatelessWidget {
   });
 
   @override
+  State<_WeightSupportedResultBox> createState() =>
+      _WeightSupportedResultBoxState();
+}
+
+class _WeightSupportedResultBoxState extends State<_WeightSupportedResultBox> {
+  bool _showExplanationNative = false;
+
+  @override
   Widget build(BuildContext context) {
-    final translatedTitle = nativeTitle[selectedLanguage] ?? '';
+    final translatedTitle = lookupNative(
+      widget.nativeTitle,
+      widget.selectedLanguage,
+    );
     final canShowNative =
-        selectedLanguage != AppLanguage.japanese && translatedTitle.isNotEmpty;
+        widget.selectedLanguage != AppLanguage.japanese &&
+        translatedTitle.isNotEmpty;
 
     return Container(
       width: double.infinity,
@@ -8171,7 +8247,7 @@ class _WeightSupportedResultBox extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      widget.title,
                       style: const TextStyle(
                         fontFamily: AppFonts.display,
                         fontSize: 28,
@@ -8180,7 +8256,7 @@ class _WeightSupportedResultBox extends StatelessWidget {
                         color: Color(0xFF059669),
                       ),
                     ),
-                    if (showNative && canShowNative) ...[
+                    if (widget.showNative && canShowNative) ...[
                       const SizedBox(height: 3),
                       Text(
                         translatedTitle,
@@ -8198,50 +8274,86 @@ class _WeightSupportedResultBox extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               _IconSupportActions(
-                language: selectedLanguage,
-                showNative: showNative,
-                translateLabel: showNative
+                language: widget.selectedLanguage,
+                showNative: widget.showNative,
+                translateLabel: widget.showNative
                     ? '日本語で見る'
-                    : '${selectedLanguage.label}で見る',
-                audioLabel: audioLabel,
-                onToggleNative: onToggleNative,
+                    : '${widget.selectedLanguage.label}で見る',
+                audioLabel: widget.audioLabel,
+                onToggleNative: widget.onToggleNative,
                 onAudio: () => LearningAudio.speakJapanese(
                   context,
                   label: '重さの説明',
-                  text: '$title ${explanation.japanese}',
+                  text: '${widget.title} ${widget.explanation.japanese}',
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          RubyText(
-            text: explanation.rubyText,
-            vocabularyEntries: vocabularyEntries,
-            language: selectedLanguage,
-            enableLearningSupport: true,
-            style: const TextStyle(
-              fontFamily: AppFonts.interface,
-              fontSize: 17,
-              height: 1.55,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF111827),
-            ),
-          ),
-          if (showNative &&
-              selectedLanguage != AppLanguage.japanese &&
-              explanation.nativeFor(selectedLanguage).isNotEmpty) ...[
-            const SizedBox(height: 7),
-            Text(
-              explanation.nativeFor(selectedLanguage),
-              style: const TextStyle(
-                fontFamily: AppFonts.interface,
-                fontSize: 15,
-                height: 1.45,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF475569),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    RubyText(
+                      text: widget.explanation.rubyText,
+                      vocabularyEntries: widget.vocabularyEntries,
+                      language: widget.selectedLanguage,
+                      enableLearningSupport: true,
+                      style: const TextStyle(
+                        fontFamily: AppFonts.interface,
+                        fontSize: 17,
+                        height: 1.55,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                    if (_showExplanationNative &&
+                        widget.selectedLanguage != AppLanguage.japanese &&
+                        widget.explanation
+                            .nativeFor(widget.selectedLanguage)
+                            .isNotEmpty) ...[
+                      const SizedBox(height: 7),
+                      Text(
+                        widget.explanation.nativeFor(widget.selectedLanguage),
+                        style: const TextStyle(
+                          fontFamily: AppFonts.interface,
+                          fontSize: 15,
+                          height: 1.45,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF475569),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
-            ),
-          ],
+              if (widget.selectedLanguage != AppLanguage.japanese &&
+                  widget.explanation
+                      .nativeFor(widget.selectedLanguage)
+                      .isNotEmpty) ...[
+                const SizedBox(width: 10),
+                _IconSupportActions(
+                  language: widget.selectedLanguage,
+                  showNative: _showExplanationNative,
+                  translateLabel: widget.selectedLanguage.label,
+                  audioLabel: '解説の音声',
+                  onToggleNative: () {
+                    setState(
+                      () => _showExplanationNative = !_showExplanationNative,
+                    );
+                  },
+                  onAudio: () => LearningAudio.speakJapanese(
+                    context,
+                    label: '重さの解説',
+                    text: widget.explanation.japanese,
+                  ),
+                ),
+              ],
+            ],
+          ),
         ],
       ),
     );
@@ -8663,28 +8775,6 @@ const _weightVocabularyEntries = [
   ),
 ];
 
-class LearnNativeScope extends InheritedWidget {
-  final bool showNative;
-  final AppLanguage language;
-  final VoidCallback toggleNative;
-
-  const LearnNativeScope({
-    required this.showNative,
-    required this.language,
-    required this.toggleNative,
-    required super.child,
-  });
-
-  static LearnNativeScope? maybeOf(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<LearnNativeScope>();
-  }
-
-  @override
-  bool updateShouldNotify(LearnNativeScope oldWidget) {
-    return showNative != oldWidget.showNative || language != oldWidget.language;
-  }
-}
-
 class _RemainderLearnShell extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -8718,11 +8808,7 @@ class _RemainderLearnShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LearnNativeScope(
-      showNative: showNative,
-      language: selectedLanguage,
-      toggleNative: onToggleNative,
-      child: Container(
+    return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -8804,7 +8890,6 @@ class _RemainderLearnShell extends StatelessWidget {
             ],
           ),
         ],
-      ),
       ),
     );
   }
@@ -13543,17 +13628,7 @@ class _EqualShareInteractiveLearnState
 
   @override
   Widget build(BuildContext context) {
-    return LearnNativeScope(
-      showNative: _showProblemNative,
-      language: widget.selectedLanguage,
-      toggleNative: () {
-        setState(() {
-          _showProblemNative = !_showProblemNative;
-          _showInstructionNative = _showProblemNative;
-          _showResultNative = _showProblemNative;
-        });
-      },
-      child: Container(
+    return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -13681,7 +13756,6 @@ class _EqualShareInteractiveLearnState
                 : const SizedBox.shrink(key: ValueKey('empty-result')),
           ),
         ],
-      ),
       ),
     );
   }
@@ -14062,12 +14136,7 @@ class _SupportedTextLines extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nativeScope = LearnNativeScope.maybeOf(context);
-    final effectiveLanguage = LessonLanguageScope.of(
-      context,
-      nativeScope?.language ?? language,
-    );
-    final effectiveShowNative = nativeScope?.showNative ?? showNative;
+    final effectiveLanguage = LessonLanguageScope.of(context, language);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -14086,7 +14155,7 @@ class _SupportedTextLines extends StatelessWidget {
               fontWeight: fontWeight,
             ),
           ),
-          if (effectiveShowNative &&
+          if (showNative &&
               effectiveLanguage != AppLanguage.japanese &&
               line.nativeFor(effectiveLanguage).isNotEmpty) ...[
             const SizedBox(height: 4),
@@ -14126,21 +14195,18 @@ class _IconSupportActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nativeScope = LearnNativeScope.maybeOf(context);
-    final effectiveLanguage = nativeScope?.language ?? language;
-    final effectiveShowNative = nativeScope?.showNative ?? showNative;
-    final onToggle = nativeScope?.toggleNative ?? onToggleNative;
+    final effectiveLanguage = LessonLanguageScope.of(context, language);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         if (effectiveLanguage != AppLanguage.japanese) ...[
           _SupportIconButton(
             icon: Icons.translate_rounded,
-            label: effectiveShowNative
+            label: showNative
                 ? '日本語で見る'
                 : '${effectiveLanguage.label}で見る',
-            selected: effectiveShowNative,
-            onPressed: onToggle,
+            selected: showNative,
+            onPressed: onToggleNative,
           ),
           const SizedBox(width: 6),
         ],
