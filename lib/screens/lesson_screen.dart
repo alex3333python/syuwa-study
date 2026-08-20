@@ -4516,7 +4516,7 @@ class _ToolChoiceSummaryPanelState extends State<_ToolChoiceSummaryPanel> {
             ),
             _SupportIconButton(
               icon: Icons.translate_rounded,
-              label: 'Português',
+              label: LessonLanguageScope.of(context, AppLanguage.japanese).label,
               selected: _showNative,
               onPressed: () => setState(() => _showNative = !_showNative),
             ),
@@ -4541,8 +4541,16 @@ class _ToolChoiceSummaryPanelState extends State<_ToolChoiceSummaryPanel> {
                     feature: '短い・まっすぐ',
                     tool: 'ものさし',
                     reason: '短いから',
-                    nativeFeature: 'curto e reto',
-                    nativeReason: 'porque é curto',
+                    nativeFeature: nativeText(
+                      portuguese: 'curto e reto',
+                      tagalog: 'maikli at tuwid',
+                      vietnamese: 'ngắn và thẳng',
+                    ),
+                    nativeReason: nativeText(
+                      portuguese: 'porque é curto',
+                      tagalog: 'dahil maikli',
+                      vietnamese: 'vì ngắn',
+                    ),
                     showNative: _showNative,
                   ),
                 ),
@@ -4554,8 +4562,16 @@ class _ToolChoiceSummaryPanelState extends State<_ToolChoiceSummaryPanel> {
                     feature: '短い・まっすぐ',
                     tool: 'ものさし',
                     reason: '短くて、はしが見やすいから',
-                    nativeFeature: 'curto e reto',
-                    nativeReason: 'porque é curto e dá para ver as pontas',
+                    nativeFeature: nativeText(
+                      portuguese: 'curto e reto',
+                      tagalog: 'maikli at tuwid',
+                      vietnamese: 'ngắn và thẳng',
+                    ),
+                    nativeReason: nativeText(
+                      portuguese: 'porque é curto e dá para ver as pontas',
+                      tagalog: 'dahil maikli at kitang-kita ang dulo',
+                      vietnamese: 'vì ngắn và thấy rõ hai đầu',
+                    ),
                     showNative: _showNative,
                   ),
                 ),
@@ -4567,8 +4583,16 @@ class _ToolChoiceSummaryPanelState extends State<_ToolChoiceSummaryPanel> {
                     feature: '長い',
                     tool: 'まきじゃく',
                     reason: '長いから',
-                    nativeFeature: 'comprido',
-                    nativeReason: 'porque é comprido',
+                    nativeFeature: nativeText(
+                      portuguese: 'comprido',
+                      tagalog: 'mahaba',
+                      vietnamese: 'dài',
+                    ),
+                    nativeReason: nativeText(
+                      portuguese: 'porque é comprido',
+                      tagalog: 'dahil mahaba',
+                      vietnamese: 'vì dài',
+                    ),
                     showNative: _showNative,
                   ),
                 ),
@@ -4580,8 +4604,16 @@ class _ToolChoiceSummaryPanelState extends State<_ToolChoiceSummaryPanel> {
                     feature: 'まるい',
                     tool: 'まきじゃく',
                     reason: 'まるいから',
-                    nativeFeature: 'redondo',
-                    nativeReason: 'porque é redondo',
+                    nativeFeature: nativeText(
+                      portuguese: 'redondo',
+                      tagalog: 'bilog',
+                      vietnamese: 'tròn',
+                    ),
+                    nativeReason: nativeText(
+                      portuguese: 'porque é redondo',
+                      tagalog: 'dahil bilog',
+                      vietnamese: 'vì tròn',
+                    ),
                     showNative: _showNative,
                   ),
                 ),
@@ -4600,8 +4632,8 @@ class _ToolChoiceChip extends StatelessWidget {
   final String feature;
   final String tool;
   final String reason;
-  final String nativeFeature;
-  final String nativeReason;
+  final Map<AppLanguage, String> nativeFeature;
+  final Map<AppLanguage, String> nativeReason;
   final bool showNative;
 
   const _ToolChoiceChip({
@@ -4617,8 +4649,13 @@ class _ToolChoiceChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final featureText = showNative ? nativeFeature : feature;
-    final reasonText = showNative ? nativeReason : reason;
+    final language = LessonLanguageScope.of(context, AppLanguage.japanese);
+    final translatedFeature = lookupNative(nativeFeature, language);
+    final translatedReason = lookupNative(nativeReason, language);
+    final featureText =
+        showNative && translatedFeature.isNotEmpty ? translatedFeature : feature;
+    final reasonText =
+        showNative && translatedReason.isNotEmpty ? translatedReason : reason;
     return Container(
       constraints: const BoxConstraints(minHeight: 116),
       padding: const EdgeInsets.all(16),
@@ -4982,7 +5019,10 @@ class _DistanceConceptBoxState extends State<_DistanceConceptBox> {
                       children: [
                         _SupportIconButton(
                           icon: Icons.translate_rounded,
-                          label: 'Português',
+                          label: LessonLanguageScope.of(
+                            context,
+                            AppLanguage.japanese,
+                          ).label,
                           selected: _showNative,
                           onPressed: () =>
                               setState(() => _showNative = !_showNative),
@@ -5004,43 +5044,83 @@ class _DistanceConceptBoxState extends State<_DistanceConceptBox> {
           Padding(
             padding: const EdgeInsets.only(left: 33),
             child: _showNative
-                ? const Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(text: 'O '),
-                        TextSpan(
-                          text: 'caminho',
-                          style: TextStyle(
-                            color: Color(0xFF2563EB),
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        TextSpan(
-                          text:
-                              ' é o comprimento medido seguindo a estrada. A ',
-                        ),
-                        TextSpan(
-                          text: 'distância',
-                          style: TextStyle(
-                            color: Color(0xFFEF4444),
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        TextSpan(
-                          text: ' é o comprimento medido em linha reta.',
-                        ),
-                      ],
-                    ),
-                    style: TextStyle(
-                      fontFamily: AppFonts.interface,
-                      color: Color(0xFF064E3B),
-                      fontSize: 17,
-                      height: 1.55,
-                      fontWeight: FontWeight.w600,
+                ? _DistanceConceptNativeText(
+                    language: LessonLanguageScope.of(
+                      context,
+                      AppLanguage.japanese,
                     ),
                   )
                 : const _DistanceConceptJapaneseText(),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DistanceConceptNativeText extends StatelessWidget {
+  final AppLanguage language;
+
+  const _DistanceConceptNativeText({required this.language});
+
+  static const _bodyStyle = TextStyle(
+    fontFamily: AppFonts.interface,
+    color: Color(0xFF064E3B),
+    fontSize: 17,
+    height: 1.55,
+    fontWeight: FontWeight.w600,
+  );
+  static const _routeStyle = TextStyle(
+    fontFamily: AppFonts.interface,
+    color: Color(0xFF2563EB),
+    fontSize: 17,
+    height: 1.55,
+    fontWeight: FontWeight.w800,
+  );
+  static const _distanceStyle = TextStyle(
+    fontFamily: AppFonts.interface,
+    color: Color(0xFFEF4444),
+    fontSize: 17,
+    height: 1.55,
+    fontWeight: FontWeight.w800,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final (beforeRoute, route, middle, distance, after) = switch (language) {
+      AppLanguage.portuguese => (
+        'O ',
+        'caminho',
+        ' é o comprimento medido seguindo a estrada. A ',
+        'distância',
+        ' é o comprimento medido em linha reta.',
+      ),
+      AppLanguage.tagalog => (
+        'Ang ',
+        'daan',
+        ' ay ang haba na sinusukat kasunod ng kalsada. Ang ',
+        'distansya',
+        ' ay ang haba na sinusukat nang tuwid.',
+      ),
+      AppLanguage.vietnamese => (
+        '',
+        'Đường đi',
+        ' là chiều dài đo theo đường. ',
+        'Khoảng cách',
+        ' là chiều dài đo thẳng.',
+      ),
+      AppLanguage.japanese => ('', '', '', '', ''),
+    };
+
+    return Text.rich(
+      TextSpan(
+        style: _bodyStyle,
+        children: [
+          TextSpan(text: beforeRoute),
+          TextSpan(text: route, style: _routeStyle),
+          TextSpan(text: middle),
+          TextSpan(text: distance, style: _distanceStyle),
+          TextSpan(text: after),
         ],
       ),
     );
@@ -9409,14 +9489,35 @@ class _RemainderShareResult extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _LargeEquation(
+            showNative: showNative,
             parts: const [
-              _EquationPart('7', Color(0xFF2563EB), 'ぜんぶの数'),
+              _EquationPart(
+                '7',
+                Color(0xFF2563EB),
+                'ぜんぶの数',
+                nativeLabels: _equationNativeTotal,
+              ),
               _EquationPart('÷', Color(0xFF111827), ''),
-              _EquationPart('3', Color(0xFFF97316), '人数'),
+              _EquationPart(
+                '3',
+                Color(0xFFF97316),
+                '人数',
+                nativeLabels: _equationNativePeople,
+              ),
               _EquationPart('=', Color(0xFF111827), ''),
-              _EquationPart('2', Color(0xFF059669), '1人分'),
+              _EquationPart(
+                '2',
+                Color(0xFF059669),
+                '1人分',
+                nativeLabels: _equationNativeEach,
+              ),
               _EquationPart('あまり', Color(0xFF111827), ''),
-              _EquationPart('1', Color(0xFFB45309), 'あまり'),
+              _EquationPart(
+                '1',
+                Color(0xFFB45309),
+                'あまり',
+                nativeLabels: _equationNativeRemainder,
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -9479,16 +9580,28 @@ class _RemainderEquationBuilderState extends State<_RemainderEquationBuilder> {
         _RemainderMiniDiagram(each: 2, remainder: 1),
         const SizedBox(height: 16),
         _LargeEquation(
+          showNative: _showInstructionNative || _showResultNative,
           parts: [
-            const _EquationPart('7', Color(0xFF2563EB), 'ぜんぶの数'),
+            const _EquationPart(
+              '7',
+              Color(0xFF2563EB),
+              'ぜんぶの数',
+              nativeLabels: _equationNativeTotal,
+            ),
             const _EquationPart('÷', Color(0xFF111827), ''),
-            const _EquationPart('3', Color(0xFFF97316), '人数'),
+            const _EquationPart(
+              '3',
+              Color(0xFFF97316),
+              '人数',
+              nativeLabels: _equationNativePeople,
+            ),
             const _EquationPart('=', Color(0xFF111827), ''),
             _EquationPart(
               _each?.toString() ?? '□',
               const Color(0xFF059669),
               '1人分',
               boxed: true,
+              nativeLabels: _equationNativeEach,
             ),
             const _EquationPart('あまり', Color(0xFF111827), ''),
             _EquationPart(
@@ -9496,6 +9609,7 @@ class _RemainderEquationBuilderState extends State<_RemainderEquationBuilder> {
               const Color(0xFFB45309),
               'あまり',
               boxed: true,
+              nativeLabels: _equationNativeRemainder,
             ),
           ],
         ),
@@ -10182,8 +10296,8 @@ class _BenchSeatingActivityState extends State<_BenchSeatingActivity> {
             : 'Ngayon, subukan nating umupo sa 3 bangko!',
       AppLanguage.vietnamese =>
         isFirstTry
-            ? 'Truoc het, hay ngoi tren 2 chiec ghe bang!'
-            : 'Bay gio, hay ngoi tren 3 chiec ghe bang!',
+            ? 'Trước hết, hãy ngồi trên 2 chiếc ghế băng!'
+            : 'Bây giờ, hãy ngồi trên 3 chiếc ghế băng!',
       AppLanguage.japanese => '',
     };
   }
@@ -11188,8 +11302,8 @@ class _BenchResultMessageState extends State<_BenchResultMessage> {
             : 'Hanggang 8 tao ang makakaupo sa 2 bangko. May 1 tao pang hindi makaupo.',
       AppLanguage.vietnamese =>
         widget.isComplete
-            ? 'Voi 3 ghe bang, ca 9 nguoi deu ngoi duoc.'
-            : 'Hai ghe bang chi du cho 8 nguoi. Con 1 nguoi chua ngoi duoc.',
+            ? 'Với 3 ghế băng, cả 9 người đều ngồi được.'
+            : 'Hai ghế băng chỉ đủ cho 8 người. Còn 1 người chưa ngồi được.',
       AppLanguage.japanese => '',
     };
   }
@@ -11297,7 +11411,7 @@ class _RemainderContextSummaryPanelState
       AppLanguage.tagalog:
           'Sa 2 bangko, may 1 tao pang hindi makaupo. Kaya 3 bangko ang sagot.',
       AppLanguage.vietnamese:
-          'Voi 2 ghe bang, van con 1 nguoi chua ngoi duoc. Vi vay, dap an la 3 ghe bang.',
+          'Với 2 ghế băng, vẫn còn 1 người chưa ngồi được. Vì vậy, đáp án là 3 ghế băng.',
     },
   );
 
@@ -11682,9 +11796,19 @@ class _InteractiveCookieResult extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(left: 32),
               child: Text(
-                language == AppLanguage.portuguese
-                    ? 'Conseguimos dividir 4 biscoitos para cada pessoa.'
-                    : '',
+                language == AppLanguage.japanese
+                    ? ''
+                    : lookupNative(
+                        nativeText(
+                          portuguese:
+                              'Conseguimos dividir 4 biscoitos para cada pessoa.',
+                          tagalog:
+                              'Naibigay natin ang tig-4 na biskwit sa bawat tao.',
+                          vietnamese:
+                              'Chúng ta đã chia được 4 cái bánh cho mỗi người.',
+                        ),
+                        language,
+                      ),
                 style: const TextStyle(
                   fontFamily: AppFonts.interface,
                   fontSize: 14,
@@ -11734,20 +11858,51 @@ class _InteractiveCookieResult extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _LargeEquation(
+            showNative: showNative,
             parts: showMultiplication
                 ? const [
-                    _EquationPart('3', Color(0xFFF97316), '人数'),
+                    _EquationPart(
+                      '3',
+                      Color(0xFFF97316),
+                      '人数',
+                      nativeLabels: _equationNativePeople,
+                    ),
                     _EquationPart('×', Color(0xFF111827), ''),
-                    _EquationPart('4', Color(0xFF059669), '1人分'),
+                    _EquationPart(
+                      '4',
+                      Color(0xFF059669),
+                      '1人分',
+                      nativeLabels: _equationNativeEach,
+                    ),
                     _EquationPart('=', Color(0xFF111827), ''),
-                    _EquationPart('12', Color(0xFF2563EB), 'ぜんぶの数'),
+                    _EquationPart(
+                      '12',
+                      Color(0xFF2563EB),
+                      'ぜんぶの数',
+                      nativeLabels: _equationNativeTotal,
+                    ),
                   ]
                 : const [
-                    _EquationPart('12', Color(0xFF2563EB), 'ぜんぶの数'),
+                    _EquationPart(
+                      '12',
+                      Color(0xFF2563EB),
+                      'ぜんぶの数',
+                      nativeLabels: _equationNativeTotal,
+                    ),
                     _EquationPart('÷', Color(0xFF111827), ''),
-                    _EquationPart('3', Color(0xFFF97316), '人数'),
+                    _EquationPart(
+                      '3',
+                      Color(0xFFF97316),
+                      '人数',
+                      nativeLabels: _equationNativePeople,
+                    ),
                     _EquationPart('=', Color(0xFF111827), ''),
-                    _EquationPart('4', Color(0xFF059669), '1人分'),
+                    _EquationPart(
+                      '4',
+                      Color(0xFF059669),
+                      '1人分',
+                      nativeLabels: _equationNativeEach,
+                    ),
                   ],
           ),
           const SizedBox(height: 10),
@@ -12097,18 +12252,42 @@ class _CookieDotPainter extends CustomPainter {
   bool shouldRepaint(covariant _CookieDotPainter oldDelegate) => false;
 }
 
+const _equationNativeTotal = {
+  AppLanguage.portuguese: 'total',
+  AppLanguage.tagalog: 'lahat',
+  AppLanguage.vietnamese: 'tổng số',
+};
+
+const _equationNativePeople = {
+  AppLanguage.portuguese: 'pessoas',
+  AppLanguage.tagalog: 'mga tao',
+  AppLanguage.vietnamese: 'số người',
+};
+
+const _equationNativeEach = {
+  AppLanguage.portuguese: 'por pessoa',
+  AppLanguage.tagalog: 'bawat isa',
+  AppLanguage.vietnamese: 'mỗi người',
+};
+
+const _equationNativeRemainder = {
+  AppLanguage.portuguese: 'resto',
+  AppLanguage.tagalog: 'sobra',
+  AppLanguage.vietnamese: 'số dư',
+};
+
 class _EquationPart {
   final String text;
   final Color color;
   final String label;
-  final String? nativeLabel;
+  final Map<AppLanguage, String> nativeLabels;
   final bool boxed;
 
   const _EquationPart(
     this.text,
     this.color,
     this.label, {
-    this.nativeLabel,
+    this.nativeLabels = const {},
     this.boxed = false,
   });
 }
@@ -12121,6 +12300,7 @@ class _LargeEquation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final language = LessonLanguageScope.of(context, AppLanguage.japanese);
     return Wrap(
       spacing: 14,
       runSpacing: 12,
@@ -12171,10 +12351,11 @@ class _LargeEquation extends StatelessWidget {
                     color: part.color,
                   ),
                 ),
-                if (showNative && part.nativeLabel != null) ...[
+                if (showNative &&
+                    lookupNative(part.nativeLabels, language).isNotEmpty) ...[
                   const SizedBox(height: 2),
                   Text(
-                    part.nativeLabel!,
+                    lookupNative(part.nativeLabels, language),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 10,
@@ -12225,21 +12406,21 @@ class _EquationPairPanelState extends State<_EquationPairPanel> {
                       '12',
                       Color(0xFF2563EB),
                       'ぜんぶの数',
-                      nativeLabel: 'total',
+                      nativeLabels: _equationNativeTotal,
                     ),
                     _EquationPart('÷', Color(0xFF111827), ''),
                     _EquationPart(
                       '3',
                       Color(0xFFF97316),
                       '人数',
-                      nativeLabel: 'pessoas',
+                      nativeLabels: _equationNativePeople,
                     ),
                     _EquationPart('=', Color(0xFF111827), ''),
                     _EquationPart(
                       '4',
                       Color(0xFF059669),
                       '1人分',
-                      nativeLabel: 'por pessoa',
+                      nativeLabels: _equationNativeEach,
                     ),
                   ],
                 ),
@@ -12251,21 +12432,21 @@ class _EquationPairPanelState extends State<_EquationPairPanel> {
                       '3',
                       Color(0xFFF97316),
                       '人数',
-                      nativeLabel: 'pessoas',
+                      nativeLabels: _equationNativePeople,
                     ),
                     _EquationPart('×', Color(0xFF111827), ''),
                     _EquationPart(
                       '4',
                       Color(0xFF059669),
                       '1人分',
-                      nativeLabel: 'por pessoa',
+                      nativeLabels: _equationNativeEach,
                     ),
                     _EquationPart('=', Color(0xFF111827), ''),
                     _EquationPart(
                       '12',
                       Color(0xFF2563EB),
                       'ぜんぶの数',
-                      nativeLabel: 'total',
+                      nativeLabels: _equationNativeTotal,
                     ),
                   ],
                 ),
@@ -17541,38 +17722,81 @@ class _SolutionExplanationCardState extends State<_SolutionExplanationCard> {
 
 String _answerSummaryText(Question question, AppLanguage language) {
   final answer = question.resolvedCorrectAnswerTextRuby;
-  if (language == AppLanguage.portuguese) {
-    final translatedAnswer = _portugueseAnswerText(question, answer);
-    return 'A resposta é $translatedAnswer.';
+  if (language == AppLanguage.japanese) {
+    return '答えは $answer です。';
   }
-  return '答えは $answer です。';
+  final translatedAnswer = _nativeAnswerText(question, answer, language);
+  return switch (language) {
+    AppLanguage.portuguese => 'A resposta é $translatedAnswer.',
+    AppLanguage.tagalog => 'Ang sagot ay $translatedAnswer.',
+    AppLanguage.vietnamese => 'Đáp án là $translatedAnswer.',
+    AppLanguage.japanese => '答えは $answer です。',
+  };
 }
 
-String _portugueseAnswerText(Question question, String answer) {
+String _nativeAnswerText(
+  Question question,
+  String answer,
+  AppLanguage language,
+) {
   final questionText = '${question.promptSchoolJa} ${question.promptEasyJa}';
-  if ((question.itemEmoji == '🍎' || questionText.contains('りんご')) &&
-      answer.endsWith('こ')) {
-    return answer.replaceFirst('こ', ' maçãs');
-  }
-  if ((question.itemEmoji == '🍬' || questionText.contains('あめ')) &&
-      answer.endsWith('こ')) {
-    return answer.replaceFirst('こ', ' balas');
-  }
-  if ((question.itemEmoji == '🍪' || questionText.contains('クッキー')) &&
-      answer.endsWith('こ')) {
-    return answer.replaceFirst('こ', ' biscoitos');
+  final isApple = question.itemEmoji == '🍎' || questionText.contains('りんご');
+  final isCandy = question.itemEmoji == '🍬' || questionText.contains('あめ');
+  final isCookie = question.itemEmoji == '🍪' || questionText.contains('クッキー');
+
+  if (answer.endsWith('こ')) {
+    final value = answer.substring(0, answer.length - 1);
+    if (isApple) {
+      return switch (language) {
+        AppLanguage.portuguese => '$value maçãs',
+        AppLanguage.tagalog => '$value mansanas',
+        AppLanguage.vietnamese => '$value quả táo',
+        AppLanguage.japanese => answer,
+      };
+    }
+    if (isCandy) {
+      return switch (language) {
+        AppLanguage.portuguese => '$value balas',
+        AppLanguage.tagalog => '$value kendi',
+        AppLanguage.vietnamese => '$value viên kẹo',
+        AppLanguage.japanese => answer,
+      };
+    }
+    if (isCookie) {
+      return switch (language) {
+        AppLanguage.portuguese => '$value biscoitos',
+        AppLanguage.tagalog => '$value biskwit',
+        AppLanguage.vietnamese => '$value cái bánh',
+        AppLanguage.japanese => answer,
+      };
+    }
   }
   if (answer.endsWith('人')) {
     final value = answer.substring(0, answer.length - 1);
-    return '$value pessoas';
+    return switch (language) {
+      AppLanguage.portuguese => '$value pessoas',
+      AppLanguage.tagalog => '$value tao',
+      AppLanguage.vietnamese => '$value người',
+      AppLanguage.japanese => answer,
+    };
   }
   if (answer.endsWith('本')) {
     final value = answer.substring(0, answer.length - 1);
-    return '$value lápis';
+    return switch (language) {
+      AppLanguage.portuguese => '$value lápis',
+      AppLanguage.tagalog => '$value lapis',
+      AppLanguage.vietnamese => '$value bút chì',
+      AppLanguage.japanese => answer,
+    };
   }
   if (answer.endsWith('まい')) {
     final value = answer.substring(0, answer.length - 2);
-    return '$value cartões';
+    return switch (language) {
+      AppLanguage.portuguese => '$value cartões',
+      AppLanguage.tagalog => '$value kard',
+      AppLanguage.vietnamese => '$value tờ',
+      AppLanguage.japanese => answer,
+    };
   }
   return answer;
 }
