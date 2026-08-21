@@ -106,6 +106,7 @@ class CompletionScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(3, (index) {
+                      final filled = index < stars;
                       return TweenAnimationBuilder<double>(
                         tween: Tween(begin: 0.0, end: 1.0),
                         duration: Duration(milliseconds: 350 + index * 90),
@@ -115,9 +116,22 @@ class CompletionScreen extends StatelessWidget {
                         },
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 3),
-                          child: Text(
-                            index < stars ? '⭐' : '☆',
-                            style: const TextStyle(fontSize: 28),
+                          child: Icon(
+                            filled
+                                ? Icons.star_rounded
+                                : Icons.star_border_rounded,
+                            size: 34,
+                            color: filled
+                                ? const Color(0xFFFBBF24)
+                                : const Color(0xFFD1D5DB),
+                            shadows: filled
+                                ? const [
+                                    Shadow(
+                                      color: Color(0x66F59E0B),
+                                      blurRadius: 10,
+                                    ),
+                                  ]
+                                : null,
                           ),
                         ),
                       );
