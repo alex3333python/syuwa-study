@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../models/app_language.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_fonts.dart';
 
 class Header extends StatelessWidget {
   final AppLanguage language;
@@ -61,7 +59,7 @@ class Header extends StatelessWidget {
   }
 }
 
-/// 白い角丸アイコン + 紺の「Marela」タイトル（横並び）。
+/// 公式アセット: アイコン + ワードマーク（横並び）。
 class _MarelaBrandMark extends StatelessWidget {
   const _MarelaBrandMark();
 
@@ -74,22 +72,17 @@ class _MarelaBrandMark extends StatelessWidget {
         children: [
           Image.asset(
             'assets/brand/marela_icon.png',
-            width: 40,
-            height: 40,
+            width: 52,
+            height: 52,
             fit: BoxFit.contain,
             filterQuality: FilterQuality.high,
           ),
-          const SizedBox(width: 10),
-          const Text(
-            'Marela',
-            style: TextStyle(
-              fontFamily: AppFonts.display,
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: AppColors.brandNavy,
-              letterSpacing: 0.2,
-              height: 1.0,
-            ),
+          const SizedBox(width: 12),
+          Image.asset(
+            'assets/brand/marela_wordmark.png',
+            height: 36,
+            fit: BoxFit.contain,
+            filterQuality: FilterQuality.high,
           ),
         ],
       ),
