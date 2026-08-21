@@ -19,7 +19,7 @@ class LessonMapScreen extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      decoration: AppColors.screenBackground,
+      decoration: AppColors.mapBackground,
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(32, 28, 32, 48),
         child: Center(
