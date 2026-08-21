@@ -70,18 +70,10 @@ class CompletionScreen extends StatelessWidget {
                     builder: (context, scale, child) {
                       return Transform.scale(scale: scale, child: child);
                     },
-                    child: Container(
-                      width: 70,
-                      height: 70,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: [Color(0xFFFACC15), Color(0xFFF97316)],
-                        ),
-                      ),
-                      child: const Center(
-                        child: Text('🏆', style: TextStyle(fontSize: 30)),
-                      ),
+                    child: const Icon(
+                      Icons.emoji_events_rounded,
+                      color: Color(0xFFF59E0B),
+                      size: 64,
                     ),
                   ),
 
@@ -97,7 +89,7 @@ class CompletionScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'お疲れ様でした',
+                    'おつかれさまでした',
                     style: TextStyle(color: Color(0xFF6B7280), fontSize: 14),
                   ),
 
@@ -185,7 +177,7 @@ class CompletionScreen extends StatelessWidget {
                         onPressed: onReview,
                         icon: const Icon(Icons.replay_rounded),
                         label: Text(
-                          '間違えた問題を復習（$wrongQuestionCount問）',
+                          'ふくしゅう（$wrongQuestionCount問）',
                           style: const TextStyle(
                             fontFamily: AppFonts.interface,
                             fontWeight: FontWeight.bold,
