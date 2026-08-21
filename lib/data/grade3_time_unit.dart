@@ -126,7 +126,7 @@ final List<Lesson> grade3TimeLessons = [
       LessonStep(
         id: 'time-main-practice',
         type: LessonStepType.independentPractice,
-        title: '自分で解こう',
+        title: '自分でとこう',
         questions: [
           _q(
             id: 18104,
@@ -293,7 +293,7 @@ final List<Lesson> grade3TimeLessons = [
       LessonStep(
         id: 'time-short-practice',
         type: LessonStepType.independentPractice,
-        title: '自分で解こう',
+        title: '自分でとこう',
         questions: [
           _q(
             id: 19103,

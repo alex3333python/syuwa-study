@@ -152,7 +152,7 @@ final List<Lesson> _allMockLessons = [
       LessonStep(
         id: 'remaining-guided',
         type: LessonStepType.guidedPractice,
-        title: 'いっしょに解こう',
+        title: 'いっしょにとこう',
         questions: [
           Question(
             id: 6001,
@@ -183,7 +183,7 @@ final List<Lesson> _allMockLessons = [
       LessonStep(
         id: 'remaining-independent',
         type: LessonStepType.independentPractice,
-        title: '自分で解こう',
+        title: '自分でとこう',
         questions: [
           Question(
             id: 6002,

@@ -32,7 +32,7 @@ final List<Lesson> grade3DivisionRemainderLessons = [
       LessonStep(
         id: 'grade3_remainder_1_guided',
         type: LessonStepType.guidedPractice,
-        title: 'いっしょに解こう',
+        title: 'いっしょにとこう',
         questions: [
           _q(
             id: 12101,
@@ -145,7 +145,7 @@ final List<Lesson> grade3DivisionRemainderLessons = [
       LessonStep(
         id: 'grade3_remainder_1_practice',
         type: LessonStepType.independentPractice,
-        title: '自分で解こう',
+        title: '自分でとこう',
         questions: [
           _q(
             id: 12104,
@@ -342,7 +342,7 @@ final List<Lesson> grade3DivisionRemainderLessons = [
       LessonStep(
         id: 'grade3_remainder_2_guided',
         type: LessonStepType.guidedPractice,
-        title: 'いっしょに解こう',
+        title: 'いっしょにとこう',
         questions: [
           _q(
             id: 12201,
@@ -421,7 +421,7 @@ final List<Lesson> grade3DivisionRemainderLessons = [
       LessonStep(
         id: 'grade3_remainder_2_practice',
         type: LessonStepType.independentPractice,
-        title: '自分で解こう',
+        title: '自分でとこう',
         questions: [
           _q(
             id: 12204,
@@ -526,7 +526,7 @@ final List<Lesson> grade3DivisionRemainderLessons = [
       LessonStep(
         id: 'grade3_remainder_3_guided',
         type: LessonStepType.guidedPractice,
-        title: 'いっしょに解こう',
+        title: 'いっしょにとこう',
         questions: [
           _q(
             id: 12301,
@@ -569,7 +569,7 @@ final List<Lesson> grade3DivisionRemainderLessons = [
       LessonStep(
         id: 'grade3_remainder_3_practice',
         type: LessonStepType.independentPractice,
-        title: '自分で解こう',
+        title: '自分でとこう',
         questions: [
           _q(
             id: 12304,
@@ -672,7 +672,7 @@ final List<Lesson> grade3DivisionRemainderLessons = [
       LessonStep(
         id: 'grade3_remainder_4_guided',
         type: LessonStepType.guidedPractice,
-        title: 'いっしょに解こう',
+        title: 'いっしょにとこう',
         questions: [
           _q(
             id: 12401,
@@ -797,7 +797,7 @@ final List<Lesson> grade3DivisionRemainderLessons = [
       LessonStep(
         id: 'grade3_remainder_4_practice',
         type: LessonStepType.independentPractice,
-        title: '自分で解こう',
+        title: '自分でとこう',
         questions: [
           _q(
             id: 12404,

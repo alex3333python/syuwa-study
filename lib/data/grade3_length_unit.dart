@@ -89,7 +89,7 @@ final List<Lesson> grade3LengthLessons = [
       LessonStep(
         id: 'length-measure-practice',
         type: LessonStepType.independentPractice,
-        title: '自分で解こう',
+        title: '自分でとこう',
         questions: [
           _q(
             id: 21103,
@@ -234,7 +234,7 @@ final List<Lesson> grade3LengthLessons = [
       LessonStep(
         id: 'length-km-practice',
         type: LessonStepType.independentPractice,
-        title: '自分で解こう',
+        title: '自分でとこう',
         questions: [
           _q(
             id: 22103,

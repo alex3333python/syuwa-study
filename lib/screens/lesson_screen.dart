@@ -201,7 +201,7 @@ class _LessonScreenState extends State<LessonScreen> {
     final stepType = currentStep?.type;
     final isIndependent = stepType == LessonStepType.independentPractice;
     final isJapaneseOnlyChallenge =
-        currentStep?.title == '日本語だけで挑戦' ||
+        isJapaneseOnlyChallengeTitle(currentStep?.title) ||
         currentStep?.title == 'たしかめ問題' ||
         widget.lesson.title == 'たしかめ問題' ||
         (currentStep?.id.contains('japanese') ?? false);
@@ -259,7 +259,10 @@ class _LessonScreenState extends State<LessonScreen> {
                         if (hasSteps) ...[
                           const SizedBox(height: 8),
                           Text(
-                            currentStep!.title,
+                            lessonStepTitleForDisplay(
+                              currentStep!.title,
+                              widget.selectedLanguage,
+                            ),
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontSize: 24,
@@ -470,7 +473,10 @@ class _LessonScreenState extends State<LessonScreen> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      step.title,
+                      lessonStepTitleForDisplay(
+                        step.title,
+                        widget.selectedLanguage,
+                      ),
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 28,
@@ -789,7 +795,7 @@ class _PromptModeCards extends StatelessWidget {
                 mode: QuestionPromptMode.native,
                 selectedMode: effectiveSelectedMode,
                 icon: Icons.translate_rounded,
-                title: selectedLanguage.label,
+                title: nativePromptModeLabel(selectedLanguage),
                 onTap: onChanged,
               ),
             ];
@@ -849,7 +855,7 @@ class _IndependentPracticeHeader extends StatelessWidget {
               const SizedBox(width: 10),
               const Expanded(
                 child: Text(
-                  '自分で解こう',
+                  '自分でとこう',
                   style: TextStyle(
                     color: Color(0xFF92400E),
                     fontSize: 17,
@@ -17913,7 +17919,7 @@ class _ExplanationLanguageToggle extends StatelessWidget {
             onTap: () => onChanged(false),
           ),
           _ExplanationLanguageOption(
-            label: language.label,
+            label: nativePromptModeLabel(language),
             selected: showNative,
             onTap: () => onChanged(true),
           ),

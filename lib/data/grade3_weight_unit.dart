@@ -109,7 +109,7 @@ final List<Lesson> grade3WeightLessons = [
       LessonStep(
         id: 'weight-gram-kg-practice',
         type: LessonStepType.independentPractice,
-        title: '自分で解こう',
+        title: '自分でとこう',
         questions: [
           _q(
             id: 23104,
