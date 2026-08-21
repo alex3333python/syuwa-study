@@ -72,15 +72,15 @@ class _MarelaBrandMark extends StatelessWidget {
         children: [
           Image.asset(
             'assets/brand/marela_icon.png',
-            width: 40,
-            height: 40,
+            width: 52,
+            height: 52,
             fit: BoxFit.contain,
             filterQuality: FilterQuality.high,
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Image.asset(
             'assets/brand/marela_wordmark.png',
-            height: 28,
+            height: 36,
             fit: BoxFit.contain,
             filterQuality: FilterQuality.high,
           ),
