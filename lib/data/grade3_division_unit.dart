@@ -42,7 +42,7 @@ final List<Lesson> grade3DivisionLessons = [
       LessonStep(
         id: 'division-equal-share-guided',
         type: LessonStepType.guidedPractice,
-        title: 'いっしょに解こう',
+        title: 'いっしょにとこう',
         questions: [
           _q(
             id: 7101,
@@ -125,7 +125,7 @@ final List<Lesson> grade3DivisionLessons = [
       LessonStep(
         id: 'division-equal-share-practice',
         type: LessonStepType.independentPractice,
-        title: '自分で解こう',
+        title: '自分でとこう',
         questions: [
           _q(
             id: 7104,
@@ -275,7 +275,7 @@ final List<Lesson> grade3DivisionLessons = [
       LessonStep(
         id: 'division-measure-guided',
         type: LessonStepType.guidedPractice,
-        title: 'いっしょに解こう',
+        title: 'いっしょにとこう',
         questions: [
           _q(
             id: 7201,
@@ -347,7 +347,7 @@ final List<Lesson> grade3DivisionLessons = [
       LessonStep(
         id: 'division-measure-practice',
         type: LessonStepType.independentPractice,
-        title: '自分で解こう',
+        title: '自分でとこう',
         questions: [
           _q(
             id: 7204,
@@ -517,7 +517,7 @@ final List<Lesson> grade3DivisionLessons = [
       LessonStep(
         id: 'division-multiplication-link-guided',
         type: LessonStepType.guidedPractice,
-        title: 'いっしょに解こう',
+        title: 'いっしょにとこう',
         questions: [
           _q(
             id: 1701,
@@ -565,7 +565,7 @@ final List<Lesson> grade3DivisionLessons = [
       LessonStep(
         id: 'division-multiplication-link-practice',
         type: LessonStepType.independentPractice,
-        title: '自分で解こう',
+        title: '自分でとこう',
         questions: [
           _q(
             id: 1703,
@@ -660,7 +660,7 @@ final List<Lesson> grade3DivisionLessons = [
       LessonStep(
         id: 'division-multiplication-guided',
         type: LessonStepType.guidedPractice,
-        title: 'いっしょに解こう',
+        title: 'いっしょにとこう',
         questions: [
           _q(
             id: 7301,
@@ -703,7 +703,7 @@ final List<Lesson> grade3DivisionLessons = [
       LessonStep(
         id: 'division-multiplication-practice',
         type: LessonStepType.independentPractice,
-        title: '自分で解こう',
+        title: '自分でとこう',
         questions: [
           _q(
             id: 7304,
@@ -809,7 +809,7 @@ final List<Lesson> grade3DivisionLessons = [
       LessonStep(
         id: 'division-story-guided',
         type: LessonStepType.guidedPractice,
-        title: 'いっしょに解こう',
+        title: 'いっしょにとこう',
         questions: [
           _q(
             id: 7401,
@@ -862,7 +862,7 @@ final List<Lesson> grade3DivisionLessons = [
       LessonStep(
         id: 'division-story-practice',
         type: LessonStepType.independentPractice,
-        title: '自分で解こう',
+        title: '自分でとこう',
         questions: [
           _q(
             id: 7405,

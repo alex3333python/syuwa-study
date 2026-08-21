@@ -1087,7 +1087,7 @@ const zeroOneDivisionVocabularyEntries = [
   ),
   VocabularyEntry(
     term: '何',
-    reading: 'なに',
+    reading: 'なん',
     simpleJapanese: '分からないものや数を聞く言葉です。',
     translations: {
       AppLanguage.portuguese: 'o que / qual',

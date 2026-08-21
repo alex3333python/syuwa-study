@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/audio_cues.dart';
+import '../data/kanji_ruby.dart';
 import '../data/learning_language_support.dart';
 import '../models/app_language.dart';
 import '../models/question.dart';
@@ -158,7 +159,7 @@ class RubyText extends StatelessWidget {
       index = end + 1;
     }
 
-    return _attachSpanningVocabulary(parts, entries);
+    return _fixSchoolMathReadings(_attachSpanningVocabulary(parts, entries));
   }
 
   List<_RubyPart> _attachSpanningVocabulary(
@@ -199,6 +200,34 @@ class RubyText extends StatelessWidget {
       }
     }
     return attached;
+  }
+
+  List<_RubyPart> _fixSchoolMathReadings(List<_RubyPart> parts) {
+    if (parts.isEmpty) return parts;
+    final fixed = List<_RubyPart>.from(parts);
+    for (var i = 0; i < fixed.length; i++) {
+      final part = fixed[i];
+      final next = i + 1 < fixed.length ? fixed[i + 1].base : '';
+      final prev = i > 0 ? fixed[i - 1].base : '';
+      if (part.base == '何' && _usesNanReading(next)) {
+        fixed[i] = part.withRuby('なん');
+      }
+      if (part.base == '数' &&
+          part.ruby != 'ずう' &&
+          prev != '人' &&
+          !next.startsWith('字') &&
+          !next.startsWith('学')) {
+        fixed[i] = part.withRuby('かず');
+      }
+    }
+    return fixed;
+  }
+
+  bool _usesNanReading(String next) {
+    if (next.isEmpty) return false;
+    return RegExp(
+      r'^(こ|人|台|本|枚|まい|分|時|g|kg|m|cm|km|t|ですか)',
+    ).hasMatch(next);
   }
 
   int _longestSurfaceLength(VocabularyEntry entry) {
@@ -490,11 +519,24 @@ class _RubyPiece extends StatelessWidget {
 
   Widget _buildRubyChild() {
     final segments = _splitRubySegments(part.base, part.ruby!);
+    final hasKanjiRuby = segments.any(
+      (segment) => segment.ruby != null && segment.ruby!.isNotEmpty,
+    );
+    if (!hasKanjiRuby) {
+      return Padding(
+        padding: EdgeInsets.only(top: (rubyStyle.fontSize ?? 8) + 2),
+        child: Text(part.base, style: _baseStyle),
+      );
+    }
     if (segments.length == 1) {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(part.ruby!, style: rubyStyle, textAlign: TextAlign.center),
+          Text(
+            segments.first.ruby!,
+            style: rubyStyle,
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 1),
           Text(part.base, style: _baseStyle, textAlign: TextAlign.center),
         ],
@@ -594,10 +636,37 @@ class _RubyPiece extends StatelessWidget {
         return const [_RubySegment('かけ'), _RubySegment('算', 'さん')];
       case 'わり算':
         return const [_RubySegment('わり'), _RubySegment('算', 'さん')];
+      case '何こずつ':
+        return const [
+          _RubySegment('何', 'なん'),
+          _RubySegment('こ'),
+          _RubySegment('ずつ'),
+        ];
       case '何こ':
         return const [_RubySegment('何', 'なん'), _RubySegment('こ')];
       case '何人':
         return const [_RubySegment('何', 'なん'), _RubySegment('人', 'にん')];
+      case '何台':
+        return const [_RubySegment('何', 'なん'), _RubySegment('台', 'だい')];
+      case '何本':
+        return const [_RubySegment('何', 'なん'), _RubySegment('本', 'ぼん')];
+      case '何まい':
+      case '何枚':
+        return const [_RubySegment('何', 'なん'), _RubySegment('まい')];
+      case '何分':
+        return const [_RubySegment('何', 'なん'), _RubySegment('分', 'ぷん')];
+      case '何時':
+        return const [_RubySegment('何', 'なん'), _RubySegment('時', 'じ')];
+      case '何時間':
+        return const [
+          _RubySegment('何', 'なん'),
+          _RubySegment('時', 'じ'),
+          _RubySegment('間', 'かん'),
+        ];
+      case '数字':
+        return const [_RubySegment('数', 'すう'), _RubySegment('字', 'じ')];
+      case '数学':
+        return const [_RubySegment('数', 'すう'), _RubySegment('学', 'がく')];
       case '人分':
         return const [_RubySegment('人', 'ひとり'), _RubySegment('分', 'ぶん')];
       case '正しい':
@@ -697,7 +766,10 @@ class _RubyPiece extends StatelessWidget {
       case 'ビー玉':
         return const [_RubySegment('ビー'), _RubySegment('玉', 'だま')];
       default:
-        return [_RubySegment(base, ruby)];
+        return [
+          for (final span in splitKanjiRuby(base, ruby))
+            _RubySegment(span.text, span.ruby),
+        ];
     }
   }
 
@@ -754,7 +826,10 @@ class _RubyPiece extends StatelessWidget {
                       onPressed: () {
                         LearningAudio.play(
                           context,
-                          AudioCueFactory.vocabulary(term: entry.term),
+                          AudioCueFactory.vocabulary(
+                            term: entry.term,
+                            reading: entry.reading,
+                          ),
                         );
                       },
                     ),
@@ -850,6 +925,10 @@ class _RubyPart {
 
   _RubyPart withEntry(VocabularyEntry next) {
     return _RubyPart(base: base, ruby: ruby, entry: next);
+  }
+
+  _RubyPart withRuby(String nextRuby) {
+    return _RubyPart(base: base, ruby: nextRuby, entry: entry);
   }
 }
 

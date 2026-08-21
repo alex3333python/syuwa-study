@@ -43,6 +43,37 @@ extension AppLanguageLabel on AppLanguage {
   }
 }
 
+/// Prompt toggle for the learner's language. Japanese is やさしい日本語, not a second 日本語.
+String nativePromptModeLabel(AppLanguage language) {
+  return language == AppLanguage.japanese ? 'やさしい日本語' : language.label;
+}
+
+/// On-screen lesson step titles. Harder kanji are written in hiragana.
+String lessonStepTitleForDisplay(String title, AppLanguage language) {
+  switch (title) {
+    case 'いっしょに解こう':
+    case 'いっしょにとこう':
+      return 'いっしょにとこう';
+    case '自分で解こう':
+    case '自分でとこう':
+      return '自分でとこう';
+    case '日本語だけで挑戦':
+    case '日本語にちょうせん':
+    case 'さらにちょうせん':
+      return language == AppLanguage.japanese
+          ? 'さらにちょうせん'
+          : '日本語にちょうせん';
+    default:
+      return title;
+  }
+}
+
+bool isJapaneseOnlyChallengeTitle(String? title) {
+  return title == '日本語だけで挑戦' ||
+      title == '日本語にちょうせん' ||
+      title == 'さらにちょうせん';
+}
+
 bool looksLikeJapaneseGloss(String value) {
   return value.contains('です。') ||
       value.contains('ことです。') ||

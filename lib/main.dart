@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'data/mock_data.dart';
@@ -18,9 +20,11 @@ import 'screens/report_screen.dart';
 import 'screens/review_screen.dart';
 import 'models/question.dart';
 import 'theme/app_fonts.dart';
+import 'services/japanese_tts_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  unawaited(JapaneseTts.instance.warmup());
   runApp(const MyApp());
 }
 
