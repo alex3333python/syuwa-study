@@ -6,8 +6,6 @@ class CompletionScreen extends StatelessWidget {
   final int stars;
   final int totalQuestions;
   final int correctAnswers;
-  final int xpGained;
-  final int streak;
   final int wrongQuestionCount;
   final VoidCallback onRestart;
   final VoidCallback onHome;
@@ -19,8 +17,6 @@ class CompletionScreen extends StatelessWidget {
     required this.stars,
     required this.totalQuestions,
     required this.correctAnswers,
-    required this.xpGained,
-    required this.streak,
     required this.wrongQuestionCount,
     required this.onRestart,
     required this.onHome,
@@ -129,30 +125,6 @@ class CompletionScreen extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 12),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _RewardChip(
-                          text: '+$xpGained XP',
-                          icon: '⚡',
-                          backgroundColor: const Color(0xFFEEF2FF),
-                          textColor: const Color(0xFF4338CA),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _RewardChip(
-                          text: streak <= 1 ? '今日開始' : '$streak日連続',
-                          icon: '🔥',
-                          backgroundColor: const Color(0xFFFFF7ED),
-                          textColor: const Color(0xFFC2410C),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 14),
 
                   Container(
                     padding: const EdgeInsets.all(14),
@@ -285,42 +257,6 @@ class CompletionScreen extends StatelessWidget {
                 ],
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _RewardChip extends StatelessWidget {
-  final String text;
-  final String icon;
-  final Color backgroundColor;
-  final Color textColor;
-
-  const _RewardChip({
-    required this.text,
-    required this.icon,
-    required this.backgroundColor,
-    required this.textColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 10),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Center(
-        child: Text(
-          '$icon $text',
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-            color: textColor,
           ),
         ),
       ),

@@ -2,17 +2,11 @@ import 'package:flutter/material.dart';
 import '../models/lesson.dart';
 
 class RecordsScreen extends StatelessWidget {
-  final int xp;
-  final int streak;
-  final int level;
   final List<Lesson> lessons;
   final VoidCallback onBack;
 
   const RecordsScreen({
     super.key,
-    required this.xp,
-    required this.streak,
-    required this.level,
     required this.lessons,
     required this.onBack,
   });
@@ -83,27 +77,6 @@ class RecordsScreen extends StatelessWidget {
                   Expanded(
                     child: ListView(
                       children: [
-                        _SummaryCard(
-                          icon: Icons.workspace_premium_rounded,
-                          iconColor: const Color(0xFF4338CA),
-                          title: '現在のレベル',
-                          value: 'Lv.$level',
-                        ),
-                        const SizedBox(height: 12),
-                        _SummaryCard(
-                          icon: Icons.bolt_rounded,
-                          iconColor: const Color(0xFFF59E0B),
-                          title: '総獲得XP',
-                          value: '$xp XP',
-                        ),
-                        const SizedBox(height: 12),
-                        _SummaryCard(
-                          icon: Icons.local_fire_department_rounded,
-                          iconColor: const Color(0xFFF97316),
-                          title: '連続記録',
-                          value: '$streak 日',
-                        ),
-                        const SizedBox(height: 12),
                         _SummaryCard(
                           icon: Icons.check_circle_outline_rounded,
                           iconColor: const Color(0xFF10B981),

@@ -163,36 +163,10 @@ class _HomePageState extends State<HomePage> {
     loadProgress();
   }
 
-  // streak and experience level(xp)
+  // streak and experience (xp) are still tracked for later UI re-enable.
   String currentScreen = 'map';
   int streak = 0;
   int xp = 0;
-  int previousLevel = 1;
-  int getLevelFromXp(int xp) {
-    if (xp >= 800) return 5;
-    if (xp >= 500) return 4;
-    if (xp >= 250) return 3;
-    if (xp >= 100) return 2;
-    return 1;
-  }
-
-  int get currentLevel => getLevelFromXp(xp);
-  int getNextLevelXp(int level) {
-    switch (level) {
-      case 1:
-        return 100;
-      case 2:
-        return 250;
-      case 3:
-        return 500;
-      case 4:
-        return 800;
-      default:
-        return 1200;
-    }
-  }
-
-  int get xpToNextLevel => getNextLevelXp(currentLevel) - xp;
   bool isLoading = true;
   bool isWeakReviewMode = false;
   AppLanguage selectedLanguage = AppLanguage.japanese;
@@ -209,13 +183,6 @@ class _HomePageState extends State<HomePage> {
   List<int> weakQuestionIds = [];
   Map<String, int> weakTagCounts = {};
   Map<String, int> weakReasonCounts = {};
-
-  double get levelProgress {
-    final currentLevelXp = getNextLevelXp(currentLevel - 1);
-    final nextLevelXp = getNextLevelXp(currentLevel);
-
-    return (xp - currentLevelXp) / (nextLevelXp - currentLevelXp);
-  }
 
   void startLesson(Lesson lesson) {
     setState(() {
@@ -245,7 +212,6 @@ class _HomePageState extends State<HomePage> {
     recordWeakSignals(answerRecords);
 
     setState(() {
-      previousLevel = currentLevel;
       resultStars = stars;
       resultCorrectAnswers = correctAnswers;
       resultTotalQuestions = totalQuestions;
@@ -267,27 +233,7 @@ class _HomePageState extends State<HomePage> {
       xp += stars * 10;
       updateStreak();
       currentScreen = isDiagnosis ? 'diagnosis_result' : 'completion';
-
-      final newLevel = currentLevel;
-
-      if (newLevel > previousLevel) {
-        Future.delayed(const Duration(milliseconds: 300), () {
-          if (!mounted) return;
-          showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: const Text('レベルアップ！'),
-              content: Text('Lv.$newLevel になりました！🎉'),
-              actions: [
-                FilledButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
-          );
-        });
-      }
+      // Level-up dialog is hidden for now (streak / XP / level UI is deferred).
     });
 
     await saveProgress();
@@ -893,11 +839,6 @@ class _HomePageState extends State<HomePage> {
       );
     } else if (currentScreen == 'settings') {
       body = SettingsScreen(
-        xp: xp,
-        streak: streak,
-        level: currentLevel,
-        xpToNextLevel: xpToNextLevel,
-        levelProgress: levelProgress,
         onReset: confirmAndReset,
         onOpenRecords: goToRecords,
         onBack: goHome,
@@ -906,9 +847,6 @@ class _HomePageState extends State<HomePage> {
       );
     } else if (currentScreen == 'records') {
       body = RecordsScreen(
-        xp: xp,
-        streak: streak,
-        level: currentLevel,
         lessons: mockLessons,
         onBack: goToSettings,
       );
@@ -917,8 +855,6 @@ class _HomePageState extends State<HomePage> {
         stars: resultStars,
         totalQuestions: resultTotalQuestions,
         correctAnswers: resultCorrectAnswers,
-        xpGained: resultStars * 10,
-        streak: streak,
         wrongQuestionCount: resultWrongQuestions.length,
         onRestart: restartLesson,
         onHome: goHome,
@@ -955,9 +891,6 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           children: [
             Header(
-              streak: streak,
-              xp: xp,
-              level: currentLevel,
               onSettingsTap: goToSettings,
             ),
             Expanded(child: body),

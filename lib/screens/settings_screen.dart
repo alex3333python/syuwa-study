@@ -1,27 +1,17 @@
 import 'package:flutter/material.dart';
 
 class SettingsScreen extends StatelessWidget {
-  final int xp;
-  final int streak;
-  final int level;
-  final int xpToNextLevel;
   final VoidCallback onReset;
   final VoidCallback onBack;
   final VoidCallback onOpenRecords;
-  final double levelProgress;
   final int weakQuestionCount;
   final VoidCallback? onWeakReview;
 
   const SettingsScreen({
     super.key,
-    required this.xp,
-    required this.streak,
     required this.onReset,
     required this.onBack,
-    required this.level,
     required this.onOpenRecords,
-    required this.xpToNextLevel,
-    required this.levelProgress,
     required this.weakQuestionCount,
     required this.onWeakReview,
   });
@@ -77,111 +67,6 @@ class SettingsScreen extends StatelessWidget {
                       const SizedBox(width: 48),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF9FAFB),
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 42,
-                              height: 42,
-                              decoration: BoxDecoration(
-                                color: const Color(
-                                  0xFF4338CA,
-                                ).withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.workspace_premium_rounded,
-                                color: Color(0xFF4338CA),
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Text(
-                              'Lv.$level',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF111827),
-                              ),
-                            ),
-                            const Spacer(),
-                            Text(
-                              '$xp XP',
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF111827),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(999),
-                          child: LinearProgressIndicator(
-                            value: levelProgress.clamp(0, 1),
-                            minHeight: 10,
-                            backgroundColor: const Color(0xFFE5E7EB),
-                            valueColor: const AlwaysStoppedAnimation<Color>(
-                              Color(0xFF6366F1),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '次のレベルまで $xpToNextLevel XP',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Color(0xFF6B7280),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const SizedBox(height: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'レベル進捗',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF6B7280),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(999),
-                        child: LinearProgressIndicator(
-                          value: levelProgress.clamp(0, 1),
-                          minHeight: 10,
-                          backgroundColor: const Color(0xFFE5E7EB),
-                          valueColor: const AlwaysStoppedAnimation(
-                            Color(0xFF6366F1),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const SizedBox(height: 12),
-                  _InfoTile(
-                    icon: Icons.local_fire_department_rounded,
-                    iconColor: const Color(0xFFF97316),
-                    title: '連続記録',
-                    value: '$streak 日',
-                  ),
-                  const SizedBox(height: 12),
-
                   const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
@@ -204,7 +89,6 @@ class SettingsScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(
@@ -255,59 +139,6 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _InfoTile extends StatelessWidget {
-  final IconData icon;
-  final Color iconColor;
-  final String title;
-  final String value;
-
-  const _InfoTile({
-    required this.icon,
-    required this.iconColor,
-    required this.title,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: iconColor),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(fontSize: 15, color: Color(0xFF6B7280)),
-            ),
-          ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF111827),
-            ),
-          ),
-        ],
       ),
     );
   }
