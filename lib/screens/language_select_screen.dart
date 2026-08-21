@@ -41,12 +41,6 @@ class LanguageSelectScreen extends StatelessWidget {
                     color: Color(0xFF111827),
                   ),
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  '問題は、学校日本語・やさしい日本語・母語で切り替えられます。',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Color(0xFF6B7280)),
-                ),
                 const SizedBox(height: 28),
                 for (final language in AppLanguage.values) ...[
                   _LanguageButton(
