@@ -213,7 +213,11 @@ class _LessonScreenState extends State<LessonScreen> {
     final questionLanguage = isJapaneseOnlyChallenge
         ? AppLanguage.japanese
         : widget.selectedLanguage;
-    final explanationLanguage = question.unit == 'time'
+    // Japanese-only challenge explanations stay in Japanese only — no
+    // translation / やさしい日本語 toggle, even for time-unit questions.
+    final explanationLanguage = isJapaneseOnlyChallenge
+        ? AppLanguage.japanese
+        : question.unit == 'time'
         ? widget.selectedLanguage
         : questionLanguage;
     final promptModeForQuestion = isIndependent
@@ -408,6 +412,7 @@ class _LessonScreenState extends State<LessonScreen> {
             languagePoint: widget.lesson.id == 7
                 ? ''
                 : question.resolvedLanguagePointRuby,
+            isJapaneseOnlyChallenge: isJapaneseOnlyChallenge,
             isLastQuestion: !hasSteps
                 ? currentQuestionIndex == widget.lesson.questions.length - 1
                 : currentStepIndex == visibleSteps.length - 1 &&
@@ -17492,6 +17497,7 @@ class _ExplanationOverlay extends StatelessWidget {
   final String formulaExplanation;
   final String visualHint;
   final String languagePoint;
+  final bool isJapaneseOnlyChallenge;
   final bool isLastQuestion;
   final Future<void> Function() onNext;
 
@@ -17505,6 +17511,7 @@ class _ExplanationOverlay extends StatelessWidget {
     required this.formulaExplanation,
     required this.visualHint,
     required this.languagePoint,
+    required this.isJapaneseOnlyChallenge,
     required this.isLastQuestion,
     required this.onNext,
   });
@@ -17591,6 +17598,8 @@ class _ExplanationOverlay extends StatelessWidget {
                                     .explanationNative[explanationLanguage],
                                 formulaText: formulaExplanation,
                                 visualHint: visualHint,
+                                isJapaneseOnlyChallenge:
+                                    isJapaneseOnlyChallenge,
                               ),
                             ],
                           ),
@@ -17691,6 +17700,7 @@ class _SolutionExplanationCard extends StatefulWidget {
   final String? nativeExplanation;
   final String formulaText;
   final String visualHint;
+  final bool isJapaneseOnlyChallenge;
 
   const _SolutionExplanationCard({
     required this.question,
@@ -17699,6 +17709,7 @@ class _SolutionExplanationCard extends StatefulWidget {
     required this.nativeExplanation,
     required this.formulaText,
     required this.visualHint,
+    required this.isJapaneseOnlyChallenge,
   });
 
   @override
@@ -17710,6 +17721,7 @@ class _SolutionExplanationCardState extends State<_SolutionExplanationCard> {
   bool showNative = false;
 
   bool get hasNativeExplanation {
+    if (widget.isJapaneseOnlyChallenge) return false;
     return widget.language != AppLanguage.japanese &&
         widget.nativeExplanation != null &&
         widget.nativeExplanation!.trim().isNotEmpty;
@@ -17730,7 +17742,12 @@ class _SolutionExplanationCardState extends State<_SolutionExplanationCard> {
 
   @override
   Widget build(BuildContext context) {
-    final visualHint = widget.visualHint.trim();
+    final visualHint = widget.isJapaneseOnlyChallenge
+        ? ''
+        : widget.visualHint.trim();
+    final showExplanationVisual = !widget.isJapaneseOnlyChallenge &&
+        widget.question.hasVisual &&
+        widget.question.diagramData['showInExplanation'] != 'false';
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -17767,8 +17784,7 @@ class _SolutionExplanationCardState extends State<_SolutionExplanationCard> {
             ],
           ),
           const SizedBox(height: 14),
-          if (widget.question.hasVisual &&
-              widget.question.diagramData['showInExplanation'] != 'false') ...[
+          if (showExplanationVisual) ...[
             QuestionVisual(
               question: widget.question,
               compact: true,
@@ -17782,8 +17798,14 @@ class _SolutionExplanationCardState extends State<_SolutionExplanationCard> {
           if (visibleExplanation.isNotEmpty) ...[
             RubyText(
               text: visibleExplanation,
-              vocabularyEntries: widget.question.vocabularyEntries,
+              vocabularyEntries: widget.isJapaneseOnlyChallenge
+                  ? const <VocabularyEntry>[]
+                  : widget.question.vocabularyEntries,
               language: visibleLanguage,
+              enableLearningSupport: !widget.isJapaneseOnlyChallenge,
+              learningSupportMode: widget.isJapaneseOnlyChallenge
+                  ? LearningSupportMode.off
+                  : LearningSupportMode.rubyAndDictionary,
               style: const TextStyle(
                 color: Color(0xFF111827),
                 fontSize: 18,
@@ -17795,8 +17817,14 @@ class _SolutionExplanationCardState extends State<_SolutionExplanationCard> {
           ],
           RubyText(
             text: _answerSummaryText(widget.question, visibleLanguage),
-            vocabularyEntries: widget.question.vocabularyEntries,
+            vocabularyEntries: widget.isJapaneseOnlyChallenge
+                ? const <VocabularyEntry>[]
+                : widget.question.vocabularyEntries,
             language: visibleLanguage,
+            enableLearningSupport: !widget.isJapaneseOnlyChallenge,
+            learningSupportMode: widget.isJapaneseOnlyChallenge
+                ? LearningSupportMode.off
+                : LearningSupportMode.rubyAndDictionary,
             style: const TextStyle(
               color: Color(0xFF374151),
               fontSize: 18,
