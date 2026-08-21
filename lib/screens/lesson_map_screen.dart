@@ -129,8 +129,8 @@ class LessonMapScreen extends StatelessWidget {
             unitLessons: remainderLessons,
             title: 'あまりのあるわり算',
             description: '',
-            color1: const Color(0xFFF97316),
-            color2: const Color(0xFFDB2777),
+            color1: const Color(0xFF38BDF8),
+            color2: const Color(0xFF4F46E5),
           ),
         );
         continue;
