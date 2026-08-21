@@ -40,7 +40,7 @@ class ReportScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const Text(
-                  '先生・保護者向けミニレポート',
+                  'レポート',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 28,
@@ -50,7 +50,7 @@ class ReportScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  '正誤、問題タグ、本人が選んだ「むずかしかった理由」から見た支援メモです。',
+                  '正誤、問題タグから見た支援メモです。',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Color(0xFF6B7280), height: 1.4),
                 ),
