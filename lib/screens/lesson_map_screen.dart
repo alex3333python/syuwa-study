@@ -53,49 +53,6 @@ class LessonMapScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 14,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.88),
-                        borderRadius: BorderRadius.circular(999),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0x14000000),
-                            blurRadius: 18,
-                            offset: Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.calculate_rounded,
-                            color: Color(0xFFA855F7),
-                            size: 28,
-                          ),
-                          SizedBox(width: 10),
-                          Text(
-                            '学習マップ',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF7C3AED),
-                            ),
-                          ),
-                          SizedBox(width: 10),
-                          Icon(
-                            Icons.auto_awesome,
-                            color: Color(0xFFF59E0B),
-                            size: 26,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 28),
 
                     for (int i = 0; i < lessonEntries.length; i++) ...[
                       _LessonRow(
@@ -207,7 +164,7 @@ class LessonMapScreen extends StatelessWidget {
           _buildUnitEntry(
             unitLessons: remainderLessons,
             title: 'あまりのあるわり算',
-            description: 'あまりの出るわり算と、文章題での答え方を練習します。',
+            description: '',
             color1: const Color(0xFFF97316),
             color2: const Color(0xFFDB2777),
           ),
@@ -224,7 +181,7 @@ class LessonMapScreen extends StatelessWidget {
           _buildUnitEntry(
             unitLessons: timeLessons,
             title: '時こくと時間',
-            description: '時計を動かして、時こくと時間を考えます。',
+            description: '',
             color1: const Color(0xFF0EA5E9),
             color2: const Color(0xFF2563EB),
           ),
@@ -241,7 +198,7 @@ class LessonMapScreen extends StatelessWidget {
           _buildUnitEntry(
             unitLessons: lengthLessons,
             title: '長さ',
-            description: '道具を選んではかり、kmとmの関係を考えます。',
+            description: '',
             color1: const Color(0xFF22C55E),
             color2: const Color(0xFF0EA5E9),
           ),
@@ -258,7 +215,7 @@ class LessonMapScreen extends StatelessWidget {
           _buildUnitEntry(
             unitLessons: weightLessons,
             title: '重さ',
-            description: 'はかりを使って、g・kg・tの感覚をつかみます。',
+            description: '',
             color1: const Color(0xFFF59E0B),
             color2: const Color(0xFF14B8A6),
           ),
