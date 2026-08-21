@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/lesson.dart';
+import '../theme/app_colors.dart';
 
 class LessonMapScreen extends StatelessWidget {
   final List<Lesson> lessons;
@@ -18,14 +19,7 @@ class LessonMapScreen extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          // 白に近い薄いターコイズブルー → 薄いマリンブルー
-          colors: [Color(0xFFD7F3F1), Color(0xFFC5DCE8)],
-        ),
-      ),
+      decoration: AppColors.screenBackground,
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(32, 28, 32, 48),
         child: Center(

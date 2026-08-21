@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../logic/diagnosis_engine.dart';
 import '../models/answer_record.dart';
 import '../models/lesson.dart';
+import '../theme/app_colors.dart';
 
 class DiagnosisResultScreen extends StatelessWidget {
   final DiagnosisResult result;
@@ -32,13 +33,7 @@ class DiagnosisResultScreen extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFEFF6FF), Color(0xFFF5F3FF), Color(0xFFFDF2F8)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
+      decoration: AppColors.screenBackground,
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(24, 28, 24, 36),
         child: Center(

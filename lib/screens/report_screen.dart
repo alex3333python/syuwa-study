@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/answer_record.dart';
+import '../theme/app_colors.dart';
 
 class ReportScreen extends StatelessWidget {
   final Map<String, int> weakTagCounts;
@@ -24,13 +25,7 @@ class ReportScreen extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFF8FAFC), Color(0xFFEFF6FF), Color(0xFFF5F3FF)],
-        ),
-      ),
+      decoration: AppColors.screenBackground,
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(24, 28, 24, 48),
         child: Center(

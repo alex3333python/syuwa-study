@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
 import 'lesson_map_screen.dart';
 
 class ReviewScreen extends StatelessWidget {
@@ -17,13 +18,7 @@ class ReviewScreen extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFEFF6FF), Color(0xFFF5F3FF), Color(0xFFFDF2F8)],
-        ),
-      ),
+      decoration: AppColors.screenBackground,
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(24, 32, 24, 48),
         child: Center(
