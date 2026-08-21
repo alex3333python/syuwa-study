@@ -22,97 +22,76 @@ class LessonMapScreen extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFFEFF6FF), Color(0xFFF5F3FF), Color(0xFFFDF2F8)],
+          // ターコイズブルー → 花浅葱
+          colors: [Color(0xFF40E0D0), Color(0xFF1E88A8)],
         ),
       ),
-      child: Stack(
-        children: [
-          const _BlurCircle(
-            size: 260,
-            color: Color(0x663B82F6),
-            top: 110,
-            left: 40,
-          ),
-          const _BlurCircle(
-            size: 260,
-            color: Color(0x668B5CF6),
-            top: 280,
-            right: 20,
-          ),
-          const _BlurCircle(
-            size: 260,
-            color: Color(0x66EC4899),
-            bottom: 80,
-            left: 260,
-          ),
-          SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(32, 28, 32, 48),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 980),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 8),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(32, 28, 32, 48),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 980),
+            child: Column(
+              children: [
+                const SizedBox(height: 8),
 
-                    for (int i = 0; i < lessonEntries.length; i++) ...[
-                      _LessonRow(
-                        item: lessonEntries[i].item,
-                        alignLeft: i % 2 == 0,
-                        onTap: lessonEntries[i].lessonToStart == null
-                            ? null
-                            : () => onStartLesson(
-                                lessonEntries[i].lessonToStart!,
-                              ),
-                      ),
-                      if (i != lessonEntries.length - 1)
-                        const SizedBox(height: 42),
-                    ],
+                for (int i = 0; i < lessonEntries.length; i++) ...[
+                  _LessonRow(
+                    item: lessonEntries[i].item,
+                    alignLeft: i % 2 == 0,
+                    onTap: lessonEntries[i].lessonToStart == null
+                        ? null
+                        : () => onStartLesson(
+                            lessonEntries[i].lessonToStart!,
+                          ),
+                  ),
+                  if (i != lessonEntries.length - 1)
+                    const SizedBox(height: 42),
+                ],
 
-                    const SizedBox(height: 48),
+                const SizedBox(height: 48),
 
-                    Container(
-                      width: 360,
-                      padding: const EdgeInsets.all(28),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.92),
-                        borderRadius: BorderRadius.circular(28),
-                        border: Border.all(
-                          color: const Color(0xFFE9D5FF),
-                          width: 2,
-                        ),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0x16000000),
-                            blurRadius: 24,
-                            offset: Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child: const Column(
-                        children: [
-                          Icon(
-                            Icons.emoji_events_rounded,
-                            color: Color(0xFFF59E0B),
-                            size: 64,
-                          ),
-                          SizedBox(height: 14),
-                          Text(
-                            '次の単元も準備中',
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
+                Container(
+                  width: 360,
+                  padding: const EdgeInsets.all(28),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.92),
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(
+                      color: const Color(0xFFE9D5FF),
+                      width: 2,
                     ),
-                  ],
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x16000000),
+                        blurRadius: 24,
+                        offset: Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: const Column(
+                    children: [
+                      Icon(
+                        Icons.emoji_events_rounded,
+                        color: Color(0xFFF59E0B),
+                        size: 64,
+                      ),
+                      SizedBox(height: 14),
+                      Text(
+                        '次の単元も準備中',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
