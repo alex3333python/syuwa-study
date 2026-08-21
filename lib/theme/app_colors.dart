@@ -7,6 +7,7 @@ class AppColors {
   static const Color brandSky = Color(0xFF6FB9E6);
   static const Color brandTurquoise = Color(0xFF7FD6CF);
   static const Color brandMist = Color(0xFFE6F0FA);
+  static const Color brandNavy = Color(0xFF1F3A5F);
 
   /// まなぶ画面用（いまの濃さ）
   static const Color paleTurquoise = Color(0xFFD7F3F1);

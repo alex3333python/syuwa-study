@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../models/app_language.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_fonts.dart';
 
 class Header extends StatelessWidget {
   final AppLanguage language;
@@ -15,7 +17,7 @@ class Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB))),
@@ -23,7 +25,7 @@ class Header extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const _MarelaBrandMark(height: 52),
+          const _MarelaBrandMark(),
           Row(
             children: [
               Container(
@@ -59,20 +61,37 @@ class Header extends StatelessWidget {
   }
 }
 
+/// 白い角丸アイコン + 紺の「Marela」タイトル（横並び）。
 class _MarelaBrandMark extends StatelessWidget {
-  final double height;
-
-  const _MarelaBrandMark({required this.height});
+  const _MarelaBrandMark();
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       label: 'Marela',
-      child: Image.asset(
-        'assets/brand/marela_logo.png',
-        height: height,
-        fit: BoxFit.contain,
-        filterQuality: FilterQuality.high,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Image.asset(
+            'assets/brand/marela_icon.png',
+            width: 40,
+            height: 40,
+            fit: BoxFit.contain,
+            filterQuality: FilterQuality.high,
+          ),
+          const SizedBox(width: 10),
+          const Text(
+            'Marela',
+            style: TextStyle(
+              fontFamily: AppFonts.display,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: AppColors.brandNavy,
+              letterSpacing: 0.2,
+              height: 1.0,
+            ),
+          ),
+        ],
       ),
     );
   }
