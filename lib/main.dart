@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: '多言語算数学習',
+      title: 'Marela',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF0082FF),
@@ -163,36 +163,10 @@ class _HomePageState extends State<HomePage> {
     loadProgress();
   }
 
-  // streak and experience level(xp)
+  // streak and experience (xp) are still tracked for later UI re-enable.
   String currentScreen = 'map';
   int streak = 0;
   int xp = 0;
-  int previousLevel = 1;
-  int getLevelFromXp(int xp) {
-    if (xp >= 800) return 5;
-    if (xp >= 500) return 4;
-    if (xp >= 250) return 3;
-    if (xp >= 100) return 2;
-    return 1;
-  }
-
-  int get currentLevel => getLevelFromXp(xp);
-  int getNextLevelXp(int level) {
-    switch (level) {
-      case 1:
-        return 100;
-      case 2:
-        return 250;
-      case 3:
-        return 500;
-      case 4:
-        return 800;
-      default:
-        return 1200;
-    }
-  }
-
-  int get xpToNextLevel => getNextLevelXp(currentLevel) - xp;
   bool isLoading = true;
   bool isWeakReviewMode = false;
   AppLanguage selectedLanguage = AppLanguage.japanese;
@@ -209,13 +183,6 @@ class _HomePageState extends State<HomePage> {
   List<int> weakQuestionIds = [];
   Map<String, int> weakTagCounts = {};
   Map<String, int> weakReasonCounts = {};
-
-  double get levelProgress {
-    final currentLevelXp = getNextLevelXp(currentLevel - 1);
-    final nextLevelXp = getNextLevelXp(currentLevel);
-
-    return (xp - currentLevelXp) / (nextLevelXp - currentLevelXp);
-  }
 
   void startLesson(Lesson lesson) {
     setState(() {
@@ -243,9 +210,11 @@ class _HomePageState extends State<HomePage> {
         ? DiagnosisEngine.analyze(wrongQuestions, answerRecords)
         : null;
     recordWeakSignals(answerRecords);
+    if (nextDiagnosisResult != null) {
+      _mergeDiagnosisSignals(nextDiagnosisResult);
+    }
 
     setState(() {
-      previousLevel = currentLevel;
       resultStars = stars;
       resultCorrectAnswers = correctAnswers;
       resultTotalQuestions = totalQuestions;
@@ -267,27 +236,7 @@ class _HomePageState extends State<HomePage> {
       xp += stars * 10;
       updateStreak();
       currentScreen = isDiagnosis ? 'diagnosis_result' : 'completion';
-
-      final newLevel = currentLevel;
-
-      if (newLevel > previousLevel) {
-        Future.delayed(const Duration(milliseconds: 300), () {
-          if (!mounted) return;
-          showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: const Text('レベルアップ！'),
-              content: Text('Lv.$newLevel になりました！🎉'),
-              actions: [
-                FilledButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
-          );
-        });
-      }
+      // Level-up dialog is hidden for now (streak / XP / level UI is deferred).
     });
 
     await saveProgress();
@@ -318,11 +267,23 @@ class _HomePageState extends State<HomePage> {
         weakTagCounts[tag] = (weakTagCounts[tag] ?? 0) + 1;
       }
 
+      final unitId = record.question.unitId.trim();
+      if (unitId.isNotEmpty) {
+        weakTagCounts[unitId] = (weakTagCounts[unitId] ?? 0) + 1;
+      }
+
       final reason = record.mistakeReason;
       if (reason != null) {
         final key = reason.storageValue;
         weakReasonCounts[key] = (weakReasonCounts[key] ?? 0) + 1;
       }
+    }
+  }
+
+  void _mergeDiagnosisSignals(DiagnosisResult result) {
+    for (final entry in result.mistakeReasonCounts.entries) {
+      final key = entry.key.storageValue;
+      weakReasonCounts[key] = (weakReasonCounts[key] ?? 0) + entry.value;
     }
   }
 
@@ -401,24 +362,7 @@ class _HomePageState extends State<HomePage> {
         steps: current.steps,
       );
 
-      if (index + 1 < mockLessons.length) {
-        final next = mockLessons[index + 1];
-        if (next.locked) {
-          mockLessons[index + 1] = Lesson(
-            id: next.id,
-            levelId: next.levelId,
-            type: next.type,
-            title: next.title,
-            description: next.description,
-            completed: next.completed,
-            locked: false,
-            stars: next.stars,
-            maxStars: next.maxStars,
-            questions: next.questions,
-            steps: next.steps,
-          );
-        }
-      }
+      _syncLearningUnitLocks();
     });
 
     await saveProgress();
@@ -513,29 +457,48 @@ class _HomePageState extends State<HomePage> {
     return counts;
   }
 
-  void _normalizeActiveLessonLocks() {
-    if (mockLessons.isEmpty) return;
+  bool get _isDiagnosisCompleted {
+    for (final lesson in mockLessons) {
+      if (lesson.id == 1) return lesson.completed;
+    }
+    return false;
+  }
+
+  Lesson _copyLesson(Lesson lesson, {bool? completed, bool? locked, int? stars}) {
+    return Lesson(
+      id: lesson.id,
+      levelId: lesson.levelId,
+      type: lesson.type,
+      title: lesson.title,
+      description: lesson.description,
+      completed: completed ?? lesson.completed,
+      locked: locked ?? lesson.locked,
+      stars: stars ?? lesson.stars,
+      maxStars: lesson.maxStars,
+      questions: lesson.questions,
+      steps: lesson.steps,
+    );
+  }
+
+  void _syncLearningUnitLocks() {
+    final diagnosisCompleted = _isDiagnosisCompleted;
+    final completedById = {
+      for (final lesson in mockLessons) lesson.id: lesson.completed,
+    };
 
     for (int i = 0; i < mockLessons.length; i++) {
       final lesson = mockLessons[i];
-      final shouldBeUnlocked =
-          i == 0 || !lesson.locked || mockLessons[i - 1].completed;
-
-      if (!shouldBeUnlocked || !lesson.locked) continue;
-
-      mockLessons[i] = Lesson(
-        id: lesson.id,
-        levelId: lesson.levelId,
-        type: lesson.type,
-        title: lesson.title,
-        description: lesson.description,
-        completed: lesson.completed,
-        locked: false,
-        stars: lesson.stars,
-        maxStars: lesson.maxStars,
-        questions: lesson.questions,
-        steps: lesson.steps,
+      final shouldLock = shouldLessonBeLocked(
+        lessonId: lesson.id,
+        diagnosisCompleted: diagnosisCompleted,
+        isCompleted: (id) => completedById[id] ?? false,
       );
+
+      // 完了済みセクションは復習できるようにロックしない。
+      final locked = lesson.completed ? false : shouldLock;
+      if (lesson.locked == locked) continue;
+
+      mockLessons[i] = _copyLesson(lesson, locked: locked);
     }
   }
 
@@ -548,25 +511,16 @@ class _HomePageState extends State<HomePage> {
       final completed =
           prefs.getBool('lesson_${lesson.id}_completed') ?? lesson.completed;
       final stars = prefs.getInt('lesson_${lesson.id}_stars') ?? lesson.stars;
-      final locked =
-          prefs.getBool('lesson_${lesson.id}_locked') ?? lesson.locked;
 
-      mockLessons[i] = Lesson(
-        id: lesson.id,
-        levelId: lesson.levelId,
-        type: lesson.type,
-        title: lesson.title,
-        description: lesson.description,
+      mockLessons[i] = _copyLesson(
+        lesson,
         completed: completed,
-        locked: locked,
         stars: stars,
-        maxStars: lesson.maxStars,
-        questions: lesson.questions,
-        steps: lesson.steps,
+        locked: lesson.locked,
       );
     }
 
-    _normalizeActiveLessonLocks();
+    _syncLearningUnitLocks();
 
     final savedXp = prefs.getInt('user_xp');
     final savedStreak = prefs.getInt('user_streak');
@@ -626,24 +580,21 @@ class _HomePageState extends State<HomePage> {
       for (int i = 0; i < mockLessons.length; i++) {
         final l = mockLessons[i];
 
-        mockLessons[i] = Lesson(
-          id: l.id,
-          levelId: l.levelId,
-          type: l.type,
-          title: l.title,
-          description: l.description,
+        mockLessons[i] = _copyLesson(
+          l,
           completed: false,
-          locked: i == 0 ? false : true, // 1つ目だけ解放
+          locked: true,
           stars: 0,
-          maxStars: l.maxStars,
-          questions: l.questions,
-          steps: l.steps,
         );
       }
+
+      _syncLearningUnitLocks();
 
       xp = 0;
       weakTagCounts = {};
       weakReasonCounts = {};
+      diagnosisResult = null;
+      weakQuestionIds = [];
 
       // 画面もマップに戻すと分かりやすい
       currentScreen = 'map';
@@ -678,21 +629,30 @@ class _HomePageState extends State<HomePage> {
   void goToNextLesson() {
     if (selectedLesson == null) return;
 
-    final index = mockLessons.indexWhere((l) => l.id == selectedLesson!.id);
+    final nextLesson = _nextSectionInUnit(selectedLesson!);
+    if (nextLesson == null) return;
+    if (_isDivisionLessonWaitingForRedesign(nextLesson)) return;
+    if (nextLesson.locked) return;
 
-    if (index != -1 && index + 1 < mockLessons.length) {
-      final nextLesson = mockLessons[index + 1];
+    setState(() {
+      selectedLesson = nextLesson;
+      lessonSessionId++;
+      currentScreen = 'lesson';
+    });
+  }
 
-      if (_isDivisionLessonWaitingForRedesign(nextLesson)) return;
+  Lesson? _nextSectionInUnit(Lesson lesson) {
+    final sections = learningUnitSectionsForLesson(lesson.id);
+    if (sections == null) return null;
 
-      if (!nextLesson.locked) {
-        setState(() {
-          selectedLesson = nextLesson;
-          lessonSessionId++;
-          currentScreen = 'lesson';
-        });
-      }
+    final index = sections.indexOf(lesson.id);
+    if (index == -1 || index + 1 >= sections.length) return null;
+
+    final nextId = sections[index + 1];
+    for (final candidate in mockLessons) {
+      if (candidate.id == nextId) return candidate;
     }
+    return null;
   }
 
   List<Question> getWeakQuestions() {
@@ -738,11 +698,8 @@ class _HomePageState extends State<HomePage> {
   VoidCallback? getNextLessonAction() {
     if (selectedLesson == null) return null;
 
-    final index = mockLessons.indexWhere((l) => l.id == selectedLesson!.id);
-    if (index == -1) return null;
-    if (index + 1 >= mockLessons.length) return null;
-
-    final nextLesson = mockLessons[index + 1];
+    final nextLesson = _nextSectionInUnit(selectedLesson!);
+    if (nextLesson == null) return null;
     if (nextLesson.locked) return null;
     if (_isDivisionLessonWaitingForRedesign(nextLesson)) return null;
 
@@ -786,8 +743,8 @@ class _HomePageState extends State<HomePage> {
         id: -3,
         levelId: -1,
         type: LessonType.practice,
-        title: '今日の復習',
-        description: '前にむずかしかった言葉や計算に近い問題を練習します。',
+        title: '今日のふくしゅう',
+        description: 'むずかしかった問題を3問とこう',
         completed: false,
         locked: false,
         stars: 0,
@@ -812,21 +769,26 @@ class _HomePageState extends State<HomePage> {
     if (index == -1) return;
 
     setState(() {
-      final current = mockLessons[index];
-      mockLessons[index] = Lesson(
-        id: current.id,
-        levelId: current.levelId,
-        type: current.type,
-        title: current.title,
-        description: current.description,
-        completed: current.completed,
+      // おすすめから入る場合も、算数チェック済みとして単元ロックを同期する。
+      final diagnosisIndex = mockLessons.indexWhere((l) => l.id == 1);
+      if (diagnosisIndex != -1 && !mockLessons[diagnosisIndex].completed) {
+        mockLessons[diagnosisIndex] = _copyLesson(
+          mockLessons[diagnosisIndex],
+          completed: true,
+          locked: false,
+        );
+      }
+
+      _syncLearningUnitLocks();
+
+      final currentIndex = mockLessons.indexWhere((l) => l.id == lesson.id);
+      if (currentIndex == -1) return;
+
+      mockLessons[currentIndex] = _copyLesson(
+        mockLessons[currentIndex],
         locked: false,
-        stars: current.stars,
-        maxStars: current.maxStars,
-        questions: current.questions,
-        steps: current.steps,
       );
-      selectedLesson = mockLessons[index];
+      selectedLesson = mockLessons[currentIndex];
       isWeakReviewMode = false;
       lessonSessionId++;
       currentScreen = 'lesson';
@@ -839,9 +801,11 @@ class _HomePageState extends State<HomePage> {
     final result = diagnosisResult;
     if (result == null) return const [];
 
-    return mockLessons
-        .where((lesson) => result.recommendedLessonIds.contains(lesson.id))
-        .toList();
+    final byId = {for (final lesson in mockLessons) lesson.id: lesson};
+    return [
+      for (final id in result.recommendedLessonIds)
+        if (byId[id] != null) byId[id]!,
+    ];
   }
 
   void goToRecords() {
@@ -893,11 +857,6 @@ class _HomePageState extends State<HomePage> {
       );
     } else if (currentScreen == 'settings') {
       body = SettingsScreen(
-        xp: xp,
-        streak: streak,
-        level: currentLevel,
-        xpToNextLevel: xpToNextLevel,
-        levelProgress: levelProgress,
         onReset: confirmAndReset,
         onOpenRecords: goToRecords,
         onBack: goHome,
@@ -906,9 +865,6 @@ class _HomePageState extends State<HomePage> {
       );
     } else if (currentScreen == 'records') {
       body = RecordsScreen(
-        xp: xp,
-        streak: streak,
-        level: currentLevel,
         lessons: mockLessons,
         onBack: goToSettings,
       );
@@ -917,8 +873,6 @@ class _HomePageState extends State<HomePage> {
         stars: resultStars,
         totalQuestions: resultTotalQuestions,
         correctAnswers: resultCorrectAnswers,
-        xpGained: resultStars * 10,
-        streak: streak,
         wrongQuestionCount: resultWrongQuestions.length,
         onRestart: restartLesson,
         onHome: goHome,
@@ -955,9 +909,7 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           children: [
             Header(
-              streak: streak,
-              xp: xp,
-              level: currentLevel,
+              language: selectedLanguage,
               onSettingsTap: goToSettings,
             ),
             Expanded(child: body),

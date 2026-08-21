@@ -213,7 +213,11 @@ class _LessonScreenState extends State<LessonScreen> {
     final questionLanguage = isJapaneseOnlyChallenge
         ? AppLanguage.japanese
         : widget.selectedLanguage;
-    final explanationLanguage = question.unit == 'time'
+    // Japanese-only challenge explanations stay in Japanese only — no
+    // translation / やさしい日本語 toggle, even for time-unit questions.
+    final explanationLanguage = isJapaneseOnlyChallenge
+        ? AppLanguage.japanese
+        : question.unit == 'time'
         ? widget.selectedLanguage
         : questionLanguage;
     final promptModeForQuestion = isIndependent
@@ -408,6 +412,7 @@ class _LessonScreenState extends State<LessonScreen> {
             languagePoint: widget.lesson.id == 7
                 ? ''
                 : question.resolvedLanguagePointRuby,
+            isJapaneseOnlyChallenge: isJapaneseOnlyChallenge,
             isLastQuestion: !hasSteps
                 ? currentQuestionIndex == widget.lesson.questions.length - 1
                 : currentStepIndex == visibleSteps.length - 1 &&
@@ -961,9 +966,9 @@ String _timeIndependentPracticeHint(Question question) {
   if (question.unit != 'time') return '';
 
   return switch (question.type) {
-    'across_hour' => 'まず、次のちょうどの時こくまで何分あるか見てみましょう。そこまで進めたら、残りの分をもう一度進めます。',
+    'across_hour' => 'まず、次のちょうどの時こくまで何分あるか見てみましょう。そこまで進めたら、のこりの分をもう一度進めます。',
     'noon' => '12時をまたぐと、午前から午後に変わります。まず正午まで何分あるかを見てみましょう。',
-    'minutes_after' => '「何分後」は時計を進めます。近いちょうどの時こくまで進めてから、残りの分を考えましょう。',
+    'minutes_after' => '「何分後」は時計を進めます。近いちょうどの時こくまで進めてから、のこりの分を考えましょう。',
     'minutes_before' ||
     'start_time' => '「前」や「何時に出た」は時計を戻して考えます。終わりの時こくから、かかった時間だけ戻しましょう。',
     'compare_time' => '単位がちがうときは、同じ単位にそろえて比べます。1分は60秒です。',
@@ -1075,7 +1080,7 @@ const _independentHintSupports = [
   ),
   _IndependentHintSupport(
     term: 'あまり',
-    simpleJapanese: '同じ数ずつ分けたあとに残る数です。',
+    simpleJapanese: '同じ数ずつ分けたあとにのこる数です。',
     translations: {
       AppLanguage.portuguese: 'resto / sobra',
       AppLanguage.tagalog: 'sobra / natira',
@@ -6058,9 +6063,9 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
           }
         ),
         SupportLine(
-          japanese: '3人で同じ数ずつ分けると、1人分は2こで、1こ残ります。',
+          japanese: '3人で同じ数ずつ分けると、1人分は2こで、1このこります。',
           ruby:
-              '3{人|にん}で{同|おな}じ{数|かず}ずつ{分|わ}けると、{1人|ひとり}{分|ぶん}は2こで、1こ{残|のこ}ります。',
+              '3{人|にん}で{同|おな}じ{数|かず}ずつ{分|わ}けると、{1人|ひとり}{分|ぶん}は2こで、1このこります。',
           native: {
             AppLanguage.portuguese:
                 'Dividindo igualmente entre 3 pessoas, cada pessoa recebe 2 e sobra 1.',
@@ -9015,7 +9020,7 @@ const _remainderLearnVocabulary = [
   VocabularyEntry(
     term: 'あまり',
     reading: 'あまり',
-    simpleJapanese: '分けたあとに残る数です。',
+    simpleJapanese: '分けたあとにのこる数です。',
     translations: {AppLanguage.portuguese: 'resto / sobra',
       AppLanguage.tagalog: 'sobra / natira',
       AppLanguage.vietnamese: 'số dư',},
@@ -9043,13 +9048,22 @@ const _remainderLearnVocabulary = [
     category: 'math_language',
   ),
   VocabularyEntry(
-    term: '残ります',
+    term: 'のこる',
+    surfaces: const [
+      'のこる',
+      'のこります',
+      'のこって',
+      'のこった',
+      'のこり',
+      'のこりました',
+      'のこっている',
+    ],
     reading: 'のこる',
     simpleJapanese: 'まだある、という意味です。',
     translations: {AppLanguage.portuguese: 'sobra / fica',
       AppLanguage.tagalog: 'natitira',
       AppLanguage.vietnamese: 'còn lại',},
-    exampleSentence: '1こ残ります。',
+    exampleSentence: '1このこります。',
     category: 'math_language',
   ),
 ];
@@ -9467,8 +9481,8 @@ class _RemainderShareResult extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const line = SupportLine(
-      japanese: '3人に2こずつ分けると、1こ残りました。この1こを「あまり」といいます。',
-      ruby: '3{人|にん}に2こずつ{分|わ}けると、1こ{残|のこ}りました。この1こを「あまり」といいます。',
+      japanese: '3人に2こずつ分けると、1このこりました。この1こを「あまり」といいます。',
+      ruby: '3{人|にん}に2こずつ{分|わ}けると、1このこりました。この1こを「あまり」といいます。',
       native: {
         AppLanguage.portuguese:
             'Ao dividir 2 para cada uma das 3 pessoas, sobrou 1. Esse 1 é o resto.',
@@ -9677,7 +9691,7 @@ class _RemainderEquationBuilderState extends State<_RemainderEquationBuilder> {
         if ((_each != null || _remainder != null) && !_complete) ...[
           const SizedBox(height: 12),
           const Text(
-            'お皿の中と、残っているいちごをもう一度見てみよう。',
+            'お皿の中と、のこっているいちごをもう一度見てみよう。',
             style: TextStyle(
               fontFamily: AppFonts.interface,
               color: Color(0xFF64748B),
@@ -9693,9 +9707,9 @@ class _RemainderEquationBuilderState extends State<_RemainderEquationBuilder> {
             showNative: _showResultNative,
             onToggleNative: () =>
                 setState(() => _showResultNative = !_showResultNative),
-            japanese: '1人分は2こ、残ったのは1こ。だから、7 ÷ 3 = 2 あまり 1 と書きます。',
+            japanese: '1人分は2こ、のこったのは1こ。だから、7 ÷ 3 = 2 あまり 1 と書きます。',
             ruby:
-                '{1人|ひとり}{分|ぶん}は2こ、{残|のこ}ったのは1こ。だから、7 ÷ 3 = 2 あまり 1 と{書|か}きます。',
+                '{1人|ひとり}{分|ぶん}は2こ、のこったのは1こ。だから、7 ÷ 3 = 2 あまり 1 と{書|か}きます。',
             portuguese:
                 'Cada pessoa recebe 2 e sobra 1. Por isso escrevemos 7 ÷ 3 = 2, resto 1.',
             tagalog:
@@ -9890,9 +9904,9 @@ class _RemainderTimesTableFinderState
             showNative: _showResultNative,
             onToggleNative: () =>
                 setState(() => _showResultNative = !_showResultNative),
-            japanese: '3 × 2 = 6です。7から6を使うと、1こ残ります。だから、7 ÷ 3 = 2 あまり 1です。',
+            japanese: '3 × 2 = 6です。7から6を使うと、1このこります。だから、7 ÷ 3 = 2 あまり 1です。',
             ruby:
-                '3 × 2 = 6です。7から6を{使|つか}うと、1こ{残|のこ}ります。だから、7 ÷ 3 = 2 あまり 1です。',
+                '3 × 2 = 6です。7から6を{使|つか}うと、1このこります。だから、7 ÷ 3 = 2 あまり 1です。',
             portuguese:
                 '3 × 2 = 6. Ao usar 6 dos 7, sobra 1. Por isso, 7 ÷ 3 = 2, resto 1.',
             tagalog:
@@ -17492,6 +17506,7 @@ class _ExplanationOverlay extends StatelessWidget {
   final String formulaExplanation;
   final String visualHint;
   final String languagePoint;
+  final bool isJapaneseOnlyChallenge;
   final bool isLastQuestion;
   final Future<void> Function() onNext;
 
@@ -17505,6 +17520,7 @@ class _ExplanationOverlay extends StatelessWidget {
     required this.formulaExplanation,
     required this.visualHint,
     required this.languagePoint,
+    required this.isJapaneseOnlyChallenge,
     required this.isLastQuestion,
     required this.onNext,
   });
@@ -17591,6 +17607,8 @@ class _ExplanationOverlay extends StatelessWidget {
                                     .explanationNative[explanationLanguage],
                                 formulaText: formulaExplanation,
                                 visualHint: visualHint,
+                                isJapaneseOnlyChallenge:
+                                    isJapaneseOnlyChallenge,
                               ),
                             ],
                           ),
@@ -17691,6 +17709,7 @@ class _SolutionExplanationCard extends StatefulWidget {
   final String? nativeExplanation;
   final String formulaText;
   final String visualHint;
+  final bool isJapaneseOnlyChallenge;
 
   const _SolutionExplanationCard({
     required this.question,
@@ -17699,6 +17718,7 @@ class _SolutionExplanationCard extends StatefulWidget {
     required this.nativeExplanation,
     required this.formulaText,
     required this.visualHint,
+    required this.isJapaneseOnlyChallenge,
   });
 
   @override
@@ -17710,6 +17730,7 @@ class _SolutionExplanationCardState extends State<_SolutionExplanationCard> {
   bool showNative = false;
 
   bool get hasNativeExplanation {
+    if (widget.isJapaneseOnlyChallenge) return false;
     return widget.language != AppLanguage.japanese &&
         widget.nativeExplanation != null &&
         widget.nativeExplanation!.trim().isNotEmpty;
@@ -17730,7 +17751,12 @@ class _SolutionExplanationCardState extends State<_SolutionExplanationCard> {
 
   @override
   Widget build(BuildContext context) {
-    final visualHint = widget.visualHint.trim();
+    final visualHint = widget.isJapaneseOnlyChallenge
+        ? ''
+        : widget.visualHint.trim();
+    final showExplanationVisual = !widget.isJapaneseOnlyChallenge &&
+        widget.question.hasVisual &&
+        widget.question.diagramData['showInExplanation'] != 'false';
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -17746,7 +17772,7 @@ class _SolutionExplanationCardState extends State<_SolutionExplanationCard> {
             children: [
               const Expanded(
                 child: Text(
-                  '解き方',
+                  'とき方',
                   style: TextStyle(
                     color: Color(0xFF2563EB),
                     fontSize: 16,
@@ -17767,8 +17793,7 @@ class _SolutionExplanationCardState extends State<_SolutionExplanationCard> {
             ],
           ),
           const SizedBox(height: 14),
-          if (widget.question.hasVisual &&
-              widget.question.diagramData['showInExplanation'] != 'false') ...[
+          if (showExplanationVisual) ...[
             QuestionVisual(
               question: widget.question,
               compact: true,
@@ -17782,8 +17807,14 @@ class _SolutionExplanationCardState extends State<_SolutionExplanationCard> {
           if (visibleExplanation.isNotEmpty) ...[
             RubyText(
               text: visibleExplanation,
-              vocabularyEntries: widget.question.vocabularyEntries,
+              vocabularyEntries: widget.isJapaneseOnlyChallenge
+                  ? const <VocabularyEntry>[]
+                  : widget.question.vocabularyEntries,
               language: visibleLanguage,
+              enableLearningSupport: !widget.isJapaneseOnlyChallenge,
+              learningSupportMode: widget.isJapaneseOnlyChallenge
+                  ? LearningSupportMode.off
+                  : LearningSupportMode.rubyAndDictionary,
               style: const TextStyle(
                 color: Color(0xFF111827),
                 fontSize: 18,
@@ -17795,8 +17826,14 @@ class _SolutionExplanationCardState extends State<_SolutionExplanationCard> {
           ],
           RubyText(
             text: _answerSummaryText(widget.question, visibleLanguage),
-            vocabularyEntries: widget.question.vocabularyEntries,
+            vocabularyEntries: widget.isJapaneseOnlyChallenge
+                ? const <VocabularyEntry>[]
+                : widget.question.vocabularyEntries,
             language: visibleLanguage,
+            enableLearningSupport: !widget.isJapaneseOnlyChallenge,
+            learningSupportMode: widget.isJapaneseOnlyChallenge
+                ? LearningSupportMode.off
+                : LearningSupportMode.rubyAndDictionary,
             style: const TextStyle(
               color: Color(0xFF374151),
               fontSize: 18,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/app_language.dart';
+import '../theme/app_colors.dart';
 
 class LanguageSelectScreen extends StatelessWidget {
   final AppLanguage selectedLanguage;
@@ -16,13 +17,7 @@ class LanguageSelectScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFEFF6FF), Color(0xFFF5F3FF), Color(0xFFFDF2F8)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
+      decoration: AppColors.screenBackground,
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 520),
@@ -33,19 +28,13 @@ class LanguageSelectScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const Text(
-                  '言語を選んでください',
+                  'ことばをえらぼう',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF111827),
                   ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  '問題は、学校日本語・やさしい日本語・母語で切り替えられます。',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Color(0xFF6B7280)),
                 ),
                 const SizedBox(height: 28),
                 for (final language in AppLanguage.values) ...[

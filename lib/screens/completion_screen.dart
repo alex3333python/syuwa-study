@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 
 class CompletionScreen extends StatelessWidget {
   final int stars;
   final int totalQuestions;
   final int correctAnswers;
-  final int xpGained;
-  final int streak;
   final int wrongQuestionCount;
   final VoidCallback onRestart;
   final VoidCallback onHome;
@@ -19,8 +18,6 @@ class CompletionScreen extends StatelessWidget {
     required this.stars,
     required this.totalQuestions,
     required this.correctAnswers,
-    required this.xpGained,
-    required this.streak,
     required this.wrongQuestionCount,
     required this.onRestart,
     required this.onHome,
@@ -39,13 +36,7 @@ class CompletionScreen extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFEFF6FF), Color(0xFFF5F3FF), Color(0xFFFDF2F8)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
+      decoration: AppColors.screenBackground,
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 390),
@@ -74,18 +65,10 @@ class CompletionScreen extends StatelessWidget {
                     builder: (context, scale, child) {
                       return Transform.scale(scale: scale, child: child);
                     },
-                    child: Container(
-                      width: 70,
-                      height: 70,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: [Color(0xFFFACC15), Color(0xFFF97316)],
-                        ),
-                      ),
-                      child: const Center(
-                        child: Text('🏆', style: TextStyle(fontSize: 30)),
-                      ),
+                    child: const Icon(
+                      Icons.emoji_events_rounded,
+                      color: Color(0xFFF59E0B),
+                      size: 64,
                     ),
                   ),
 
@@ -101,7 +84,7 @@ class CompletionScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'お疲れ様でした',
+                    'おつかれさまでした',
                     style: TextStyle(color: Color(0xFF6B7280), fontSize: 14),
                   ),
 
@@ -110,6 +93,7 @@ class CompletionScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(3, (index) {
+                      final filled = index < stars;
                       return TweenAnimationBuilder<double>(
                         tween: Tween(begin: 0.0, end: 1.0),
                         duration: Duration(milliseconds: 350 + index * 90),
@@ -119,9 +103,22 @@ class CompletionScreen extends StatelessWidget {
                         },
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 3),
-                          child: Text(
-                            index < stars ? '⭐' : '☆',
-                            style: const TextStyle(fontSize: 28),
+                          child: Icon(
+                            filled
+                                ? Icons.star_rounded
+                                : Icons.star_border_rounded,
+                            size: 34,
+                            color: filled
+                                ? const Color(0xFFFBBF24)
+                                : const Color(0xFFD1D5DB),
+                            shadows: filled
+                                ? const [
+                                    Shadow(
+                                      color: Color(0x66F59E0B),
+                                      blurRadius: 10,
+                                    ),
+                                  ]
+                                : null,
                           ),
                         ),
                       );
@@ -129,30 +126,6 @@ class CompletionScreen extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 12),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _RewardChip(
-                          text: '+$xpGained XP',
-                          icon: '⚡',
-                          backgroundColor: const Color(0xFFEEF2FF),
-                          textColor: const Color(0xFF4338CA),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _RewardChip(
-                          text: streak <= 1 ? '今日開始' : '$streak日連続',
-                          icon: '🔥',
-                          backgroundColor: const Color(0xFFFFF7ED),
-                          textColor: const Color(0xFFC2410C),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 14),
 
                   Container(
                     padding: const EdgeInsets.all(14),
@@ -199,7 +172,7 @@ class CompletionScreen extends StatelessWidget {
                         onPressed: onReview,
                         icon: const Icon(Icons.replay_rounded),
                         label: Text(
-                          '間違えた問題を復習（$wrongQuestionCount問）',
+                          'ふくしゅう（$wrongQuestionCount問）',
                           style: const TextStyle(
                             fontFamily: AppFonts.interface,
                             fontWeight: FontWeight.bold,
@@ -285,42 +258,6 @@ class CompletionScreen extends StatelessWidget {
                 ],
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _RewardChip extends StatelessWidget {
-  final String text;
-  final String icon;
-  final Color backgroundColor;
-  final Color textColor;
-
-  const _RewardChip({
-    required this.text,
-    required this.icon,
-    required this.backgroundColor,
-    required this.textColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 10),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Center(
-        child: Text(
-          '$icon $text',
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-            color: textColor,
           ),
         ),
       ),

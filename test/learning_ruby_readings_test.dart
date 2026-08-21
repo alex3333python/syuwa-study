@@ -32,6 +32,19 @@ void main() {
     expect(applyLearningRuby('数字で表します。'), isNot(contains('{数|かず}字')));
   });
 
+  test('何 plus metric unit keeps ruby only on 何', () {
+    expect(applyLearningRuby('何cm長いですか。'), '{何|なん}cm{長|なが}いですか。');
+    expect(applyLearningRuby('何mですか。'), '{何|なん}mですか。');
+    expect(applyLearningRuby('何kgですか。'), '{何|なん}kgですか。');
+    expect(applyLearningRuby('何gですか。'), '{何|なん}gですか。');
+    expect(applyLearningRuby('何kmですか。'), '{何|なん}kmですか。');
+    expect(applyLearningRuby('何tですか。'), '{何|なん}tですか。');
+    expect(
+      applyLearningRuby('より何cm長い'),
+      isNot(contains('なんセンチメートル')),
+    );
+  });
+
   test('okurigana is not wrapped with furigana', () {
     expect(applyLearningRuby('分けてみよう'), '{分|わ}けてみよう');
     expect(applyLearningRuby('使って見つけられます'), '{使|つか}って{見|み}つけられます');

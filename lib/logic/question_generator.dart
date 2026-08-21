@@ -1,3 +1,4 @@
+import '../data/diagnostic_questions.dart';
 import '../models/question.dart';
 import '../models/question_template.dart';
 
@@ -58,11 +59,25 @@ class QuestionGenerator {
     return values.map(fractionComparisonTemplate.build).toList();
   }
 
+  /// 苦手タグに近い問題を、算数チェックの単元問題から優先的に返す。
   static List<Question> reviewQuestionsForTags(Set<String> tags) {
+    if (tags.isEmpty) return const [];
+
+    final matched = diagnosticQuestions.where((question) {
+      if (question.tags.any(tags.contains)) return true;
+      return tags.contains(question.unitId);
+    }).toList();
+
+    if (matched.isNotEmpty) {
+      matched.shuffle();
+      return matched.take(3).toList();
+    }
+
     final hasDivisionReviewTag =
         tags.contains('division') ||
         tags.contains('word_problem') ||
         tags.contains('equal_share') ||
+        tags.contains('equal-sharing') ||
         tags.contains('school_japanese_equally');
 
     if (!hasDivisionReviewTag) {

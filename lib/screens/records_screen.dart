@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
 import '../models/lesson.dart';
+import '../theme/app_colors.dart';
 
 class RecordsScreen extends StatelessWidget {
-  final int xp;
-  final int streak;
-  final int level;
   final List<Lesson> lessons;
   final VoidCallback onBack;
 
   const RecordsScreen({
     super.key,
-    required this.xp,
-    required this.streak,
-    required this.level,
     required this.lessons,
     required this.onBack,
   });
@@ -32,13 +27,7 @@ class RecordsScreen extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFEFF6FF), Color(0xFFF5F3FF), Color(0xFFFDF2F8)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
+      decoration: AppColors.screenBackground,
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 460),
@@ -83,27 +72,6 @@ class RecordsScreen extends StatelessWidget {
                   Expanded(
                     child: ListView(
                       children: [
-                        _SummaryCard(
-                          icon: Icons.workspace_premium_rounded,
-                          iconColor: const Color(0xFF4338CA),
-                          title: '現在のレベル',
-                          value: 'Lv.$level',
-                        ),
-                        const SizedBox(height: 12),
-                        _SummaryCard(
-                          icon: Icons.bolt_rounded,
-                          iconColor: const Color(0xFFF59E0B),
-                          title: '総獲得XP',
-                          value: '$xp XP',
-                        ),
-                        const SizedBox(height: 12),
-                        _SummaryCard(
-                          icon: Icons.local_fire_department_rounded,
-                          iconColor: const Color(0xFFF97316),
-                          title: '連続記録',
-                          value: '$streak 日',
-                        ),
-                        const SizedBox(height: 12),
                         _SummaryCard(
                           icon: Icons.check_circle_outline_rounded,
                           iconColor: const Color(0xFF10B981),
@@ -242,25 +210,12 @@ class _LessonProgressTile extends StatelessWidget {
           ),
           const SizedBox(width: 14),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  lesson.title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  lesson.description,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF6B7280),
-                  ),
-                ),
-              ],
+            child: Text(
+              lesson.title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+              ),
             ),
           ),
           const SizedBox(width: 10),

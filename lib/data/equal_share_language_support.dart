@@ -585,7 +585,7 @@ const remainderBasicLessonVocabulary = [
   LessonVocabulary(
     word: 'あまり',
     reading: 'あまり',
-    explanation: '分けたあとに残る数です。',
+    explanation: '分けたあとにのこる数です。',
     translations: {
       AppLanguage.portuguese: 'resto / sobra',
       AppLanguage.tagalog: 'sobra / natira',
