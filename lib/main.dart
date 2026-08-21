@@ -891,6 +891,7 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           children: [
             Header(
+              language: selectedLanguage,
               onSettingsTap: goToSettings,
             ),
             Expanded(child: body),

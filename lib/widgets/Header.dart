@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../models/app_language.dart';
+
 class Header extends StatelessWidget {
+  final AppLanguage language;
   final VoidCallback onSettingsTap;
 
   const Header({
     super.key,
+    required this.language,
     required this.onSettingsTap,
   });
 
@@ -48,10 +52,34 @@ class Header extends StatelessWidget {
               ),
             ],
           ),
-          IconButton(
-            tooltip: '設定',
-            icon: const Icon(Icons.settings_rounded),
-            onPressed: onSettingsTap,
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  // Teal — distinct from the old streak (orange), XP (yellow),
+                  // and level (indigo) pills.
+                  color: const Color(0xFFF0FDFA),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  language.label,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0F766E),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              IconButton(
+                tooltip: '設定',
+                icon: const Icon(Icons.settings_rounded),
+                onPressed: onSettingsTap,
+              ),
+            ],
           ),
         ],
       ),
