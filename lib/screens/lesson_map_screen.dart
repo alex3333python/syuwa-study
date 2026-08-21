@@ -20,10 +20,10 @@ class LessonMapScreen extends StatelessWidget {
       height: double.infinity,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          // ターコイズブルー → 花浅葱
-          colors: [Color(0xFF40E0D0), Color(0xFF1E88A8)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          // 明度を落としたターコイズブルー → マリンブルー
+          colors: [Color(0xFF3A9B96), Color(0xFF1A4F6E)],
         ),
       ),
       child: SingleChildScrollView(
