@@ -163,13 +163,18 @@ class DiagnosisResultScreen extends StatelessWidget {
   String _recommendationSubtitle(Lesson lesson) {
     for (final score in result.weakUnits) {
       if (score.entryLessonId == lesson.id) {
-        return 'チェック ${score.summary} → この単元からはじめよう';
+        return 'チェック ${score.summary}';
+      }
+    }
+    for (final score in result.unitScores) {
+      if (score.entryLessonId == lesson.id && score.total > 0) {
+        return 'チェック ${score.summary}';
       }
     }
     if (lesson.description.trim().isNotEmpty) {
       return lesson.description;
     }
-    return 'この単元から学習してみよう';
+    return 'おすすめの単元';
   }
 
   List<String> _supportMessages() {
@@ -394,7 +399,7 @@ class _RecommendedLessonCard extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
         onTap: onTap,
-        child: Container(
+        child: Ink(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             gradient: const LinearGradient(

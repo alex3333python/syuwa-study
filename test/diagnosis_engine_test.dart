@@ -75,4 +75,72 @@ void main() {
       containsAll(<String>['division', 'length']),
     );
   });
+
+  test('after diagnosis, only each unit entry is unlocked', () {
+    expect(
+      shouldLessonBeLocked(
+        lessonId: 1,
+        diagnosisCompleted: false,
+        isCompleted: (_) => false,
+      ),
+      isFalse,
+    );
+    expect(
+      shouldLessonBeLocked(
+        lessonId: 18,
+        diagnosisCompleted: false,
+        isCompleted: (_) => false,
+      ),
+      isTrue,
+    );
+    expect(
+      shouldLessonBeLocked(
+        lessonId: 7,
+        diagnosisCompleted: true,
+        isCompleted: (_) => false,
+      ),
+      isFalse,
+    );
+    expect(
+      shouldLessonBeLocked(
+        lessonId: 18,
+        diagnosisCompleted: true,
+        isCompleted: (_) => false,
+      ),
+      isFalse,
+    );
+    expect(
+      shouldLessonBeLocked(
+        lessonId: 23,
+        diagnosisCompleted: true,
+        isCompleted: (_) => false,
+      ),
+      isFalse,
+    );
+    // Later sections in the same unit stay locked until the previous one is done.
+    expect(
+      shouldLessonBeLocked(
+        lessonId: 8,
+        diagnosisCompleted: true,
+        isCompleted: (_) => false,
+      ),
+      isTrue,
+    );
+    expect(
+      shouldLessonBeLocked(
+        lessonId: 8,
+        diagnosisCompleted: true,
+        isCompleted: (id) => id == 7,
+      ),
+      isFalse,
+    );
+    expect(
+      shouldLessonBeLocked(
+        lessonId: 19,
+        diagnosisCompleted: true,
+        isCompleted: (_) => false,
+      ),
+      isTrue,
+    );
+  });
 }

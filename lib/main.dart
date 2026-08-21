@@ -362,24 +362,7 @@ class _HomePageState extends State<HomePage> {
         steps: current.steps,
       );
 
-      if (index + 1 < mockLessons.length) {
-        final next = mockLessons[index + 1];
-        if (next.locked) {
-          mockLessons[index + 1] = Lesson(
-            id: next.id,
-            levelId: next.levelId,
-            type: next.type,
-            title: next.title,
-            description: next.description,
-            completed: next.completed,
-            locked: false,
-            stars: next.stars,
-            maxStars: next.maxStars,
-            questions: next.questions,
-            steps: next.steps,
-          );
-        }
-      }
+      _syncLearningUnitLocks();
     });
 
     await saveProgress();
@@ -474,29 +457,48 @@ class _HomePageState extends State<HomePage> {
     return counts;
   }
 
-  void _normalizeActiveLessonLocks() {
-    if (mockLessons.isEmpty) return;
+  bool get _isDiagnosisCompleted {
+    for (final lesson in mockLessons) {
+      if (lesson.id == 1) return lesson.completed;
+    }
+    return false;
+  }
+
+  Lesson _copyLesson(Lesson lesson, {bool? completed, bool? locked, int? stars}) {
+    return Lesson(
+      id: lesson.id,
+      levelId: lesson.levelId,
+      type: lesson.type,
+      title: lesson.title,
+      description: lesson.description,
+      completed: completed ?? lesson.completed,
+      locked: locked ?? lesson.locked,
+      stars: stars ?? lesson.stars,
+      maxStars: lesson.maxStars,
+      questions: lesson.questions,
+      steps: lesson.steps,
+    );
+  }
+
+  void _syncLearningUnitLocks() {
+    final diagnosisCompleted = _isDiagnosisCompleted;
+    final completedById = {
+      for (final lesson in mockLessons) lesson.id: lesson.completed,
+    };
 
     for (int i = 0; i < mockLessons.length; i++) {
       final lesson = mockLessons[i];
-      final shouldBeUnlocked =
-          i == 0 || !lesson.locked || mockLessons[i - 1].completed;
-
-      if (!shouldBeUnlocked || !lesson.locked) continue;
-
-      mockLessons[i] = Lesson(
-        id: lesson.id,
-        levelId: lesson.levelId,
-        type: lesson.type,
-        title: lesson.title,
-        description: lesson.description,
-        completed: lesson.completed,
-        locked: false,
-        stars: lesson.stars,
-        maxStars: lesson.maxStars,
-        questions: lesson.questions,
-        steps: lesson.steps,
+      final shouldLock = shouldLessonBeLocked(
+        lessonId: lesson.id,
+        diagnosisCompleted: diagnosisCompleted,
+        isCompleted: (id) => completedById[id] ?? false,
       );
+
+      // 完了済みセクションは復習できるようにロックしない。
+      final locked = lesson.completed ? false : shouldLock;
+      if (lesson.locked == locked) continue;
+
+      mockLessons[i] = _copyLesson(lesson, locked: locked);
     }
   }
 
@@ -509,25 +511,16 @@ class _HomePageState extends State<HomePage> {
       final completed =
           prefs.getBool('lesson_${lesson.id}_completed') ?? lesson.completed;
       final stars = prefs.getInt('lesson_${lesson.id}_stars') ?? lesson.stars;
-      final locked =
-          prefs.getBool('lesson_${lesson.id}_locked') ?? lesson.locked;
 
-      mockLessons[i] = Lesson(
-        id: lesson.id,
-        levelId: lesson.levelId,
-        type: lesson.type,
-        title: lesson.title,
-        description: lesson.description,
+      mockLessons[i] = _copyLesson(
+        lesson,
         completed: completed,
-        locked: locked,
         stars: stars,
-        maxStars: lesson.maxStars,
-        questions: lesson.questions,
-        steps: lesson.steps,
+        locked: lesson.locked,
       );
     }
 
-    _normalizeActiveLessonLocks();
+    _syncLearningUnitLocks();
 
     final savedXp = prefs.getInt('user_xp');
     final savedStreak = prefs.getInt('user_streak');
@@ -587,24 +580,21 @@ class _HomePageState extends State<HomePage> {
       for (int i = 0; i < mockLessons.length; i++) {
         final l = mockLessons[i];
 
-        mockLessons[i] = Lesson(
-          id: l.id,
-          levelId: l.levelId,
-          type: l.type,
-          title: l.title,
-          description: l.description,
+        mockLessons[i] = _copyLesson(
+          l,
           completed: false,
-          locked: i == 0 ? false : true, // 1つ目だけ解放
+          locked: true,
           stars: 0,
-          maxStars: l.maxStars,
-          questions: l.questions,
-          steps: l.steps,
         );
       }
+
+      _syncLearningUnitLocks();
 
       xp = 0;
       weakTagCounts = {};
       weakReasonCounts = {};
+      diagnosisResult = null;
+      weakQuestionIds = [];
 
       // 画面もマップに戻すと分かりやすい
       currentScreen = 'map';
@@ -639,21 +629,30 @@ class _HomePageState extends State<HomePage> {
   void goToNextLesson() {
     if (selectedLesson == null) return;
 
-    final index = mockLessons.indexWhere((l) => l.id == selectedLesson!.id);
+    final nextLesson = _nextSectionInUnit(selectedLesson!);
+    if (nextLesson == null) return;
+    if (_isDivisionLessonWaitingForRedesign(nextLesson)) return;
+    if (nextLesson.locked) return;
 
-    if (index != -1 && index + 1 < mockLessons.length) {
-      final nextLesson = mockLessons[index + 1];
+    setState(() {
+      selectedLesson = nextLesson;
+      lessonSessionId++;
+      currentScreen = 'lesson';
+    });
+  }
 
-      if (_isDivisionLessonWaitingForRedesign(nextLesson)) return;
+  Lesson? _nextSectionInUnit(Lesson lesson) {
+    final sections = learningUnitSectionsForLesson(lesson.id);
+    if (sections == null) return null;
 
-      if (!nextLesson.locked) {
-        setState(() {
-          selectedLesson = nextLesson;
-          lessonSessionId++;
-          currentScreen = 'lesson';
-        });
-      }
+    final index = sections.indexOf(lesson.id);
+    if (index == -1 || index + 1 >= sections.length) return null;
+
+    final nextId = sections[index + 1];
+    for (final candidate in mockLessons) {
+      if (candidate.id == nextId) return candidate;
     }
+    return null;
   }
 
   List<Question> getWeakQuestions() {
@@ -699,11 +698,8 @@ class _HomePageState extends State<HomePage> {
   VoidCallback? getNextLessonAction() {
     if (selectedLesson == null) return null;
 
-    final index = mockLessons.indexWhere((l) => l.id == selectedLesson!.id);
-    if (index == -1) return null;
-    if (index + 1 >= mockLessons.length) return null;
-
-    final nextLesson = mockLessons[index + 1];
+    final nextLesson = _nextSectionInUnit(selectedLesson!);
+    if (nextLesson == null) return null;
     if (nextLesson.locked) return null;
     if (_isDivisionLessonWaitingForRedesign(nextLesson)) return null;
 
@@ -773,21 +769,26 @@ class _HomePageState extends State<HomePage> {
     if (index == -1) return;
 
     setState(() {
-      final current = mockLessons[index];
-      mockLessons[index] = Lesson(
-        id: current.id,
-        levelId: current.levelId,
-        type: current.type,
-        title: current.title,
-        description: current.description,
-        completed: current.completed,
+      // おすすめから入る場合も、算数チェック済みとして単元ロックを同期する。
+      final diagnosisIndex = mockLessons.indexWhere((l) => l.id == 1);
+      if (diagnosisIndex != -1 && !mockLessons[diagnosisIndex].completed) {
+        mockLessons[diagnosisIndex] = _copyLesson(
+          mockLessons[diagnosisIndex],
+          completed: true,
+          locked: false,
+        );
+      }
+
+      _syncLearningUnitLocks();
+
+      final currentIndex = mockLessons.indexWhere((l) => l.id == lesson.id);
+      if (currentIndex == -1) return;
+
+      mockLessons[currentIndex] = _copyLesson(
+        mockLessons[currentIndex],
         locked: false,
-        stars: current.stars,
-        maxStars: current.maxStars,
-        questions: current.questions,
-        steps: current.steps,
       );
-      selectedLesson = mockLessons[index];
+      selectedLesson = mockLessons[currentIndex];
       isWeakReviewMode = false;
       lessonSessionId++;
       currentScreen = 'lesson';

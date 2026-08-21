@@ -26,11 +26,50 @@ const List<DiagnosticUnitInfo> diagnosticUnits = [
   DiagnosticUnitInfo(id: 'weight', label: '重さ', entryLessonId: 23),
 ];
 
+/// 学習マップ上の単元ごとのセクション順（非表示レッスンは含めない）。
+/// 算数チェック完了後は各リストの先頭だけ解放し、以降は前のセクション完了で解放する。
+const List<List<int>> learningUnitSectionIds = [
+  [7, 8, 17, 9, 11], // わり算
+  [12, 15, 16], // あまりのあるわり算
+  [18, 19, 20], // 時こくと時間
+  [21, 22, 25], // 長さ
+  [23, 24, 26], // 重さ
+];
+
 DiagnosticUnitInfo? diagnosticUnitById(String unitId) {
   for (final unit in diagnosticUnits) {
     if (unit.id == unitId) return unit;
   }
   return null;
+}
+
+List<int>? learningUnitSectionsForLesson(int lessonId) {
+  for (final sections in learningUnitSectionIds) {
+    if (sections.contains(lessonId)) return sections;
+  }
+  return null;
+}
+
+/// 算数チェック完了後は各単元の先頭セクションを解放し、
+/// 単元内は順番どおりに解放する。単元をまたいだ一括ロックはしない。
+bool shouldLessonBeLocked({
+  required int lessonId,
+  required bool diagnosisCompleted,
+  required bool Function(int lessonId) isCompleted,
+}) {
+  if (lessonId == 1) return false;
+
+  final sections = learningUnitSectionsForLesson(lessonId);
+  if (sections == null) {
+    // 学習単元以外は、算数チェック後に開放する。
+    return !diagnosisCompleted;
+  }
+
+  if (!diagnosisCompleted) return true;
+
+  final index = sections.indexOf(lessonId);
+  if (index <= 0) return false;
+  return !isCompleted(sections[index - 1]);
 }
 
 /// 単元ごとの理解度（正答数 / 出題数）。
