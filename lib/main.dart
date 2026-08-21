@@ -210,6 +210,9 @@ class _HomePageState extends State<HomePage> {
         ? DiagnosisEngine.analyze(wrongQuestions, answerRecords)
         : null;
     recordWeakSignals(answerRecords);
+    if (nextDiagnosisResult != null) {
+      _mergeDiagnosisSignals(nextDiagnosisResult);
+    }
 
     setState(() {
       resultStars = stars;
@@ -264,11 +267,23 @@ class _HomePageState extends State<HomePage> {
         weakTagCounts[tag] = (weakTagCounts[tag] ?? 0) + 1;
       }
 
+      final unitId = record.question.unitId.trim();
+      if (unitId.isNotEmpty) {
+        weakTagCounts[unitId] = (weakTagCounts[unitId] ?? 0) + 1;
+      }
+
       final reason = record.mistakeReason;
       if (reason != null) {
         final key = reason.storageValue;
         weakReasonCounts[key] = (weakReasonCounts[key] ?? 0) + 1;
       }
+    }
+  }
+
+  void _mergeDiagnosisSignals(DiagnosisResult result) {
+    for (final entry in result.mistakeReasonCounts.entries) {
+      final key = entry.key.storageValue;
+      weakReasonCounts[key] = (weakReasonCounts[key] ?? 0) + entry.value;
     }
   }
 
@@ -785,9 +800,11 @@ class _HomePageState extends State<HomePage> {
     final result = diagnosisResult;
     if (result == null) return const [];
 
-    return mockLessons
-        .where((lesson) => result.recommendedLessonIds.contains(lesson.id))
-        .toList();
+    final byId = {for (final lesson in mockLessons) lesson.id: lesson};
+    return [
+      for (final id in result.recommendedLessonIds)
+        if (byId[id] != null) byId[id]!,
+    ];
   }
 
   void goToRecords() {

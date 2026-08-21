@@ -16,8 +16,8 @@ class ReportScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final topTags = _topEntries(weakTagCounts);
     final topThreeTags = _topEntries(weakTagCounts, limit: 3);
-    const topThreeReasons = <MapEntry<String, int>>[];
-    const MistakeReason? topReason = null;
+    final topThreeReasons = _topEntries(weakReasonCounts, limit: 3);
+    final topReason = _topReason();
     final trendMessages = _trendMessages(topTags, topReason);
     final supportHints = _supportHints(topTags, topReason);
 
@@ -125,7 +125,6 @@ class ReportScreen extends StatelessWidget {
     return entries.take(limit).toList();
   }
 
-  // ignore: unused_element
   MistakeReason? _topReason() {
     if (weakReasonCounts.isEmpty) return null;
 
@@ -148,15 +147,28 @@ class ReportScreen extends StatelessWidget {
     final messages = <String>[];
     final topTagKeys = topTags.map((entry) => entry.key).toSet();
 
-    if (_isTopTag('word_problem', topTags)) {
+    if (_isTopTag('word_problem', topTags) ||
+        topReason == MistakeReason.wording) {
       messages.add('計算そのものよりも、問題文の読み取りでつまずいている可能性があります。');
     }
     if (_isTopTag('equal_share', topTags) ||
+        _isTopTag('equal-sharing', topTags) ||
         _isTopTag('school_japanese_equally', topTags)) {
       messages.add('「等しく」「ずつ」「分ける」などの学校日本語を確認するとよさそうです。');
     }
-    if (topReason == MistakeReason.wording) {
-      messages.add('本人の選択では、問題文の言葉がわからなかった場面が多く見られます。');
+    if (_isTopTag('remainder', topTags) ||
+        _isTopTag('remainder_calculation', topTags)) {
+      messages.add('あまりのあるわり算で、商とあまりの両方を確かめる必要がある場面が多いです。');
+    }
+    if (_isTopTag('time', topTags) || _isTopTag('elapsed_time', topTags)) {
+      messages.add('時こくと時間の進み方・経過時間でつまずいている可能性があります。');
+    }
+    if (_isTopTag('length', topTags) || _isTopTag('weight', topTags) ||
+        topReason == MistakeReason.unit) {
+      messages.add('長さや重さの単位（cm・m・km / g・kg）の理解を確かめるとよさそうです。');
+    }
+    if (topReason == MistakeReason.askedMeaning) {
+      messages.add('「何を聞かれているか」を取り違えている可能性があります。');
     }
 
     if (messages.isEmpty && topTagKeys.isNotEmpty) {
@@ -174,22 +186,38 @@ class ReportScreen extends StatelessWidget {
   ) {
     final hints = <String>[];
 
-    if (topReason == MistakeReason.wording) {
+    if (topReason == MistakeReason.wording ||
+        _hasTag('word_problem', topTags) ||
+        _hasTag('school_japanese_equally', topTags)) {
       hints.add('日本語語彙支援を優先し、問題文の大事な言葉を先に確認してから計算に入るとよさそうです。');
     }
-    if (_hasTag('word_problem', topTags)) {
+    if (_hasTag('word_problem', topTags) ||
+        topReason == MistakeReason.askedMeaning) {
       hints.add('「何を聞かれているか」を最後の一文から一緒に確認すると、式を選びやすくなります。');
     }
     if (_hasTag('equal_share', topTags) ||
-        _hasTag('school_japanese_equally', topTags)) {
+        _hasTag('equal-sharing', topTags) ||
+        _hasTag('school_japanese_equally', topTags) ||
+        _hasTag('division', topTags)) {
       hints.add('具体物や絵を使って、同じ数ずつ分ける場面を作ってから式につなげると効果的です。');
+    }
+    if (_hasTag('remainder', topTags)) {
+      hints.add('あまりを「切り上げる場面」と「使わない場面」を分けて話すと整理しやすいです。');
+    }
+    if (_hasTag('time', topTags)) {
+      hints.add('時計を動かしながら、開始・終了・かかった時間を指差し確認すると定着しやすいです。');
+    }
+    if (_hasTag('length', topTags) ||
+        _hasTag('weight', topTags) ||
+        topReason == MistakeReason.unit) {
+      hints.add('単位の換算表（1000m=1km、1000g=1kg）を近くに置いてから問題に入ると安心です。');
     }
 
     if (hints.isEmpty) {
       hints.add('学習後に、間違えた理由を本人に選んでもらうことで、支援の方向が見えやすくなります。');
     }
 
-    return hints;
+    return hints.take(4).toList();
   }
 
   bool _isTopTag(String tag, List<MapEntry<String, int>> topTags) {
@@ -206,11 +234,34 @@ class ReportScreen extends StatelessWidget {
     switch (tag) {
       case 'division':
         return 'わり算';
+      case 'remainder':
+      case 'remainder_calculation':
+        return 'あまりのあるわり算';
+      case 'time':
+      case 'elapsed_time':
+      case 'minutes_after':
+        return '時こくと時間';
+      case 'length':
+      case 'kilometer':
+        return '長さ';
+      case 'weight':
+      case 'kilogram':
+      case 'gram':
+        return '重さ';
+      case 'unit':
+        return '単位';
       case 'word_problem':
         return '文章題';
       case 'equal_share':
+      case 'equal-sharing':
       case 'school_japanese_equally':
         return '等しく分ける言葉';
+      case 'school_japanese_each':
+        return '「ずつ」の言葉';
+      case 'measurement-division':
+        return '何人分・いくつ分';
+      case 'round_up_context':
+        return 'あまりを切り上げる場面';
       case 'multiplication':
         return 'かけ算';
       case 'subtraction':

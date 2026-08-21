@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../logic/diagnosis_engine.dart';
+import '../models/answer_record.dart';
 import '../models/lesson.dart';
 
 class DiagnosisResultScreen extends StatelessWidget {
@@ -26,7 +27,8 @@ class DiagnosisResultScreen extends StatelessWidget {
     final percentage = totalQuestions == 0
         ? 0
         : ((correctAnswers / totalQuestions) * 100).round();
-    final strengths = _strengthMessages();
+    final strongUnits = result.strongUnits;
+    final weakUnits = result.weakUnits;
 
     return Container(
       width: double.infinity,
@@ -65,41 +67,63 @@ class DiagnosisResultScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
                 _ScoreBar(percentage: percentage),
-                const SizedBox(height: 24),
+                if (result.unitScores.any((score) => score.total > 0)) ...[
+                  const SizedBox(height: 16),
+                  _ResultPanel(
+                    icon: Icons.grid_view_rounded,
+                    iconColor: const Color(0xFF6366F1),
+                    title: '単元ごとのけっか',
+                    child: Column(
+                      children: [
+                        for (final score in result.unitScores)
+                          if (score.total > 0)
+                            _UnitScoreRow(score: score),
+                      ],
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
                 _ResultPanel(
                   icon: Icons.check_circle_rounded,
-                  iconColor: Color(0xFF16A34A),
-                  title: 'できていること',
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: strengths
-                        .map((message) => _MessageRow.good(message))
-                        .toList(),
-                  ),
+                  iconColor: const Color(0xFF16A34A),
+                  title: 'よくできている単元',
+                  child: strongUnits.isEmpty
+                      ? const _MessageRow.watch('今回は、ぜんぶ正解の単元はありませんでした。')
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: strongUnits
+                              .map(
+                                (score) => _MessageRow.good(
+                                  '${score.label}（${score.summary}）',
+                                ),
+                              )
+                              .toList(),
+                        ),
                 ),
                 const SizedBox(height: 16),
                 _ResultPanel(
                   icon: Icons.lightbulb_rounded,
-                  iconColor: Color(0xFFF97316),
-                  title: 'つまずいているかもしれないこと',
-                  child: result.hasWeakness
-                      ? Column(
+                  iconColor: const Color(0xFFF97316),
+                  title: 'つまずいている単元',
+                  child: weakUnits.isEmpty
+                      ? const _MessageRow.good('大きなつまずきは見つかりませんでした。')
+                      : Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: result.weakTags
-                              .map(
-                                (tag) => _MessageRow.watch(
-                                  _childFriendlyTagMessage(tag),
-                                ),
-                              )
-                              .toList(),
-                        )
-                      : const _MessageRow.good('大きなつまずきは見つかりませんでした。'),
+                          children: [
+                            for (final score in weakUnits)
+                              _MessageRow.watch(
+                                '${score.label}（${score.summary}）',
+                              ),
+                            for (final message in _supportMessages())
+                              _MessageRow.watch(message),
+                          ],
+                        ),
                 ),
                 const SizedBox(height: 16),
                 _ResultPanel(
                   icon: Icons.play_circle_fill_rounded,
-                  iconColor: Color(0xFF2563EB),
-                  title: '次にやってみよう',
+                  iconColor: const Color(0xFF2563EB),
+                  title: 'おすすめの学習単元',
                   child: recommendedLessons.isEmpty
                       ? const Text(
                           '学習マップから、やってみたいレッスンを選んでください。',
@@ -110,6 +134,7 @@ class DiagnosisResultScreen extends StatelessWidget {
                             for (final lesson in recommendedLessons) ...[
                               _RecommendedLessonCard(
                                 lesson: lesson,
+                                subtitle: _recommendationSubtitle(lesson),
                                 onTap: () => onStartRecommendedLesson(lesson),
                               ),
                               const SizedBox(height: 12),
@@ -135,50 +160,91 @@ class DiagnosisResultScreen extends StatelessWidget {
     );
   }
 
-  List<String> _strengthMessages() {
-    final messages = <String>[];
-
-    if (correctAnswers > 0) {
-      messages.add('自分で考えて、答えを選べています。');
+  String _recommendationSubtitle(Lesson lesson) {
+    for (final score in result.weakUnits) {
+      if (score.entryLessonId == lesson.id) {
+        return 'チェック ${score.summary} → この単元からはじめよう';
+      }
     }
-    if (!result.tagCounts.containsKey('place_value')) {
-      messages.add('数の位を読む問題はよくできています。');
+    if (lesson.description.trim().isNotEmpty) {
+      return lesson.description;
     }
-    if (!result.tagCounts.containsKey('word_problem')) {
-      messages.add('文章題の場面を読み取れています。');
-    }
-    if (messages.isEmpty) {
-      messages.add('まずは最後までチェックに取り組めました。');
-    }
-
-    return messages.take(3).toList();
+    return 'この単元から学習してみよう';
   }
 
-  String _childFriendlyTagMessage(String tag) {
-    switch (tag) {
-      case 'division':
-        return '同じ数に分けるとき、わり算を使うところ。';
-      case 'multiplication':
-        return '同じ数が何人分・何こ分あるかを考えるところ。';
-      case 'subtraction':
-        return 'のこりやちがいを、ひき算で考えるところ。';
-      case 'comparison':
-        return '「どちらがどれだけ多い・長い」をくらべるところ。';
-      case 'fraction':
-        return '分数の大きさをくらべるところ。';
-      case 'word_problem':
-        return '文を読んで、どんな計算かを選ぶところ。';
-      case 'school_japanese_equally':
-        return '「同じ数ずつ分ける」という学校の言い方。';
-      case 'school_japanese_each':
-        return '「ずつ」という言葉の意味。';
-      case 'school_japanese_remaining':
-        return '「のこり」という言葉の意味。';
-      case 'school_japanese_more_than':
-        return '「より」というくらべる言葉の意味。';
-      default:
-        return tag;
+  List<String> _supportMessages() {
+    final messages = <String>[];
+    final tags = result.tagCounts.keys.toSet();
+    final topReason = result.mostCommonMistakeReason;
+
+    if (tags.contains('word_problem') ||
+        tags.any((tag) => tag.startsWith('school_japanese_')) ||
+        topReason == MistakeReason.wording) {
+      messages.add('問題文の言葉や、何を聞かれているかを確かめるとよさそうです。');
     }
+    if (tags.contains('unit') || topReason == MistakeReason.unit) {
+      messages.add('cm・m・km や g・kg などの単位のことばも、いっしょに確認しましょう。');
+    }
+    if (tags.contains('round_up_context') ||
+        topReason == MistakeReason.askedMeaning) {
+      messages.add('あまりをどう使うか（切り上げる / 使わない）を場面で考えましょう。');
+    }
+    return messages.take(2).toList();
+  }
+}
+
+class _UnitScoreRow extends StatelessWidget {
+  final UnitDiagnosisScore score;
+
+  const _UnitScoreRow({required this.score});
+
+  @override
+  Widget build(BuildContext context) {
+    final rate = score.rate.clamp(0.0, 1.0);
+    final color = score.isStrong
+        ? const Color(0xFF16A34A)
+        : score.rate == 0
+        ? const Color(0xFFDC2626)
+        : const Color(0xFFF97316);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  score.label,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+              ),
+              Text(
+                score.summary,
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: rate,
+              minHeight: 8,
+              backgroundColor: const Color(0xFFE5E7EB),
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -312,9 +378,14 @@ class _MessageRow extends StatelessWidget {
 
 class _RecommendedLessonCard extends StatelessWidget {
   final Lesson lesson;
+  final String subtitle;
   final VoidCallback onTap;
 
-  const _RecommendedLessonCard({required this.lesson, required this.onTap});
+  const _RecommendedLessonCard({
+    required this.lesson,
+    required this.subtitle,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -360,7 +431,7 @@ class _RecommendedLessonCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      lesson.description,
+                      subtitle,
                       style: const TextStyle(
                         color: Color(0xFFEFF6FF),
                         fontSize: 13,
