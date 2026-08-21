@@ -41,12 +41,6 @@ class ReviewScreen extends StatelessWidget {
                     color: Color(0xFF111827),
                   ),
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  '前にむずかしかったところに近い問題を、あとでもう一度練習できます。',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Color(0xFF6B7280), height: 1.4),
-                ),
                 const SizedBox(height: 28),
                 Center(
                   child: TodayReviewCard(

@@ -413,7 +413,7 @@ class TodayReviewCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        '今日の復習',
+                        '今日のふくしゅう',
                         style: TextStyle(
                           fontSize: 21,
                           fontWeight: FontWeight.bold,
@@ -423,8 +423,8 @@ class TodayReviewCard extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text(
                         enabled
-                            ? '前にむずかしかったところに近い問題を3問練習します。'
-                            : '間違えた問題がたまると、ここから復習できます。',
+                            ? 'むずかしかった問題を3問とこう'
+                            : '間違えた問題がたまると、ここからふくしゅうできます。',
                         style: const TextStyle(
                           fontSize: 14,
                           color: Color(0xFF6B7280),
