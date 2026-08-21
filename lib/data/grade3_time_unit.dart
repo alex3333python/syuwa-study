@@ -23,6 +23,10 @@ final List<Lesson> grade3TimeLessons = [
         native: {
           AppLanguage.portuguese:
               'Vamos mover o relógio para entender horário e duração.',
+          AppLanguage.tagalog:
+              'Igala natin ang orasan para maintindihan ang oras at tagal.',
+          AppLanguage.vietnamese:
+              'Hãy xoay đồng hồ để hiểu thời điểm và khoảng thời gian.',
         },
       ),
       _learn(
@@ -44,6 +48,10 @@ final List<Lesson> grade3TimeLessons = [
             native: {
               AppLanguage.portuguese:
                   'Saiu de casa às 7:45 e chegou à escola às 8:10. Quantos minutos levou?',
+              AppLanguage.tagalog:
+                  'Umalis sa bahay nang 7:45 at dumating sa paaralan nang 8:10. Ilang minuto ang inabot?',
+              AppLanguage.vietnamese:
+                  'Rời nhà lúc 7:45 và đến trường lúc 8:10. Mất bao nhiêu phút?',
             },
             questionTextRuby:
                 '7{時|じ}45{分|ふん}に{家|いえ}を{出|で}て、8{時|じ}10{分|ぷん}に{学校|がっこう}につきました。{何分|なんぷん}かかりましたか。',
@@ -67,6 +75,10 @@ final List<Lesson> grade3TimeLessons = [
             native: {
               AppLanguage.portuguese:
                   'Que horas são 20 minutos depois das 8:10?',
+              AppLanguage.tagalog:
+                  'Anong oras ang 20 minuto pagkatapos ng 8:10?',
+              AppLanguage.vietnamese:
+                  '20 phút sau 8:10 là mấy giờ?',
             },
             questionTextRuby:
                 '8{時|じ}10{分|ぷん}から20{分|ぷん}{後|ご}は{何時|なんじ}{何分|なんぷん}ですか。',
@@ -90,6 +102,10 @@ final List<Lesson> grade3TimeLessons = [
             native: {
               AppLanguage.portuguese:
                   'Chegou às 8:10. Que horas eram 25 minutos antes?',
+              AppLanguage.tagalog:
+                  'Dumating nang 8:10. Anong oras 25 minuto bago iyon?',
+              AppLanguage.vietnamese:
+                  'Đến lúc 8:10. 25 phút trước đó là mấy giờ?',
             },
             questionTextRuby:
                 '8{時|じ}10{分|ぷん}につきました。25{分|ふん}{前|まえ}は{何時|なんじ}{何分|なんぷん}ですか。',
@@ -117,6 +133,11 @@ final List<Lesson> grade3TimeLessons = [
             type: 'across_hour',
             school: '9時45分から30分後は何時何分ですか。',
             easy: '9時45分から30分進めます。',
+            native: {
+              AppLanguage.portuguese: 'Que horas são 30 minutos depois das 9:45?',
+              AppLanguage.tagalog: 'Anong oras ang 30 minuto pagkatapos ng 9:45?',
+              AppLanguage.vietnamese: '30 phút sau 9:45 là mấy giờ?',
+            },
             questionTextRuby:
                 '9{時|じ}45{分|ふん}から30{分|ぷん}{後|ご}は{何時|なんじ}{何分|なんぷん}ですか。',
             choices: ['10時5分', '10時15分', '10時30分'],
@@ -136,6 +157,11 @@ final List<Lesson> grade3TimeLessons = [
             type: 'noon',
             school: '午前11時40分から50分後は何時何分ですか。',
             easy: '11時40分から50分進めます。12時をまたぎます。',
+            native: {
+              AppLanguage.portuguese: 'Que horas são 50 minutos depois das 11:40 da manhã?',
+              AppLanguage.tagalog: 'Anong oras ang 50 minuto pagkatapos ng 11:40 ng umaga?',
+              AppLanguage.vietnamese: '50 phút sau 11:40 sáng là mấy giờ?',
+            },
             questionTextRuby:
                 '{午前|ごぜん}11{時|じ}40{分|ぷん}から50{分|ぷん}{後|ご}は{何時|なんじ}{何分|なんぷん}ですか。',
             choices: ['午後0時30分', '午前12時10分', '午後1時30分'],
@@ -196,6 +222,10 @@ final List<Lesson> grade3TimeLessons = [
         native: {
           AppLanguage.portuguese:
               'Vamos sentir os segundos e ver que 1 minuto tem 60 segundos.',
+          AppLanguage.tagalog:
+              'Damhin natin ang segundo at tingnan na 60 segundo ang 1 minuto.',
+          AppLanguage.vietnamese:
+              'Hãy cảm nhận giây và thấy 1 phút có 60 giây.',
         },
       ),
       _learn(
@@ -216,6 +246,8 @@ final List<Lesson> grade3TimeLessons = [
             easy: '秒針が1周すると何秒ですか。',
             native: {
               AppLanguage.portuguese: 'Quantos segundos há em 1 minuto?',
+              AppLanguage.tagalog: 'Ilang segundo ang mayroon sa 1 minuto?',
+              AppLanguage.vietnamese: '1 phút có bao nhiêu giây?',
             },
             questionTextRuby: '1{分|ぷん}は{何秒|なんびょう}ですか。',
             choices: ['30秒', '60秒', '100秒'],
@@ -238,6 +270,10 @@ final List<Lesson> grade3TimeLessons = [
             native: {
               AppLanguage.portuguese:
                   '1 minuto e 20 segundos são quantos segundos?',
+              AppLanguage.tagalog:
+                  'Ilang segundo ang 1 minuto at 20 segundo?',
+              AppLanguage.vietnamese:
+                  '1 phút 20 giây bằng bao nhiêu giây?',
             },
             questionTextRuby: '1{分|ぷん}20{秒|びょう}は{何秒|なんびょう}ですか。',
             choices: ['70秒', '80秒', '120秒'],
@@ -264,6 +300,11 @@ final List<Lesson> grade3TimeLessons = [
             type: 'compare_time',
             school: '1分と50秒では、どちらが長いですか。',
             easy: '1分は60秒です。',
+            native: {
+              AppLanguage.portuguese: 'Qual é mais longo: 1 minuto ou 50 segundos?',
+              AppLanguage.tagalog: 'Alin ang mas mahaba: 1 minuto o 50 segundo?',
+              AppLanguage.vietnamese: 'Cái nào dài hơn: 1 phút hay 50 giây?',
+            },
             questionTextRuby: '1{分|ぷん}と50{秒|びょう}では、どちらが{長|なが}いですか。',
             choices: ['1分', '50秒', '同じ'],
             correct: 0,
@@ -277,6 +318,11 @@ final List<Lesson> grade3TimeLessons = [
             type: 'seconds_life',
             school: '50m走の記録を表すとき、使う単位はどれがよいですか。',
             easy: '短い時間を表す単位を選びます。',
+            native: {
+              AppLanguage.portuguese: 'Para o recorde de uma corrida de 50 m, qual unidade é melhor?',
+              AppLanguage.tagalog: 'Para sa record ng 50 m takbo, aling yunit ang mas maganda?',
+              AppLanguage.vietnamese: 'Khi ghi thành tích chạy 50 m, đơn vị nào phù hợp?',
+            },
             questionTextRuby:
                 '50m{走|そう}の{記録|きろく}を{表|あらわ}すとき、{使|つか}う{単位|たんい}はどれがよいですか。',
             choices: ['時', '分', '秒'],
@@ -334,6 +380,11 @@ final List<Lesson> grade3TimeLessons = [
             type: 'elapsed_time',
             school: '9時35分に公園につきました。10時5分まで遊びました。何分遊びましたか。',
             easy: '9時35分から10時5分までを考えます。',
+            native: {
+              AppLanguage.portuguese: 'Chegou ao parque às 9:35 e brincou até 10:05. Quantos minutos brincou?',
+              AppLanguage.tagalog: 'Dumating sa parke nang 9:35 at naglaro hanggang 10:05. Ilang minuto siya naglaro?',
+              AppLanguage.vietnamese: 'Đến công viên lúc 9:35 và chơi đến 10:05. Chơi bao nhiêu phút?',
+            },
             choices: ['20分', '30分', '40分'],
             correct: 1,
             explanation: '9時35分から10時までは25分、10時から10時5分までは5分です。合わせて30分です。',
@@ -349,6 +400,11 @@ final List<Lesson> grade3TimeLessons = [
             type: 'minutes_after',
             school: '午後1時25分から40分、読書をしました。終わった時こくは何時何分ですか。',
             easy: '午後1時25分から40分進めます。',
+            native: {
+              AppLanguage.portuguese: 'Leu por 40 minutos a partir de 1:25 da tarde. A que horas terminou?',
+              AppLanguage.tagalog: 'Nagbasa siya ng 40 minuto mula 1:25 ng hapon. Anong oras natapos?',
+              AppLanguage.vietnamese: 'Đọc sách 40 phút từ 1:25 chiều. Kết thúc lúc mấy giờ?',
+            },
             choices: ['午後1時55分', '午後2時5分', '午後2時15分'],
             correct: 1,
             explanation: '午後1時25分から午後2時までは35分です。あと5分進めると、午後2時5分です。',
@@ -364,6 +420,11 @@ final List<Lesson> grade3TimeLessons = [
             type: 'noon',
             school: '午前11時35分から45分後は何時何分ですか。',
             easy: '午前11時35分から45分進めます。',
+            native: {
+              AppLanguage.portuguese: 'Que horas são 45 minutos depois das 11:35 da manhã?',
+              AppLanguage.tagalog: 'Anong oras ang 45 minuto pagkatapos ng 11:35 ng umaga?',
+              AppLanguage.vietnamese: '45 phút sau 11:35 sáng là mấy giờ?',
+            },
             choices: ['午後0時20分', '午後0時10分', '午前11時50分'],
             correct: 0,
             explanation: '午前11時35分から正午までは25分です。あと20分進めると午後0時20分です。',
@@ -379,6 +440,11 @@ final List<Lesson> grade3TimeLessons = [
             type: 'minutes_seconds',
             school: '2分10秒は何秒ですか。',
             easy: '2分は120秒です。',
+            native: {
+              AppLanguage.portuguese: '2 minutos e 10 segundos são quantos segundos?',
+              AppLanguage.tagalog: 'Ilang segundo ang 2 minuto at 10 segundo?',
+              AppLanguage.vietnamese: '2 phút 10 giây bằng bao nhiêu giây?',
+            },
             choices: ['70秒', '120秒', '130秒'],
             correct: 2,
             explanation: '1分は60秒です。2分は120秒です。120秒に10秒を足すと130秒です。',
@@ -394,6 +460,11 @@ final List<Lesson> grade3TimeLessons = [
             type: 'compare_time',
             school: '1分20秒と75秒では、どちらが長いですか。',
             easy: '1分20秒を秒だけで考えます。',
+            native: {
+              AppLanguage.portuguese: 'Qual é mais longo: 1 minuto e 20 segundos ou 75 segundos?',
+              AppLanguage.tagalog: 'Alin ang mas mahaba: 1 minuto at 20 segundo o 75 segundo?',
+              AppLanguage.vietnamese: 'Cái nào dài hơn: 1 phút 20 giây hay 75 giây?',
+            },
             choices: ['1分20秒', '75秒', '同じ'],
             correct: 0,
             explanation: '1分20秒は80秒です。80秒は75秒より長いので、1分20秒のほうが長いです。',
@@ -461,41 +532,87 @@ Question _q({
 }
 
 Map<AppLanguage, String> _timeExplanationNative(int id) {
-  final portuguese = switch (id) {
-    18101 =>
-      'De 7:45 até 8:00 são 15 minutos. De 8:00 até 8:10 são 10 minutos. 15 minutos mais 10 minutos são 25 minutos.',
-    18102 =>
-      'Avançando o relógio 20 minutos a partir de 8:10, chegamos a 8:30.',
-    18103 =>
-      'Voltando 10 minutos a partir de 8:10, chegamos a 8:00. Voltando mais 15 minutos, chegamos a 7:45.',
-    18104 =>
-      'De 9:45 até 10:00 são 15 minutos. Avançando mais 15 minutos, chegamos a 10:15.',
-    18105 =>
-      'De 11:40 da manhã até o meio-dia são 20 minutos. Avançando mais 30 minutos, chegamos a 0:30 da tarde.',
-    18106 => 'Voltando 30 minutos a partir de 10:00, chegamos a 9:30.',
-    19101 =>
-      'Quando o ponteiro dos segundos dá uma volta no relógio, passam 60 segundos. 1 minuto tem 60 segundos.',
-    19102 =>
-      '1 minuto tem 60 segundos. Somando mais 20 segundos, temos 80 segundos.',
-    19103 =>
-      '1 minuto tem 60 segundos. 60 segundos é mais longo que 50 segundos, então 1 minuto é mais longo.',
-    19104 =>
-      'Uma corrida de 50 m leva pouco tempo. Para tempos curtos, usamos segundos.',
-    19105 =>
-      '1 minuto tem 60 segundos. 60 segundos mais 30 segundos são 90 segundos.',
-    20101 =>
-      'De 9:35 até 10:00 são 25 minutos. De 10:00 até 10:05 são 5 minutos. Ao todo, são 30 minutos.',
-    20102 =>
-      'De 1:25 da tarde até 2:00 são 35 minutos. Avançando mais 5 minutos, chegamos a 2:05 da tarde.',
-    20103 =>
-      'De 11:35 da manhã até o meio-dia são 25 minutos. Avançando mais 20 minutos, chegamos a 0:20 da tarde.',
-    20104 =>
-      '1 minuto tem 60 segundos. 2 minutos têm 120 segundos. 120 segundos mais 10 segundos são 130 segundos.',
-    20105 =>
-      '1 minuto e 20 segundos são 80 segundos. 80 segundos é mais longo que 75 segundos.',
-    _ => '',
+  return switch (id) {
+    18101 => {
+      AppLanguage.portuguese: 'De 7:45 até 8:00 são 15 minutos. De 8:00 até 8:10 são 10 minutos. 15 minutos mais 10 minutos são 25 minutos.',
+      AppLanguage.tagalog: 'Mula 7:45 hanggang 8:00 ay 15 minuto. Mula 8:00 hanggang 8:10 ay 10 minuto. 15 + 10 = 25 minuto.',
+      AppLanguage.vietnamese: 'Từ 7:45 đến 8:00 là 15 phút. Từ 8:00 đến 8:10 là 10 phút. 15 phút cộng 10 phút là 25 phút.',
+    },
+    18102 => {
+      AppLanguage.portuguese: 'Avançando o relógio 20 minutos a partir de 8:10, chegamos a 8:30.',
+      AppLanguage.tagalog: 'Kung igagala ang orasan ng 20 minuto mula 8:10, magiging 8:30.',
+      AppLanguage.vietnamese: 'Xoay đồng hồ thêm 20 phút từ 8:10 thì đến 8:30.',
+    },
+    18103 => {
+      AppLanguage.portuguese: 'Voltando 10 minutos a partir de 8:10, chegamos a 8:00. Voltando mais 15 minutos, chegamos a 7:45.',
+      AppLanguage.tagalog: 'Kung ibabalik ng 10 minuto mula 8:10, magiging 8:00. Dagdag na 15 minuto pabalik, 7:45.',
+      AppLanguage.vietnamese: 'Lùi 10 phút từ 8:10 thì 8:00. Lùi thêm 15 phút thì 7:45.',
+    },
+    18104 => {
+      AppLanguage.portuguese: 'De 9:45 até 10:00 são 15 minutos. Avançando mais 15 minutos, chegamos a 10:15.',
+      AppLanguage.tagalog: 'Mula 9:45 hanggang 10:00 ay 15 minuto. Dagdag pang 15 minuto, 10:15.',
+      AppLanguage.vietnamese: 'Từ 9:45 đến 10:00 là 15 phút. Tiến thêm 15 phút thì 10:15.',
+    },
+    18105 => {
+      AppLanguage.portuguese: 'De 11:40 da manhã até o meio-dia são 20 minutos. Avançando mais 30 minutos, chegamos a 0:30 da tarde.',
+      AppLanguage.tagalog: 'Mula 11:40 ng umaga hanggang tanghali ay 20 minuto. Dagdag pang 30 minuto, 0:30 ng hapon.',
+      AppLanguage.vietnamese: 'Từ 11:40 sáng đến 12 giờ là 20 phút. Tiến thêm 30 phút thì 0:30 chiều.',
+    },
+    18106 => {
+      AppLanguage.portuguese: 'Voltando 30 minutos a partir de 10:00, chegamos a 9:30.',
+      AppLanguage.tagalog: 'Kung ibabalik ng 30 minuto mula 10:00, magiging 9:30.',
+      AppLanguage.vietnamese: 'Lùi 30 phút từ 10:00 thì 9:30.',
+    },
+    19101 => {
+      AppLanguage.portuguese: 'Quando o ponteiro dos segundos dá uma volta no relógio, passam 60 segundos. 1 minuto tem 60 segundos.',
+      AppLanguage.tagalog: 'Kapag umikot nang isang beses ang segundong kamay, 60 segundo ang lumipas. 60 segundo ang 1 minuto.',
+      AppLanguage.vietnamese: 'Kim giây đi một vòng thì hết 60 giây. 1 phút có 60 giây.',
+    },
+    19102 => {
+      AppLanguage.portuguese: '1 minuto tem 60 segundos. Somando mais 20 segundos, temos 80 segundos.',
+      AppLanguage.tagalog: '60 segundo ang 1 minuto. Dagdag 20 segundo, 80 segundo.',
+      AppLanguage.vietnamese: '1 phút có 60 giây. Cộng thêm 20 giây được 80 giây.',
+    },
+    19103 => {
+      AppLanguage.portuguese: '1 minuto tem 60 segundos. 60 segundos é mais longo que 50 segundos, então 1 minuto é mais longo.',
+      AppLanguage.tagalog: '60 segundo ang 1 minuto. Mas mahaba ang 60 segundo kaysa 50 segundo, kaya mas mahaba ang 1 minuto.',
+      AppLanguage.vietnamese: '1 phút có 60 giây. 60 giây dài hơn 50 giây, nên 1 phút dài hơn.',
+    },
+    19104 => {
+      AppLanguage.portuguese: 'Uma corrida de 50 m leva pouco tempo. Para tempos curtos, usamos segundos.',
+      AppLanguage.tagalog: 'Maikli ang oras ng takbuhang 50 m. Para sa maikling oras, ginagamit ang segundo.',
+      AppLanguage.vietnamese: 'Chạy 50 m mất ít thời gian. Với khoảng ngắn ta dùng giây.',
+    },
+    19105 => {
+      AppLanguage.portuguese: '1 minuto tem 60 segundos. 60 segundos mais 30 segundos são 90 segundos.',
+      AppLanguage.tagalog: '60 segundo ang 1 minuto. 60 segundo dagdag 30 segundo ay 90 segundo.',
+      AppLanguage.vietnamese: '1 phút có 60 giây. 60 giây cộng 30 giây là 90 giây.',
+    },
+    20101 => {
+      AppLanguage.portuguese: 'De 9:35 até 10:00 são 25 minutos. De 10:00 até 10:05 são 5 minutos. Ao todo, são 30 minutos.',
+      AppLanguage.tagalog: 'Mula 9:35 hanggang 10:00 ay 25 minuto. Mula 10:00 hanggang 10:05 ay 5 minuto. Kabuuan: 30 minuto.',
+      AppLanguage.vietnamese: 'Từ 9:35 đến 10:00 là 25 phút. Từ 10:00 đến 10:05 là 5 phút. Tổng cộng 30 phút.',
+    },
+    20102 => {
+      AppLanguage.portuguese: 'De 1:25 da tarde até 2:00 são 35 minutos. Avançando mais 5 minutos, chegamos a 2:05 da tarde.',
+      AppLanguage.tagalog: 'Mula 1:25 ng hapon hanggang 2:00 ay 35 minuto. Dagdag pang 5 minuto, 2:05 ng hapon.',
+      AppLanguage.vietnamese: 'Từ 1:25 chiều đến 2:00 là 35 phút. Tiến thêm 5 phút thì 2:05 chiều.',
+    },
+    20103 => {
+      AppLanguage.portuguese: 'De 11:35 da manhã até o meio-dia são 25 minutos. Avançando mais 20 minutos, chegamos a 0:20 da tarde.',
+      AppLanguage.tagalog: 'Mula 11:35 ng umaga hanggang tanghali ay 25 minuto. Dagdag pang 20 minuto, 0:20 ng hapon.',
+      AppLanguage.vietnamese: 'Từ 11:35 sáng đến 12 giờ là 25 phút. Tiến thêm 20 phút thì 0:20 chiều.',
+    },
+    20104 => {
+      AppLanguage.portuguese: '1 minuto tem 60 segundos. 2 minutos têm 120 segundos. 120 segundos mais 10 segundos são 130 segundos.',
+      AppLanguage.tagalog: '60 segundo ang 1 minuto. 120 segundo ang 2 minuto. 120 + 10 = 130 segundo.',
+      AppLanguage.vietnamese: '1 phút có 60 giây. 2 phút có 120 giây. 120 giây cộng 10 giây là 130 giây.',
+    },
+    20105 => {
+      AppLanguage.portuguese: '1 minuto e 20 segundos são 80 segundos. 80 segundos é mais longo que 75 segundos.',
+      AppLanguage.tagalog: '1 minuto at 20 segundo ay 80 segundo. Mas mahaba ang 80 segundo kaysa 75 segundo.',
+      AppLanguage.vietnamese: '1 phút 20 giây là 80 giây. 80 giây dài hơn 75 giây.',
+    },
+    _ => const {},
   };
-
-  if (portuguese.isEmpty) return const {};
-  return {AppLanguage.portuguese: portuguese};
 }

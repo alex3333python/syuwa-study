@@ -230,6 +230,6 @@ class VocabularyEntry {
   });
 
   String translationFor(AppLanguage language) {
-    return translations[language] ?? simpleJapanese;
+    return lookupNative(translations, language);
   }
 }

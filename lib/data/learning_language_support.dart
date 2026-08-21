@@ -1,5 +1,6 @@
 import '../models/app_language.dart';
 import '../models/question.dart';
+import 'native_text.dart';
 
 /// Shared language scaffolding used only in the supported learning phases.
 /// Individual questions may still provide a more specific entry for a word.
@@ -8,9 +9,90 @@ List<VocabularyEntry> mergeLearningVocabulary(
 ) {
   final entries = <String, VocabularyEntry>{
     for (final entry in _learningTerms) entry.term: entry.toVocabulary(),
-    for (final entry in localEntries) entry.term: entry,
   };
+  for (final local in localEntries) {
+    final existing = entries[local.term];
+    entries[local.term] = existing == null
+        ? local
+        : VocabularyEntry(
+            term: local.term,
+            surfaces: {
+              ...existing.surfaces,
+              ...local.surfaces,
+            }.toList(growable: false),
+            reading: local.reading.isNotEmpty ? local.reading : existing.reading,
+            simpleJapanese: local.simpleJapanese.isNotEmpty
+                ? local.simpleJapanese
+                : existing.simpleJapanese,
+            translations: _mergedTranslations(
+              existing.translations,
+              local.translations,
+            ),
+            exampleSentence: local.exampleSentence.isNotEmpty
+                ? local.exampleSentence
+                : existing.exampleSentence,
+            category: local.category.isNotEmpty
+                ? local.category
+                : existing.category,
+          );
+  }
   return entries.values.toList(growable: false);
+}
+
+Map<AppLanguage, String> _mergedTranslations(
+  Map<AppLanguage, String> existing,
+  Map<AppLanguage, String> local,
+) {
+  final merged = Map<AppLanguage, String>.from(existing);
+  local.forEach((language, value) {
+    final usable = lookupNative({language: value}, language);
+    if (usable.isNotEmpty) {
+      merged[language] = usable;
+    }
+  });
+  return merged;
+}
+
+String nativeMeaningFor(VocabularyEntry entry, AppLanguage language) {
+  if (language == AppLanguage.japanese) return '';
+
+  if (entry.term == '長いす' ||
+      entry.term == '長椅子' ||
+      entry.reading == 'ながいす' ||
+      entry.surfaces.contains('長いす') ||
+      entry.surfaces.contains('長椅子')) {
+    return switch (language) {
+      AppLanguage.portuguese => 'banco comprido',
+      AppLanguage.tagalog => 'mahabang upuan / bangko',
+      AppLanguage.vietnamese => 'ghế dài',
+      AppLanguage.japanese => '',
+    };
+  }
+
+  for (final term in _learningTerms) {
+    if (!_sameLearningTerm(term, entry)) continue;
+    final mapped = lookupNative(
+      nativeText(
+        portuguese: term.portuguese,
+        tagalog: term.tagalog,
+        vietnamese: term.vietnamese,
+      ),
+      language,
+    );
+    if (mapped.isNotEmpty) return mapped;
+  }
+
+  return lookupNative(entry.translations, language);
+}
+
+bool _sameLearningTerm(_LearningTerm term, VocabularyEntry entry) {
+  if (term.term == entry.term || term.surfaces.contains(entry.term)) {
+    return true;
+  }
+  if (entry.surfaces.contains(term.term)) {
+    return true;
+  }
+  return term.surfaces.any(entry.surfaces.contains);
 }
 
 /// Adds ruby markup to common school-math words while preserving existing
@@ -58,6 +140,8 @@ class _LearningTerm {
   final String reading;
   final String simpleJapanese;
   final String portuguese;
+  final String tagalog;
+  final String vietnamese;
   final String example;
 
   const _LearningTerm({
@@ -66,6 +150,8 @@ class _LearningTerm {
     required this.reading,
     required this.simpleJapanese,
     required this.portuguese,
+    required this.tagalog,
+    required this.vietnamese,
     required this.example,
   });
 
@@ -75,7 +161,11 @@ class _LearningTerm {
       surfaces: surfaces,
       reading: reading,
       simpleJapanese: simpleJapanese,
-      translations: {AppLanguage.portuguese: portuguese},
+      translations: nativeText(
+        portuguese: portuguese,
+        tagalog: tagalog,
+        vietnamese: vietnamese,
+      ),
       exampleSentence: example,
       category: 'lesson',
     );
@@ -95,6 +185,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'おなじ かずずつ',
     simpleJapanese: 'みんなが同じ数になるようにします。',
     portuguese: 'em quantidades iguais',
+    tagalog: 'pantay-pantay na dami',
+    vietnamese: 'số lượng bằng nhau',
     example: '3人に同じ数ずつ分けます。',
   ),
   _LearningTerm(
@@ -102,6 +194,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'おなじ',
     simpleJapanese: 'ほかのものと、ちがいがないことです。',
     portuguese: 'igual / o mesmo',
+    tagalog: 'pareho / iisa',
+    vietnamese: 'giống / như nhau',
     example: '同じ数を使います。',
   ),
   _LearningTerm(
@@ -109,6 +203,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'かず',
     simpleJapanese: 'ものがいくつあるかを表します。',
     portuguese: 'número / quantidade',
+    tagalog: 'bilang / dami',
+    vietnamese: 'số / số lượng',
     example: '3つの数を使います。',
   ),
   _LearningTerm(
@@ -116,6 +212,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'わける',
     simpleJapanese: 'いくつかのグループにします。',
     portuguese: 'dividir',
+    tagalog: 'hatiin',
+    vietnamese: 'chia',
     example: 'いちごを3人に分けます。',
   ),
   _LearningTerm(
@@ -123,6 +221,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'はいる',
     simpleJapanese: 'ものや数が、中におさまることです。',
     portuguese: 'entrar / caber',
+    tagalog: 'pumasok / kasya',
+    vietnamese: 'vào / vừa',
     example: '□に入る数を考えます。',
   ),
   _LearningTerm(
@@ -130,6 +230,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'いれる',
     simpleJapanese: 'ものを中に移すことです。',
     portuguese: 'colocar / pôr dentro',
+    tagalog: 'ilagay sa loob',
+    vietnamese: 'cho vào',
     example: 'いちごを皿に入れます。',
   ),
   _LearningTerm(
@@ -137,6 +239,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'ぜんぶ',
     simpleJapanese: 'あるものを、残さずまとめたものです。',
     portuguese: 'tudo / total',
+    tagalog: 'lahat / kabuuan',
+    vietnamese: 'tất cả / tổng',
     example: '全部で6こです。',
   ),
   _LearningTerm(
@@ -144,6 +248,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'もらう',
     simpleJapanese: '人からものを受け取ることです。',
     portuguese: 'receber',
+    tagalog: 'tumanggap',
+    vietnamese: 'nhận',
     example: '1人が6こもらいます。',
   ),
   _LearningTerm(
@@ -151,6 +257,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'もと',
     simpleJapanese: '変わる前の、はじめのものや数です。',
     portuguese: 'original / inicial',
+    tagalog: 'orihinal / simula',
+    vietnamese: 'ban đầu / gốc',
     example: '答えはもとの数になります。',
   ),
   _LearningTerm(
@@ -158,6 +266,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'くばる',
     simpleJapanese: '何人かにものを分けて渡すことです。',
     portuguese: 'distribuir',
+    tagalog: 'ipamahagi',
+    vietnamese: 'phát / chia',
     example: '3人にいちごを配ります。',
   ),
   _LearningTerm(
@@ -165,6 +275,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'わる',
     simpleJapanese: 'ある数を、同じ数ずつ分ける計算をすることです。',
     portuguese: 'dividir',
+    tagalog: 'hatiin',
+    vietnamese: 'chia',
     example: '6を3でわります。',
   ),
   _LearningTerm(
@@ -172,6 +284,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'ひとりぶん',
     simpleJapanese: '1人がもらう数です。',
     portuguese: 'quantidade para uma pessoa',
+    tagalog: 'bahagi ng isang tao',
+    vietnamese: 'phần của một người',
     example: '1人分は2こです。',
   ),
   _LearningTerm(
@@ -179,6 +293,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'どれ',
     simpleJapanese: 'いくつかの中から、えらぶものを聞く言葉です。',
     portuguese: 'qual',
+    tagalog: 'alin',
+    vietnamese: 'cái nào',
     example: '正しい式はどれですか。',
   ),
   _LearningTerm(
@@ -186,6 +302,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'ただしい',
     simpleJapanese: '合っていて、まちがっていないことです。',
     portuguese: 'correto / certo',
+    tagalog: 'tama',
+    vietnamese: 'đúng',
     example: '正しい式を選びます。',
   ),
   _LearningTerm(
@@ -193,6 +311,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'はじめ',
     simpleJapanese: 'ものごとが始まるところや、最初のことです。',
     portuguese: 'começo / início',
+    tagalog: 'simula',
+    vietnamese: 'ban đầu',
     example: 'はじめにある数を見ます。',
   ),
   _LearningTerm(
@@ -200,6 +320,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'わられる かず',
     simpleJapanese: 'わり算で、分けるもとの数です。',
     portuguese: 'dividendo',
+    tagalog: 'hinahatiang bilang',
+    vietnamese: 'số bị chia',
     example: '6÷3の6はわられる数です。',
   ),
   _LearningTerm(
@@ -207,6 +329,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'わる かず',
     simpleJapanese: 'わり算で、何人に分けるかを表す数です。',
     portuguese: 'divisor',
+    tagalog: 'panghati',
+    vietnamese: 'số chia',
     example: '6÷3の3はわる数です。',
   ),
   _LearningTerm(
@@ -214,6 +338,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'なんこ',
     simpleJapanese: 'ものの数を聞く言い方です。',
     portuguese: 'quantos itens',
+    tagalog: 'ilang piraso',
+    vietnamese: 'bao nhiêu cái',
     example: '何こありますか。',
   ),
   _LearningTerm(
@@ -221,6 +347,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'なんにん',
     simpleJapanese: '人の数を聞く言い方です。',
     portuguese: 'quantas pessoas',
+    tagalog: 'ilang tao',
+    vietnamese: 'bao nhiêu người',
     example: '何人いますか。',
   ),
   _LearningTerm(
@@ -229,6 +357,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'なに',
     simpleJapanese: '分からないものや数を聞く言葉です。',
     portuguese: 'o que / qual',
+    tagalog: 'ano / alin',
+    vietnamese: 'cái gì / cái nào',
     example: '答えは何ですか。',
   ),
   _LearningTerm(
@@ -236,6 +366,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'ぜんぶの かず',
     simpleJapanese: 'はじめにある、もの全部の数です。',
     portuguese: 'quantidade total',
+    tagalog: 'kabuuang dami',
+    vietnamese: 'tổng số',
     example: '全部の数は6こです。',
   ),
   _LearningTerm(
@@ -243,6 +375,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'にんずう',
     simpleJapanese: '人が何人いるか、その数です。',
     portuguese: 'número de pessoas',
+    tagalog: 'bilang ng tao',
+    vietnamese: 'số người',
     example: '人数は3人です。',
   ),
   _LearningTerm(
@@ -250,6 +384,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'しき',
     simpleJapanese: '数や記号で表したものです。',
     portuguese: 'expressão matemática',
+    tagalog: 'pahayag sa matematika',
+    vietnamese: 'biểu thức',
     example: '式を書きます。',
   ),
   _LearningTerm(
@@ -257,6 +393,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'こたえ',
     simpleJapanese: '問題を考えて出す数です。',
     portuguese: 'resposta',
+    tagalog: 'sagot',
+    vietnamese: 'đáp án',
     example: '答えは4です。',
   ),
   _LearningTerm(
@@ -264,6 +402,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'さら',
     simpleJapanese: '食べ物をのせる、平たい入れ物です。',
     portuguese: 'prato',
+    tagalog: 'plato',
+    vietnamese: 'đĩa',
     example: '皿にいちごをのせます。',
   ),
   _LearningTerm(
@@ -271,6 +411,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'あまり',
     simpleJapanese: '分けたあとに残る数です。',
     portuguese: 'resto',
+    tagalog: 'sobra / natira',
+    vietnamese: 'số dư',
     example: '1こ余ります。',
   ),
   _LearningTerm(
@@ -279,6 +421,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'のこる',
     simpleJapanese: '使ったあとに、まだあることです。',
     portuguese: 'sobrar',
+    tagalog: 'matira',
+    vietnamese: 'còn lại',
     example: '1こ残ります。',
   ),
   _LearningTerm(
@@ -286,6 +430,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'かけざん',
     simpleJapanese: '同じ数を何回か足す計算です。',
     portuguese: 'multiplicação',
+    tagalog: 'multiplikasyon',
+    vietnamese: 'phép nhân',
     example: '3かける4は12です。',
   ),
   _LearningTerm(
@@ -293,6 +439,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'わりざん',
     simpleJapanese: '同じ数ずつ分ける計算です。',
     portuguese: 'divisão',
+    tagalog: 'dibisyon',
+    vietnamese: 'phép chia',
     example: '12わる3は4です。',
   ),
   _LearningTerm(
@@ -300,6 +448,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'とけい',
     simpleJapanese: '時こくや時間を見る道具です。',
     portuguese: 'relógio',
+    tagalog: 'orasan',
+    vietnamese: 'đồng hồ',
     example: '時計を見ます。',
   ),
   _LearningTerm(
@@ -307,6 +457,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'じこく',
     simpleJapanese: '時計が指す、そのときの時と分です。',
     portuguese: 'horário',
+    tagalog: 'oras',
+    vietnamese: 'thời điểm',
     example: '8時10分は時刻です。',
   ),
   _LearningTerm(
@@ -314,6 +466,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'じかん',
     simpleJapanese: 'はじめから終わりまでの長さです。',
     portuguese: 'tempo',
+    tagalog: 'oras / tagal',
+    vietnamese: 'khoảng thời gian',
     example: '30分の時間がかかります。',
   ),
   _LearningTerm(
@@ -321,6 +475,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'ごぜん',
     simpleJapanese: '昼の12時より前の時間です。',
     portuguese: 'manhã',
+    tagalog: 'umaga / a.m.',
+    vietnamese: 'buổi sáng / a.m.',
     example: '午前8時です。',
   ),
   _LearningTerm(
@@ -328,6 +484,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'ごご',
     simpleJapanese: '昼の12時より後の時間です。',
     portuguese: 'tarde',
+    tagalog: 'hapon / p.m.',
+    vietnamese: 'buổi chiều / p.m.',
     example: '午後3時です。',
   ),
   _LearningTerm(
@@ -335,6 +493,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'びょう',
     simpleJapanese: '分より短い時間の単位です。',
     portuguese: 'segundo',
+    tagalog: 'segundo',
+    vietnamese: 'giây',
     example: '60秒で1分です。',
   ),
   _LearningTerm(
@@ -342,6 +502,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'しゅっぱつ',
     simpleJapanese: 'ある場所から出かけることです。',
     portuguese: 'partida',
+    tagalog: 'alis',
+    vietnamese: 'xuất phát',
     example: '家を出発します。',
   ),
   _LearningTerm(
@@ -349,6 +511,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'とうちゃく',
     simpleJapanese: '目的の場所につくことです。',
     portuguese: 'chegada',
+    tagalog: 'dating',
+    vietnamese: 'đến nơi',
     example: '学校に到着します。',
   ),
   _LearningTerm(
@@ -356,13 +520,26 @@ const _learningTerms = <_LearningTerm>[
     reading: 'ながさ',
     simpleJapanese: '端から端までの、のびた大きさです。',
     portuguese: 'comprimento',
+    tagalog: 'haba',
+    vietnamese: 'độ dài',
     example: 'えんぴつの長さをはかります。',
   ),
   _LearningTerm(
     term: '測る',
+    surfaces: const [
+      '測る',
+      '測ります',
+      'はかる',
+      'はかります',
+      'はかりましょう',
+      'はかって',
+      'はかった',
+    ],
     reading: 'はかる',
     simpleJapanese: '長さや重さを調べることです。',
     portuguese: 'medir',
+    tagalog: 'sukatin',
+    vietnamese: 'đo',
     example: 'ものさしで測ります。',
   ),
   _LearningTerm(
@@ -370,6 +547,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'ものさし',
     simpleJapanese: '短いものの長さをはかる道具です。',
     portuguese: 'régua',
+    tagalog: 'ruler / panukat',
+    vietnamese: 'thước kẻ',
     example: 'ものさしを使います。',
   ),
   _LearningTerm(
@@ -377,6 +556,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'まきじゃく',
     simpleJapanese: '長いものや丸いものをはかる道具です。',
     portuguese: 'fita métrica',
+    tagalog: 'tape measure',
+    vietnamese: 'thước dây',
     example: '巻き尺をのばします。',
   ),
   _LearningTerm(
@@ -384,6 +565,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'みちのり',
     simpleJapanese: '道にそってはかった長さです。',
     portuguese: 'percurso',
+    tagalog: 'daan / ruta',
+    vietnamese: 'quãng đường',
     example: '道のりは1000mです。',
   ),
   _LearningTerm(
@@ -391,6 +574,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'きょり',
     simpleJapanese: '2つの場所の間の長さです。',
     portuguese: 'distância',
+    tagalog: 'distansya',
+    vietnamese: 'khoảng cách',
     example: '家から学校までの距離です。',
   ),
   _LearningTerm(
@@ -398,6 +583,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'おもい',
     simpleJapanese: '持ち上げるのに力がいることです。',
     portuguese: 'pesado',
+    tagalog: 'mabigat',
+    vietnamese: 'nặng',
     example: 'りんごは重いです。',
   ),
   _LearningTerm(
@@ -405,6 +592,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'かるい',
     simpleJapanese: '持ち上げるのにあまり力がいらないことです。',
     portuguese: 'leve',
+    tagalog: 'magaan',
+    vietnamese: 'nhẹ',
     example: 'えんぴつは軽いです。',
   ),
   _LearningTerm(
@@ -412,6 +601,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'おもさ',
     simpleJapanese: 'ものの重い・軽いの大きさです。',
     portuguese: 'peso',
+    tagalog: 'timbang',
+    vietnamese: 'cân nặng',
     example: '重さをはかります。',
   ),
   _LearningTerm(
@@ -419,6 +610,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'はかり',
     simpleJapanese: '重さをはかる道具です。',
     portuguese: 'balança',
+    tagalog: 'timbangan',
+    vietnamese: 'cân',
     example: 'はかりにのせます。',
   ),
   _LearningTerm(
@@ -426,6 +619,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'めもり',
     simpleJapanese: '数を読むための、小さなしるしです。',
     portuguese: 'graduação',
+    tagalog: 'marka',
+    vietnamese: 'vạch chia',
     example: '目盛りを見ます。',
   ),
   _LearningTerm(
@@ -433,6 +628,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'ぐらむ',
     simpleJapanese: '軽いものの重さの単位です。',
     portuguese: 'grama',
+    tagalog: 'gramo',
+    vietnamese: 'gam',
     example: '300グラムです。',
   ),
   _LearningTerm(
@@ -440,6 +637,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'きろぐらむ',
     simpleJapanese: 'グラムより大きい重さの単位です。',
     portuguese: 'quilograma',
+    tagalog: 'kilogramo',
+    vietnamese: 'kilôgam',
     example: '1キログラムです。',
   ),
   _LearningTerm(
@@ -447,6 +646,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'とん',
     simpleJapanese: 'とても重いものの重さの単位です。',
     portuguese: 'tonelada',
+    tagalog: 'tonelada',
+    vietnamese: 'tấn',
     example: '1トンです。',
   ),
   _LearningTerm(
@@ -454,6 +655,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'てんびん',
     simpleJapanese: '重い・軽いを比べる道具です。',
     portuguese: 'balança de dois pratos',
+    tagalog: 'timbangang may dalawang platito',
+    vietnamese: 'cân thăng bằng',
     example: '天びんで比べます。',
   ),
   _LearningTerm(
@@ -461,6 +664,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'にもつ',
     simpleJapanese: '運んだり持ったりするものです。',
     portuguese: 'carga',
+    tagalog: 'karga',
+    vietnamese: 'hàng',
     example: '荷物を積みます。',
   ),
   _LearningTerm(
@@ -468,6 +673,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'じどうしゃ',
     simpleJapanese: '人を乗せて走る車です。',
     portuguese: 'automóvel',
+    tagalog: 'kotse',
+    vietnamese: 'ôtô',
     example: '自動車は重いです。',
   ),
   _LearningTerm(
@@ -475,6 +682,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'えんぴつ',
     simpleJapanese: '字や絵を書く道具です。',
     portuguese: 'lápis',
+    tagalog: 'lapis',
+    vietnamese: 'bút chì',
     example: '鉛筆の長さをはかります。',
   ),
   _LearningTerm(
@@ -482,6 +691,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'いちご',
     simpleJapanese: '赤いくだものです。',
     portuguese: 'morango',
+    tagalog: 'strawberry',
+    vietnamese: 'quả dâu',
     example: 'いちごが6こあります。',
   ),
   _LearningTerm(
@@ -489,6 +700,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'りんご',
     simpleJapanese: '丸いくだものです。',
     portuguese: 'maçã',
+    tagalog: 'mansanas',
+    vietnamese: 'quả táo',
     example: 'りんごが6こあります。',
   ),
   _LearningTerm(
@@ -496,6 +709,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'くっきー',
     simpleJapanese: '小さくて甘いおかしです。',
     portuguese: 'biscoito',
+    tagalog: 'biskwit',
+    vietnamese: 'bánh quy',
     example: 'クッキーが12こあります。',
   ),
   _LearningTerm(
@@ -503,6 +718,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'しーる',
     simpleJapanese: '紙に貼れる小さな飾りです。',
     portuguese: 'adesivo',
+    tagalog: 'sticker',
+    vietnamese: 'nhãn dán',
     example: 'シールが9こあります。',
   ),
   _LearningTerm(
@@ -510,6 +727,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'あめ',
     simpleJapanese: '甘いおかしです。',
     portuguese: 'doce',
+    tagalog: 'kendi',
+    vietnamese: 'kẹo',
     example: 'あめが10こあります。',
   ),
   _LearningTerm(
@@ -517,6 +736,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'びーだま',
     simpleJapanese: 'ガラスでできた小さな玉です。',
     portuguese: 'bolinha de gude',
+    tagalog: 'bolang salamin',
+    vietnamese: 'viên bi',
     example: 'ビー玉が18こあります。',
   ),
   _LearningTerm(
@@ -524,6 +745,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'かーど',
     simpleJapanese: '紙でできた小さな札です。',
     portuguese: 'cartão',
+    tagalog: 'kard',
+    vietnamese: 'thẻ',
     example: 'カードが15まいあります。',
   ),
   _LearningTerm(
@@ -531,6 +754,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'もんだい',
     simpleJapanese: '考えて答える問いです。',
     portuguese: 'problema',
+    tagalog: 'suliranin',
+    vietnamese: 'bài toán',
     example: '問題を読みます。',
   ),
   _LearningTerm(
@@ -538,6 +763,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'えらぶ',
     simpleJapanese: 'いくつかの中から決めることです。',
     portuguese: 'escolher',
+    tagalog: 'pumili',
+    vietnamese: 'chọn',
     example: '答えを選びます。',
   ),
   _LearningTerm(
@@ -545,6 +772,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'かんがえる',
     simpleJapanese: '答えや方法を思いうかべることです。',
     portuguese: 'pensar',
+    tagalog: 'mag-isip',
+    vietnamese: 'suy nghĩ',
     example: '答えを考えます。',
   ),
   _LearningTerm(
@@ -552,6 +781,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'くらべる',
     simpleJapanese: 'ちがいや大きさを見ることです。',
     portuguese: 'comparar',
+    tagalog: 'ihambing',
+    vietnamese: 'so sánh',
     example: '重さを比べます。',
   ),
   _LearningTerm(
@@ -559,6 +790,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'うごかす',
     simpleJapanese: 'ものの位置を変えることです。',
     portuguese: 'mover',
+    tagalog: 'igalaw',
+    vietnamese: 'di chuyển',
     example: '時計の針を動かします。',
   ),
   _LearningTerm(
@@ -566,6 +799,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'すすめる',
     simpleJapanese: '前のほうへ動かすことです。',
     portuguese: 'avançar',
+    tagalog: 'isulong',
+    vietnamese: 'tiến tới',
     example: '時計を5分進めます。',
   ),
   _LearningTerm(
@@ -573,6 +808,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'もどす',
     simpleJapanese: '前の位置へ返すことです。',
     portuguese: 'voltar',
+    tagalog: 'ibalik',
+    vietnamese: 'đưa về',
     example: '時計を5分戻します。',
   ),
   _LearningTerm(
@@ -580,6 +817,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'すわる',
     simpleJapanese: 'いすに体をのせることです。',
     portuguese: 'sentar',
+    tagalog: 'umupo',
+    vietnamese: 'ngồi',
     example: '長いすに座ります。',
   ),
   _LearningTerm(
@@ -587,6 +826,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'きる',
     simpleJapanese: '分けて短くすることです。',
     portuguese: 'cortar',
+    tagalog: 'putulin',
+    vietnamese: 'cắt',
     example: 'リボンを切ります。',
   ),
   _LearningTerm(
@@ -595,6 +836,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'かく',
     simpleJapanese: '文字や式をしるすことです。',
     portuguese: 'escrever',
+    tagalog: 'sumulat',
+    vietnamese: 'viết',
     example: '式を書きます。',
   ),
   _LearningTerm(
@@ -603,14 +846,18 @@ const _learningTerms = <_LearningTerm>[
     reading: 'ちいさい',
     simpleJapanese: '大きさが少ないことです。',
     portuguese: 'pequeno / pequena',
+    tagalog: 'maliit',
+    vietnamese: 'nhỏ',
     example: 'あまりは、わる数より小さいです。',
   ),
   _LearningTerm(
     term: '長いす',
-    surfaces: const ['長いす'],
+    surfaces: const ['長いす', '長椅子'],
     reading: 'ながいす',
     simpleJapanese: '何人かがいっしょにすわれる、長いいすです。',
     portuguese: 'banco comprido',
+    tagalog: 'mahabang upuan / bangko',
+    vietnamese: 'ghế dài',
     example: '4人がけの長いすがあります。',
   ),
   _LearningTerm(
@@ -618,6 +865,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'すわる',
     simpleJapanese: 'いすなどにこしをおろすことです。',
     portuguese: 'sentar-se',
+    tagalog: 'umupo',
+    vietnamese: 'ngồi',
     example: '長いすにすわります。',
   ),
   _LearningTerm(
@@ -626,6 +875,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'つかう',
     simpleJapanese: '道具を役立てることです。',
     portuguese: 'usar',
+    tagalog: 'gamitin',
+    vietnamese: 'dùng',
     example: 'ものさしを使います。',
   ),
   _LearningTerm(
@@ -633,6 +884,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'かかる',
     simpleJapanese: '必要な時間や量があることです。',
     portuguese: 'levar',
+    tagalog: 'tumagal',
+    vietnamese: 'mất thời gian',
     example: '学校まで30分かかります。',
   ),
   _LearningTerm(
@@ -640,6 +893,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'のせる',
     simpleJapanese: 'ものの上に置くことです。',
     portuguese: 'colocar em cima',
+    tagalog: 'ilagay sa ibabaw',
+    vietnamese: 'đặt lên',
     example: 'はかりにりんごを乗せます。',
   ),
   _LearningTerm(
@@ -647,6 +902,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'つむ',
     simpleJapanese: 'ものを重ねてのせることです。',
     portuguese: 'empilhar',
+    tagalog: 'ikarga',
+    vietnamese: 'chất lên',
     example: '荷物をトラックに積みます。',
   ),
   _LearningTerm(
@@ -655,6 +912,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'つくる',
     simpleJapanese: '新しくできるようにすることです。',
     portuguese: 'fazer',
+    tagalog: 'gumawa',
+    vietnamese: 'làm',
     example: '1000gを作ります。',
   ),
   _LearningTerm(
@@ -662,6 +921,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'おく',
     simpleJapanese: 'ある場所にのせることです。',
     portuguese: 'colocar',
+    tagalog: 'ilagay',
+    vietnamese: 'đặt',
     example: '皿にいちごを置きます。',
   ),
   _LearningTerm(
@@ -669,6 +930,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'よむ',
     simpleJapanese: '文字や目盛りを見て分かることです。',
     portuguese: 'ler',
+    tagalog: 'basahin',
+    vietnamese: 'đọc',
     example: '目盛りを読みます。',
   ),
   _LearningTerm(
@@ -676,6 +939,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'みる',
     simpleJapanese: '目でたしかめることです。',
     portuguese: 'ver',
+    tagalog: 'tingnan',
+    vietnamese: 'nhìn',
     example: '時計を見ます。',
   ),
   _LearningTerm(
@@ -683,6 +948,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'みつける',
     simpleJapanese: 'さがして、分かることです。',
     portuguese: 'encontrar',
+    tagalog: 'hanapin',
+    vietnamese: 'tìm ra',
     example: 'かけ算で答えを見つけます。',
   ),
   _LearningTerm(
@@ -690,6 +957,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'はじまる',
     simpleJapanese: 'ものごとが最初になることです。',
     portuguese: 'começar',
+    tagalog: 'magsimula',
+    vietnamese: 'bắt đầu',
     example: '映画が始まります。',
   ),
   _LearningTerm(
@@ -697,6 +966,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'おわる',
     simpleJapanese: 'ものごとが最後になることです。',
     portuguese: 'terminar',
+    tagalog: 'matapos',
+    vietnamese: 'kết thúc',
     example: '映画が終わります。',
   ),
   _LearningTerm(
@@ -704,6 +975,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'ふやす',
     simpleJapanese: '数や量を多くすることです。',
     portuguese: 'aumentar',
+    tagalog: 'dagdagan',
+    vietnamese: 'tăng',
     example: 'おもりを1つ増やします。',
   ),
   _LearningTerm(
@@ -711,6 +984,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'あわせる',
     simpleJapanese: '同じ位置にそろえることです。',
     portuguese: 'alinhar',
+    tagalog: 'itapat',
+    vietnamese: 'căn chỉnh',
     example: '0を端に合わせます。',
   ),
   _LearningTerm(
@@ -718,6 +993,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'みじかい',
     simpleJapanese: '長さがあまりないことです。',
     portuguese: 'curto',
+    tagalog: 'maikli',
+    vietnamese: 'ngắn',
     example: '短いものをはかります。',
   ),
   _LearningTerm(
@@ -725,6 +1002,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'ながい',
     simpleJapanese: '長さがたくさんあることです。',
     portuguese: 'longo',
+    tagalog: 'mahaba',
+    vietnamese: 'dài',
     example: '長い道のりです。',
   ),
   _LearningTerm(
@@ -732,6 +1011,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'どうぐ',
     simpleJapanese: '何かをするときに使うものです。',
     portuguese: 'ferramenta',
+    tagalog: 'kagamitan',
+    vietnamese: 'dụng cụ',
     example: '道具を選びます。',
   ),
   _LearningTerm(
@@ -739,6 +1020,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'たんい',
     simpleJapanese: '長さや重さを表すための名前です。',
     portuguese: 'unidade',
+    tagalog: 'yunit',
+    vietnamese: 'đơn vị',
     example: 'グラムは重さの単位です。',
   ),
   _LearningTerm(
@@ -747,6 +1030,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'ながいす',
     simpleJapanese: '何人かがすわれる長いいすです。',
     portuguese: 'banco comprido',
+    tagalog: 'mahabang upuan / bangko',
+    vietnamese: 'ghế dài',
     example: '長椅子に4人すわります。',
   ),
   _LearningTerm(
@@ -754,6 +1039,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'ひつよう',
     simpleJapanese: 'なくてはならないことです。',
     portuguese: 'necessário',
+    tagalog: 'kailangan',
+    vietnamese: 'cần',
     example: '長椅子が3台必要です。',
   ),
   _LearningTerm(
@@ -761,6 +1048,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'き',
     simpleJapanese: '地面から育つ大きな植物です。',
     portuguese: 'árvore',
+    tagalog: 'puno',
+    vietnamese: 'cây',
     example: '木の幹をはかります。',
   ),
   _LearningTerm(
@@ -768,6 +1057,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'みき',
     simpleJapanese: '木の太い中心の部分です。',
     portuguese: 'tronco',
+    tagalog: 'tangkay / puno ng puno',
+    vietnamese: 'thân cây',
     example: '木の幹のまわりです。',
   ),
   _LearningTerm(
@@ -775,6 +1066,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'ろうか',
     simpleJapanese: '部屋と部屋をつなぐ通り道です。',
     portuguese: 'corredor',
+    tagalog: 'pasilyo',
+    vietnamese: 'hành lang',
     example: '廊下の長さをはかります。',
   ),
   _LearningTerm(
@@ -782,6 +1075,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'りぼん',
     simpleJapanese: '細長い布の飾りです。',
     portuguese: 'fita',
+    tagalog: 'lasyo',
+    vietnamese: 'ruy băng',
     example: 'リボンを切ります。',
   ),
   _LearningTerm(
@@ -789,6 +1084,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'ひも',
     simpleJapanese: '細くて長い、しばるためのものです。',
     portuguese: 'cordão',
+    tagalog: 'tali',
+    vietnamese: 'dây',
     example: '紐を切ります。',
   ),
   _LearningTerm(
@@ -796,6 +1093,8 @@ const _learningTerms = <_LearningTerm>[
     reading: 'ふくろ',
     simpleJapanese: 'ものを入れる入れ物です。',
     portuguese: 'saco',
+    tagalog: 'supot',
+    vietnamese: 'túi',
     example: '袋にクッキーを入れます。',
   ),
 ];
@@ -913,6 +1212,9 @@ final _rubyRules = <_RubyRule>[
   const _RubyRule('重さ', 'おもさ'),
   const _RubyRule('重い', 'おもい'),
   const _RubyRule('軽い', 'かるい'),
+  const _RubyRule('はかりましょう', 'はかりましょう'),
+  const _RubyRule('はかります', 'はかります'),
+  const _RubyRule('はかって', 'はかって'),
   const _RubyRule('はかり', 'はかり'),
   const _RubyRule('目盛り', 'めもり'),
   const _RubyRule('グラム', 'ぐらむ'),
@@ -961,6 +1263,8 @@ final _rubyRules = <_RubyRule>[
   const _RubyRule('わる', 'わる'),
   const _RubyRule('表す', 'あらわす'),
   const _RubyRule('短い', 'みじかい'),
+  const _RubyRule('長いす', 'ながいす'),
+  const _RubyRule('長椅子', 'ながいす'),
   const _RubyRule('長い', 'ながい'),
   const _RubyRule('道具', 'どうぐ'),
   const _RubyRule('単位', 'たんい'),
@@ -968,7 +1272,6 @@ final _rubyRules = <_RubyRule>[
   const _RubyRule('数', 'かず'),
   const _RubyRule('もらう', 'もらう'),
   const _RubyRule('もと', 'もと'),
-  const _RubyRule('長椅子', 'ながいす'),
   const _RubyRule('必要', 'ひつよう'),
   const _RubyRule('木', 'き'),
   const _RubyRule('幹', 'みき'),
@@ -984,7 +1287,6 @@ final _rubyRules = <_RubyRule>[
   const _RubyRule('分ける', 'わける'),
   const _RubyRule('書く', 'かく'),
   const _RubyRule('小さい', 'ちいさい'),
-  const _RubyRule('長いす', 'ながいす'),
   const _RubyRule('見つける', 'みつける'),
   const _RubyRule('すわる', 'すわる'),
 ];

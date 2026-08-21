@@ -12,7 +12,7 @@ class GlossaryEntry {
   });
 
   String nativeMeaningFor(AppLanguage language) {
-    return native[language] ?? easyJa;
+    return lookupNative(native, language);
   }
 }
 

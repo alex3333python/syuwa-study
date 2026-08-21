@@ -23,6 +23,10 @@ final List<Lesson> grade3WeightLessons = [
         native: {
           AppLanguage.portuguese:
               'Vamos comparar pesos e usar uma balança para entender g e kg.',
+          AppLanguage.tagalog:
+              'Ihambing natin ang bigat at gumamit ng timbangan para maintindihan ang g at kg.',
+          AppLanguage.vietnamese:
+              'Hãy so sánh khối lượng và dùng cân để hiểu g và kg.',
         },
       ),
       _learn(
@@ -44,6 +48,10 @@ final List<Lesson> grade3WeightLessons = [
             native: {
               AppLanguage.portuguese:
                   'Observe a balança e leia o peso. Quantos gramas são?',
+              AppLanguage.tagalog:
+                  'Tingnan ang timbangan at basahin ang timbang. Ilang gramo?',
+              AppLanguage.vietnamese:
+                  'Nhìn cân và đọc khối lượng. Bao nhiêu gam?',
             },
             questionTextRuby:
                 'はかりを{見|み}て、{重|おも}さを{読|よ}みましょう。{重|おも}さは{何|なん}gですか。',
@@ -64,6 +72,10 @@ final List<Lesson> grade3WeightLessons = [
             native: {
               AppLanguage.portuguese:
                   'Para mostrar o peso de um lápis, qual parece natural?',
+              AppLanguage.tagalog:
+                  'Para ipakita ang bigat ng lapis, alin ang natural?',
+              AppLanguage.vietnamese:
+                  'Để ghi khối lượng bút chì, cách nào tự nhiên hơn?',
             },
             questionTextRuby:
                 'えんぴつの{重|おも}さを{表|あらわ}すなら、どちらが{自然|しぜん}ですか。',
@@ -81,6 +93,8 @@ final List<Lesson> grade3WeightLessons = [
             easy: '1kgは1000gです。',
             native: {
               AppLanguage.portuguese: '1 kg e 300 g são quantos gramas?',
+              AppLanguage.tagalog: 'Ilang gramo ang 1 kg at 300 g?',
+              AppLanguage.vietnamese: '1 kg và 300 g bằng bao nhiêu gam?',
             },
             questionTextRuby: '1kg300gは{何|なん}gですか。',
             choices: ['1030g', '1300g', '3000g'],
@@ -102,6 +116,11 @@ final List<Lesson> grade3WeightLessons = [
             type: 'unit_sense',
             school: 'ランドセルの重さを表すなら、どちらが自然ですか。',
             easy: 'ランドセルは、えんぴつよりずっと重いです。',
+            native: {
+              AppLanguage.portuguese: 'Para mostrar o peso da mochila, qual parece natural?',
+              AppLanguage.tagalog: 'Para ipakita ang bigat ng bag, alin ang natural?',
+              AppLanguage.vietnamese: 'Để ghi khối lượng cặp sách, cách nào tự nhiên hơn?',
+            },
             questionTextRuby:
                 'ランドセルの{重|おも}さを{表|あらわ}すなら、どちらが{自然|しぜん}ですか。',
             choices: ['4g', '4kg'],
@@ -116,6 +135,11 @@ final List<Lesson> grade3WeightLessons = [
             type: 'g_to_kg',
             school: '1700gは、1kg何gですか。',
             easy: '1000gを1kgにします。',
+            native: {
+              AppLanguage.portuguese: '1700 g são 1 kg e quantos gramas?',
+              AppLanguage.tagalog: '1700 g ay 1 kg at ilang gramo?',
+              AppLanguage.vietnamese: '1700 g bằng 1 kg bao nhiêu gam?',
+            },
             questionTextRuby: '1700gは、1kg{何|なん}gですか。',
             choices: ['1kg70g', '1kg700g', '17kg'],
             correct: 1,
@@ -171,6 +195,10 @@ final List<Lesson> grade3WeightLessons = [
         native: {
           AppLanguage.portuguese:
               'Para coisas muito pesadas, podemos usar toneladas.',
+          AppLanguage.tagalog:
+              'Para sa napakabibigat, puwedeng gamitin ang tonelada.',
+          AppLanguage.vietnamese:
+              'Với đồ rất nặng, có thể dùng tấn.',
         },
       ),
       _learn(
@@ -189,7 +217,11 @@ final List<Lesson> grade3WeightLessons = [
             type: 'ton_relation',
             school: '1000kgは何tですか。',
             easy: '1000kgと1tは同じ重さです。',
-            native: {AppLanguage.portuguese: '1000 kg são quantas toneladas?'},
+            native: {
+              AppLanguage.portuguese: '1000 kg são quantas toneladas?',
+              AppLanguage.tagalog: 'Ilang tonelada ang 1000 kg?',
+              AppLanguage.vietnamese: '1000 kg bằng bao nhiêu tấn?',
+            },
             questionTextRuby: '1000kgは{何|なん}tですか。',
             choices: ['1t', '10t', '100t'],
             correct: 0,
@@ -205,6 +237,10 @@ final List<Lesson> grade3WeightLessons = [
             native: {
               AppLanguage.portuguese:
                   'Para mostrar o peso de um caminhão, qual unidade parece natural?',
+              AppLanguage.tagalog:
+                  'Para ipakita ang bigat ng trak, aling yunit ang natural?',
+              AppLanguage.vietnamese:
+                  'Để ghi khối lượng xe tải, đơn vị nào tự nhiên hơn?',
             },
             questionTextRuby:
                 'トラックの{重|おも}さを{表|あらわ}すなら、どの{単位|たんい}が{自然|しぜん}ですか。',
@@ -267,6 +303,11 @@ final List<Lesson> grade3WeightLessons = [
             type: 'read_weight_scale',
             school: 'はかりの針を見て、重さは何gですか。',
             easy: 'はかりの目もりを読みます。',
+            native: {
+              AppLanguage.portuguese: 'Olhando o ponteiro da balança, quantos gramas são?',
+              AppLanguage.tagalog: 'Tingnan ang karayom ng timbangan. Ilang gramo?',
+              AppLanguage.vietnamese: 'Nhìn kim cân, bao nhiêu gam?',
+            },
             choices: ['250g', '350g', '450g'],
             correct: 1,
             explanation: '300gと400gの間の目もりを見ると、350gです。',
@@ -281,6 +322,11 @@ final List<Lesson> grade3WeightLessons = [
             type: 'unit_sense',
             school: 'りんごの重さを表すなら、どちらが自然ですか。',
             easy: 'りんごに合う単位を選びます。',
+            native: {
+              AppLanguage.portuguese: 'Para mostrar o peso de uma maçã, qual parece natural?',
+              AppLanguage.tagalog: 'Para ipakita ang bigat ng mansanas, alin ang natural?',
+              AppLanguage.vietnamese: 'Để ghi khối lượng quả táo, cách nào tự nhiên hơn?',
+            },
             choices: ['250g', '250kg'],
             correct: 0,
             explanation: 'りんごのように手で持てる重さは、gで表すと分かりやすいです。',
@@ -293,6 +339,11 @@ final List<Lesson> grade3WeightLessons = [
             type: 'kg_g_conversion',
             school: '1kg500gは何gですか。',
             easy: '1kgを1000gにして考えます。',
+            native: {
+              AppLanguage.portuguese: '1 kg e 500 g são quantos gramas?',
+              AppLanguage.tagalog: 'Ilang gramo ang 1 kg at 500 g?',
+              AppLanguage.vietnamese: '1 kg và 500 g bằng bao nhiêu gam?',
+            },
             choices: ['1050g', '1500g', '5000g'],
             correct: 1,
             explanation: '1kgは1000gです。1000gと500gを合わせると、1500gです。',
@@ -305,6 +356,11 @@ final List<Lesson> grade3WeightLessons = [
             type: 'ton_relation',
             school: '3000kgは何tですか。',
             easy: '1000kgを1tにします。',
+            native: {
+              AppLanguage.portuguese: '3000 kg são quantas toneladas?',
+              AppLanguage.tagalog: 'Ilang tonelada ang 3000 kg?',
+              AppLanguage.vietnamese: '3000 kg bằng bao nhiêu tấn?',
+            },
             choices: ['3t', '30t', '300t'],
             correct: 0,
             explanation: '1000kgを1tといいます。3000kgは1000kgが3つなので、3tです。',
@@ -317,6 +373,11 @@ final List<Lesson> grade3WeightLessons = [
             type: 'unit_sense',
             school: 'ゾウの重さを表すなら、どの単位が自然ですか。',
             easy: 'とても重いものに合う単位を選びます。',
+            native: {
+              AppLanguage.portuguese: 'Para mostrar o peso de um elefante, qual unidade parece natural?',
+              AppLanguage.tagalog: 'Para ipakita ang bigat ng elepante, aling yunit ang natural?',
+              AppLanguage.vietnamese: 'Để ghi khối lượng con voi, đơn vị nào tự nhiên hơn?',
+            },
             choices: ['g', 'kg', 't'],
             correct: 2,
             explanation: 'ゾウのようにとても重いものは、tで表すと分かりやすいです。',
@@ -388,19 +449,82 @@ Question _q({
 }
 
 Map<AppLanguage, String> _weightExplanationNative(int id) {
-  final portuguese = switch (id) {
-    23101 => 'A marca entre 300 g e 400 g é 350 g.',
-    23102 => 'Um lápis é leve, então g é uma unidade natural.',
-    23103 => '1 kg é 1000 g. 1000 g mais 300 g são 1300 g.',
-    23104 => 'Uma mochila é pesada, então kg é mais natural.',
-    23105 => '1700 g são 1000 g e 700 g. 1000 g é 1 kg.',
-    23106 => 'O ponteiro aponta para 700 g.',
-    24101 => '1000 kg é 1 tonelada. Tonelada se escreve t.',
-    24102 => 'Um caminhão é muito pesado, então t é mais natural.',
-    24103 => 'Uma borracha é leve, então g é mais natural.',
-    24104 => 'Um elefante é muito pesado, então t é mais natural.',
-    _ => '',
+  return switch (id) {
+    23101 => {
+      AppLanguage.portuguese: 'A marca entre 300 g e 400 g é 350 g.',
+      AppLanguage.tagalog: 'Ang marka sa pagitan ng 300 g at 400 g ay 350 g.',
+      AppLanguage.vietnamese: 'Vạch giữa 300 g và 400 g là 350 g.',
+    },
+    23102 => {
+      AppLanguage.portuguese: 'Um lápis é leve, então g é uma unidade natural.',
+      AppLanguage.tagalog: 'Magaan ang lapis, kaya natural ang yunit na g.',
+      AppLanguage.vietnamese: 'Bút chì nhẹ nên dùng g thì tự nhiên.',
+    },
+    23103 => {
+      AppLanguage.portuguese: '1 kg é 1000 g. 1000 g mais 300 g são 1300 g.',
+      AppLanguage.tagalog: '1 kg ay 1000 g. 1000 g dagdag 300 g ay 1300 g.',
+      AppLanguage.vietnamese: '1 kg bằng 1000 g. 1000 g cộng 300 g là 1300 g.',
+    },
+    23104 => {
+      AppLanguage.portuguese: 'Uma mochila é pesada, então kg é mais natural.',
+      AppLanguage.tagalog: 'Mabigat ang bag, kaya mas natural ang kg.',
+      AppLanguage.vietnamese: 'Cặp sách nặng nên dùng kg thì tự nhiên hơn.',
+    },
+    23105 => {
+      AppLanguage.portuguese: '1700 g são 1000 g e 700 g. 1000 g é 1 kg.',
+      AppLanguage.tagalog: '1700 g ay 1000 g at 700 g. 1000 g ay 1 kg.',
+      AppLanguage.vietnamese: '1700 g là 1000 g và 700 g. 1000 g là 1 kg.',
+    },
+    23106 => {
+      AppLanguage.portuguese: 'O ponteiro aponta para 700 g.',
+      AppLanguage.tagalog: 'Tumakdo ang karayom sa 700 g.',
+      AppLanguage.vietnamese: 'Kim cân chỉ 700 g.',
+    },
+    24101 => {
+      AppLanguage.portuguese: '1000 kg é 1 tonelada. Tonelada se escreve t.',
+      AppLanguage.tagalog: '1000 kg ay 1 tonelada. Ang tonelada ay sinusulat na t.',
+      AppLanguage.vietnamese: '1000 kg là 1 tấn. Tấn viết là t.',
+    },
+    24102 => {
+      AppLanguage.portuguese: 'Um caminhão é muito pesado, então t é mais natural.',
+      AppLanguage.tagalog: 'Napakabigat ng trak, kaya mas natural ang t.',
+      AppLanguage.vietnamese: 'Xe tải rất nặng nên dùng t thì tự nhiên hơn.',
+    },
+    24103 => {
+      AppLanguage.portuguese: 'Uma borracha é leve, então g é mais natural.',
+      AppLanguage.tagalog: 'Magaan ang pambura, kaya mas natural ang g.',
+      AppLanguage.vietnamese: 'Cục tẩy nhẹ nên dùng g thì tự nhiên hơn.',
+    },
+    24104 => {
+      AppLanguage.portuguese: 'Um elefante é muito pesado, então t é mais natural.',
+      AppLanguage.tagalog: 'Napakabigat ng elepante, kaya mas natural ang t.',
+      AppLanguage.vietnamese: 'Con voi rất nặng nên dùng t thì tự nhiên hơn.',
+    },
+    26101 => {
+      AppLanguage.portuguese: 'A marca entre 300 g e 400 g é 350 g.',
+      AppLanguage.tagalog: 'Ang marka sa pagitan ng 300 g at 400 g ay 350 g.',
+      AppLanguage.vietnamese: 'Vạch giữa 300 g và 400 g là 350 g.',
+    },
+    26102 => {
+      AppLanguage.portuguese: 'Uma maçã cabe na mão, então g é uma unidade natural.',
+      AppLanguage.tagalog: 'Kaya hawakan ang mansanas, kaya natural ang yunit na g.',
+      AppLanguage.vietnamese: 'Quả táo cầm tay được nên dùng g thì tự nhiên.',
+    },
+    26103 => {
+      AppLanguage.portuguese: '1 kg é 1000 g. 1000 g mais 500 g são 1500 g.',
+      AppLanguage.tagalog: '1 kg ay 1000 g. 1000 g dagdag 500 g ay 1500 g.',
+      AppLanguage.vietnamese: '1 kg bằng 1000 g. 1000 g cộng 500 g là 1500 g.',
+    },
+    26104 => {
+      AppLanguage.portuguese: '1000 kg é 1 t. 3000 kg são 3 t.',
+      AppLanguage.tagalog: '1000 kg ay 1 t. 3000 kg ay 3 t.',
+      AppLanguage.vietnamese: '1000 kg là 1 t. 3000 kg là 3 t.',
+    },
+    26105 => {
+      AppLanguage.portuguese: 'Um elefante é muito pesado, então t é mais natural.',
+      AppLanguage.tagalog: 'Napakabigat ng elepante, kaya mas natural ang t.',
+      AppLanguage.vietnamese: 'Con voi rất nặng nên dùng t thì tự nhiên hơn.',
+    },
+    _ => const {},
   };
-  if (portuguese.isEmpty) return const {};
-  return {AppLanguage.portuguese: portuguese};
 }

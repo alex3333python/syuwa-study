@@ -5,6 +5,7 @@ import '../data/learning_language_support.dart';
 import '../models/app_language.dart';
 import '../models/question.dart';
 import '../services/audio_service.dart';
+import 'lesson_language_scope.dart';
 
 /// Makes the intent of learning support explicit at each call site.
 enum LearningSupportMode { off, rubyOnly, rubyAndDictionary }
@@ -58,6 +59,7 @@ class RubyText extends StatelessWidget {
       effectiveVocabularyEntries = mergeLearningVocabulary(vocabularyEntries);
     }
     final lines = supportedText.split('\n');
+    final effectiveLanguage = LessonLanguageScope.of(context, language);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -69,7 +71,7 @@ class RubyText extends StatelessWidget {
             style: effectiveStyle,
             rubyStyle: effectiveRubyStyle,
             alignment: _wrapAlignment,
-            language: language,
+            language: effectiveLanguage,
           ),
           if (i < lines.length - 1)
             SizedBox(height: effectiveStyle.fontSize ?? 16),
@@ -156,7 +158,59 @@ class RubyText extends StatelessWidget {
       index = end + 1;
     }
 
-    return parts;
+    return _attachSpanningVocabulary(parts, entries);
+  }
+
+  List<_RubyPart> _attachSpanningVocabulary(
+    List<_RubyPart> parts,
+    List<VocabularyEntry> entries,
+  ) {
+    if (parts.isEmpty || entries.isEmpty) return parts;
+
+    final ranked = entries.toList()
+      ..sort((a, b) {
+        final aLen = _longestSurfaceLength(a);
+        final bLen = _longestSurfaceLength(b);
+        return bLen.compareTo(aLen);
+      });
+    final attached = List<_RubyPart>.from(parts);
+    var index = 0;
+    while (index < attached.length) {
+      var combined = '';
+      VocabularyEntry? matched;
+      var matchEnd = index;
+      for (var end = index; end < attached.length; end++) {
+        combined += attached[end].base;
+        for (final entry in ranked) {
+          if (_surfaceSet(entry).contains(combined)) {
+            matched = entry;
+            matchEnd = end;
+            break;
+          }
+        }
+      }
+      if (matched != null) {
+        for (var i = index; i <= matchEnd; i++) {
+          attached[i] = attached[i].withEntry(matched);
+        }
+        index = matchEnd + 1;
+      } else {
+        index++;
+      }
+    }
+    return attached;
+  }
+
+  int _longestSurfaceLength(VocabularyEntry entry) {
+    var longest = entry.term.length;
+    for (final surface in entry.surfaces) {
+      if (surface.length > longest) longest = surface.length;
+    }
+    return longest;
+  }
+
+  Set<String> _surfaceSet(VocabularyEntry entry) {
+    return {entry.term, ...entry.surfaces};
   }
 
   void _addPlainText(
@@ -173,6 +227,12 @@ class RubyText extends StatelessWidget {
       String? matchedSurface;
       for (final entry in entries) {
         for (final surface in <String>[entry.term, ...entry.surfaces]) {
+          if (surface == 'はかり' && value.startsWith('はかりま', cursor)) {
+            continue;
+          }
+          if (surface == '長い' && value.startsWith('長いす', cursor)) {
+            continue;
+          }
           if (surface.isEmpty || !value.startsWith(surface, cursor)) continue;
           if (matchedSurface == null || surface.length > matchedSurface.length) {
             matched = entry;
@@ -657,9 +717,11 @@ class _RubyPiece extends StatelessWidget {
       showDragHandle: true,
       isScrollControlled: true,
       builder: (context) {
-        final nativeLabel = language == AppLanguage.japanese
+        final sheetLanguage = language;
+        final nativeLabel = sheetLanguage == AppLanguage.japanese
             ? '母国語'
-            : language.label;
+            : sheetLanguage.label;
+        final nativeMeaning = nativeMeaningFor(entry, sheetLanguage);
         return SafeArea(
           child: SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(
@@ -711,11 +773,14 @@ class _RubyPiece extends StatelessWidget {
                 ],
                 const SizedBox(height: 18),
                 _VocabularyBlock(title: '意味', text: entry.simpleJapanese),
-                if (language != AppLanguage.japanese) ...[
+                if (sheetLanguage != AppLanguage.japanese &&
+                    nativeMeaning.isNotEmpty &&
+                    nativeMeaning != entry.simpleJapanese &&
+                    !looksLikeJapaneseGloss(nativeMeaning)) ...[
                   const SizedBox(height: 14),
                   _VocabularyBlock(
                     title: '$nativeLabelで',
-                    text: entry.translationFor(language),
+                    text: nativeMeaning,
                   ),
                 ],
                 if (entry.exampleSentence.isNotEmpty) ...[
@@ -782,6 +847,10 @@ class _RubyPart {
   final VocabularyEntry? entry;
 
   const _RubyPart({required this.base, this.ruby, this.entry});
+
+  _RubyPart withEntry(VocabularyEntry next) {
+    return _RubyPart(base: base, ruby: ruby, entry: next);
+  }
 }
 
 class _RubySegment {
