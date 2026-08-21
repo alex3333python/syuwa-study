@@ -17572,7 +17572,6 @@ class _ExplanationOverlay extends StatelessWidget {
                               if (showCorrectAnswerCard) ...[
                                 _CorrectAnswerCard(
                                   text: correctAnswerText,
-                                  vocabularyEntries: question.vocabularyEntries,
                                   language: questionLanguage,
                                 ),
                                 const SizedBox(height: 12),
@@ -17634,12 +17633,10 @@ class _ExplanationOverlay extends StatelessWidget {
 
 class _CorrectAnswerCard extends StatelessWidget {
   final String text;
-  final List<VocabularyEntry> vocabularyEntries;
   final AppLanguage language;
 
   const _CorrectAnswerCard({
     required this.text,
-    required this.vocabularyEntries,
     required this.language,
   });
 
@@ -17666,8 +17663,8 @@ class _CorrectAnswerCard extends StatelessWidget {
           const SizedBox(height: 8),
           RubyText(
             text: text,
-            vocabularyEntries: vocabularyEntries,
             language: language,
+            learningSupportMode: LearningSupportMode.rubyOnly,
             style: const TextStyle(
               color: Color(0xFF111827),
               fontSize: 32,
