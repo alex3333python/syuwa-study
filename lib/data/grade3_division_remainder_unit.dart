@@ -10,7 +10,7 @@ final List<Lesson> grade3DivisionRemainderLessons = [
     levelId: 2,
     type: LessonType.practice,
     title: 'あまりのあるわり算',
-    description: '分けたあとに残る数を、式と図で考えます。',
+    description: '分けたあとにのこる数を、式と図で考えます。',
     completed: false,
     locked: true,
     stars: 0,
@@ -20,8 +20,8 @@ final List<Lesson> grade3DivisionRemainderLessons = [
       _learn(
         id: 'division-remainder-basic-learn',
         title: '学習しよう',
-        school: '7このいちごを3人で同じ数ずつ分けます。1人分は2こで、1このこります。この残った数を「あまり」といいます。',
-        easy: '分けたあとに残る数が、あまりです。',
+        school: '7このいちごを3人で同じ数ずつ分けます。1人分は2こで、1このこります。こののこった数を「あまり」といいます。',
+        easy: '分けたあとにのこる数が、あまりです。',
       ),
       _learn(
         id: 'division-remainder-basic-words',
@@ -38,13 +38,13 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             id: 12101,
             type: 'select_picture',
             school: '5このあめを2こずつ分けます。何こあまりますか。',
-            easy: 'あめ5こを2こずつにします。残るあめは何こですか。',
+            easy: 'あめ5こを2こずつにします。のこるあめは何こですか。',
             questionTextRuby: '5このあめを2こずつ{分|わ}けます。{何こ|なんこ}あまりますか。',
             choices: ['0こ', '1こ', '2こ'],
             correct: 1,
             explanation: '2こずつのまとまりが2つできて、1このこります。',
-            explanationRuby: '2こずつのまとまりが2つできて、1こ{残|のこ}ります。',
-            vocabulary: ['あまり', '残る'],
+            explanationRuby: '2こずつのまとまりが2つできて、1このこります。',
+            vocabulary: ['あまり', 'のこる'],
             tags: ['remainder', 'select_picture'],
             native: {
               AppLanguage.portuguese:
@@ -63,7 +63,7 @@ final List<Lesson> grade3DivisionRemainderLessons = [
                   'Làm được 2 nhóm 2, còn dư 1 viên kẹo.',
             },
             equationHint: '5 ÷ 2 = 2 あまり 1',
-            visualHint: '2こずつのまとまりを作り、残った1こを見る。',
+            visualHint: '2こずつのまとまりを作り、のこった1こを見る。',
             visualType: QuestionVisualType.divisionRemainder,
             itemEmoji: '🍬',
             itemUnit: 'こ',
@@ -81,7 +81,7 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             choices: ['0', '1', '2', '4'],
             correct: 2,
             explanation: '4こずつのまとまりが2つできて、2このこります。',
-            explanationRuby: '4こずつのまとまりが2つできて、2こ{残|のこ}ります。',
+            explanationRuby: '4こずつのまとまりが2つできて、2このこります。',
             vocabulary: ['あまり', 'まとまり'],
             tags: ['remainder_calculation'],
             native: {
@@ -116,14 +116,14 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             easy: '「あまり」は、どの数のことですか。',
             questionTextRuby: '「あまり」とは{何|なん}ですか。',
             choicesRuby: [
-              '{分|わ}けたあとに{残|のこ}る{数|かず}',
+              '{分|わ}けたあとにのこる{数|かず}',
               '{全部|ぜんぶ}の{数|かず}',
               'かけ{算|ざん}の{答|こた}え',
             ],
-            choices: ['分けたあとに残る数', 'ぜんぶの数', 'かけ算の答え'],
+            choices: ['分けたあとにのこる数', 'ぜんぶの数', 'かけ算の答え'],
             correct: 0,
-            explanation: 'あまりは、分けたあとに残る数です。',
-            explanationRuby: 'あまりは、{分|わ}けたあとに{残|のこ}る{数|かず}です。',
+            explanation: 'あまりは、分けたあとにのこる数です。',
+            explanationRuby: 'あまりは、{分|わ}けたあとにのこる{数|かず}です。',
             vocabulary: ['あまり'],
             tags: ['select_word_meaning', 'vocabulary'],
             native: {
@@ -196,7 +196,7 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             correct: 0,
             explanation: 'あめを4こずつ分けると、3組できて、2このこります。',
             explanationRuby:
-                'あめを4こずつ{分|わ}けると、3{組|くみ}できて、2こ{残|のこ}ります。',
+                'あめを4こずつ{分|わ}けると、3{組|くみ}できて、2このこります。',
             vocabulary: ['わりきれない'],
             tags: ['remainder_check'],
             native: {
@@ -233,7 +233,7 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             choices: ['1', '2', '3', '5'],
             correct: 2,
             explanation: '5こずつのまとまりが2つできて、3このこります。',
-            explanationRuby: '5こずつのまとまりが2つできて、3こ{残|のこ}ります。',
+            explanationRuby: '5こずつのまとまりが2つできて、3このこります。',
             vocabulary: ['あまり'],
             tags: ['remainder_calculation'],
             native: {
@@ -301,8 +301,8 @@ final List<Lesson> grade3DivisionRemainderLessons = [
       ),
       _summary(
         id: 'grade3_remainder_1_summary',
-        school: 'ぴったり分けられずに残る数を「あまり」といいます。',
-        easy: '分けたあとに残った数が、あまりです。',
+        school: 'ぴったり分けられずにのこる数を「あまり」といいます。',
+        easy: '分けたあとにのこった数が、あまりです。',
         native: {
           AppLanguage.portuguese:
               'O número que sobra depois de dividir é chamado de resto.',
@@ -331,13 +331,13 @@ final List<Lesson> grade3DivisionRemainderLessons = [
         title: '学習しよう',
         school:
             '17 ÷ 5 を考えます。5×3=15 で17に近い数になります。17-15=2 なので、17÷5=3 あまり2です。あまりは、わる数の5より小さくなります。',
-        easy: 'わる数を何回作れるか考えます。残った数を「あまり」として書きます。',
+        easy: 'わる数を何回作れるか考えます。のこった数を「あまり」として書きます。',
       ),
       _learn(
         id: 'grade3_remainder_2_words',
         title: 'ことばを知ろう',
         school: '大事な言葉は「商」「あまり」「わる数」「わられる数」「式で表す」です。',
-        easy: '「商」は、わり算の答えの大きい数です。「あまり」は残った数です。',
+        easy: '「商」は、わり算の答えの大きい数です。「あまり」はのこった数です。',
       ),
       LessonStep(
         id: 'grade3_remainder_2_guided',
@@ -358,12 +358,12 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             explanationRuby:
                 '13 - 12 = 1 なので、1こ{余|あま}ります。だから、13 ÷ 4 = 3 あまり 1 です。',
             formulaExplanation:
-                '13 ÷ 4 は、13を4つずつ分けるという意味です。\n3は、4つずつのまとまりの数です。\nあまりの1は、分けきれずに残った数です。',
+                '13 ÷ 4 は、13を4つずつ分けるという意味です。\n3は、4つずつのまとまりの数です。\nあまりの1は、分けきれずにのこった数です。',
             formulaExplanationRuby:
-                '13 ÷ 4 は、13こを4{人|にん}に{同|おな}じ{数|かず}ずつ{分|わ}けるという{意味|いみ}です。\n{答え|こたえ}の3は、{1人|ひとり}{分|ぶん}の{数|かず}です。\nあまりの1は、{分|わ}けきれずに{残|のこ}った{数|かず}です。',
-            languagePoint: '「あまり」は、同じ数ずつ分けたあとに残る数です。',
+                '13 ÷ 4 は、13こを4{人|にん}に{同|おな}じ{数|かず}ずつ{分|わ}けるという{意味|いみ}です。\n{答え|こたえ}の3は、{1人|ひとり}{分|ぶん}の{数|かず}です。\nあまりの1は、{分|わ}けきれずにのこった{数|かず}です。',
+            languagePoint: '「あまり」は、同じ数ずつ分けたあとにのこる数です。',
             languagePointRuby:
-                '「あまり」は、{同|おな}じ{数|かず}ずつ{分|わ}けたあとに{残|のこ}る{数|かず}です。',
+                '「あまり」は、{同|おな}じ{数|かず}ずつ{分|わ}けたあとにのこる{数|かず}です。',
             vocabularyEntries: _remainderVocabulary,
             visualType: QuestionVisualType.divisionRemainder,
             visualTitle: '13このあめを4人で分ける図',
@@ -384,7 +384,7 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             type: 'fill_blank',
             school: '17 ÷ 5 = 3 あまり□。□に入る数は何ですか。',
             easy: '17を5でわると、3こずつ作れて、何このこりますか。',
-            questionTextRuby: '17を5でわると、3こずつ{作|つく}れて、{何こ|なんこ}{残|のこ}りますか。',
+            questionTextRuby: '17を5でわると、3こずつ{作|つく}れて、{何こ|なんこ}のこりますか。',
             choices: ['1', '2', '3', '5'],
             correct: 1,
             explanation: '5×3=15、17-15=2 なので、あまりは2です。',
@@ -598,7 +598,7 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             id: 12306,
             type: 'unit_choice',
             school: '28本のえんぴつを6人で分けます。あまりの単位はどれですか。',
-            easy: '残るえんぴつの数を聞いています。単位はどれですか。',
+            easy: 'のこるえんぴつの数を聞いています。単位はどれですか。',
             choices: ['本', '人', '束'],
             correct: 0,
             explanation: 'あまるものはえんぴつなので、単位は本です。',
@@ -723,9 +723,9 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             choicesRuby: ['3{台|だい}', '4{台|だい}', '5{台|だい}'],
             choices: ['3台', '4台', '5台'],
             correct: 1,
-            explanation: '17÷5=3 あまり2。2人が残るので、もう1台必要です。',
+            explanation: '17÷5=3 あまり2。2人がのこるので、もう1台必要です。',
             explanationRuby:
-                '17÷5=3 あまり2。2{人|にん}が{残|のこ}るので、もう1{台|だい}{必要|ひつよう}です。',
+                '17÷5=3 あまり2。2{人|にん}がのこるので、もう1{台|だい}{必要|ひつよう}です。',
             vocabulary: ['必要', '1つ増やす'],
             tags: ['round_up_context'],
             native: {
@@ -809,9 +809,9 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             choicesRuby: ['5{台|だい}', '6{台|だい}', '7{台|だい}'],
             choices: ['5台', '6台', '7台'],
             correct: 1,
-            explanation: '22÷4=5 あまり2。2人が残るので、もう1台必要です。',
+            explanation: '22÷4=5 あまり2。2人がのこるので、もう1台必要です。',
             explanationRuby:
-                '22÷4=5 あまり2。2{人|にん}が{残|のこ}るので、もう1{台|だい}{必要|ひつよう}です。',
+                '22÷4=5 あまり2。2{人|にん}がのこるので、もう1{台|だい}{必要|ひつよう}です。',
             vocabulary: ['必要', '1つ増やす'],
             tags: ['round_up_context'],
             native: {
@@ -988,7 +988,7 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             correct: 0,
             explanation: 'あめを6こずつ分けると、3組できて、1このこります。',
             explanationRuby:
-                'あめを6こずつ{分|わ}けると、3{組|くみ}できて、1こ{残|のこ}ります。',
+                'あめを6こずつ{分|わ}けると、3{組|くみ}できて、1このこります。',
             vocabulary: ['計算'],
             tags: ['remainder_calculation'],
             equationHint: '19 ÷ 6 = 3 あまり 1',
@@ -1026,9 +1026,9 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             easy: '6人乗りの車に29人が乗ります。みんなが乗るには何台いりますか。',
             choices: ['4台', '5台', '6台'],
             correct: 1,
-            explanation: '29÷6=4 あまり5。5人が残るので、車は5台必要です。',
+            explanation: '29÷6=4 あまり5。5人がのこるので、車は5台必要です。',
             explanationRuby:
-                '29÷6=4 あまり5。5{人|にん}が{残|のこ}るので、{車|くるま}は5{台|だい}{必要|ひつよう}です。',
+                '29÷6=4 あまり5。5{人|にん}がのこるので、{車|くるま}は5{台|だい}{必要|ひつよう}です。',
             vocabulary: ['必要', '1つ増やす'],
             tags: ['round_up_context'],
             equationHint: '29 ÷ 6 = 4 あまり 5',
@@ -1089,12 +1089,12 @@ final List<Lesson> grade3DivisionRemainderLessons = [
             id: 12509,
             type: 'round_up_context',
             school: '38人が5人ずつグループになります。全員が入るには、グループはいくつ必要ですか。',
-            easy: '5人ずつのグループに38人が入ります。残った人も入るには、何グループ必要ですか。',
+            easy: '5人ずつのグループに38人が入ります。のこった人も入るには、何グループ必要ですか。',
             choices: ['7グループ', '8グループ', '9グループ'],
             correct: 1,
-            explanation: '38÷5=7 あまり3。3人が残るので、もう1グループ必要です。',
+            explanation: '38÷5=7 あまり3。3人がのこるので、もう1グループ必要です。',
             explanationRuby:
-                '38÷5=7 あまり3。3{人|にん}が{残|のこ}るので、もう1グループ{必要|ひつよう}です。',
+                '38÷5=7 あまり3。3{人|にん}がのこるので、もう1グループ{必要|ひつよう}です。',
             vocabulary: ['全員', 'グループ'],
             tags: ['round_up_context', 'word_problem'],
             equationHint: '38 ÷ 5 = 7 あまり 3',
@@ -1246,7 +1246,16 @@ const _remainderVocabulary = [
     category: 'math_language',
   ),
   VocabularyEntry(
-    term: '残る',
+    term: 'のこる',
+    surfaces: const [
+      'のこる',
+      'のこります',
+      'のこって',
+      'のこった',
+      'のこり',
+      'のこりました',
+      'のこっている',
+    ],
     reading: 'のこる',
     simpleJapanese: '使ったあと、まだあること。',
     translations: {
@@ -1260,7 +1269,7 @@ const _remainderVocabulary = [
   VocabularyEntry(
     term: '余る',
     reading: 'あまる',
-    simpleJapanese: '分けたあとに、残ること。',
+    simpleJapanese: '分けたあとに、のこること。',
     translations: {
       AppLanguage.portuguese: 'sobrar',
       AppLanguage.tagalog: 'may matira',
@@ -1317,7 +1326,7 @@ Map<AppLanguage, String> _nativeText(String fallback) {
       AppLanguage.tagalog: 'Hatiin ang 17 cm nang tig-5 cm. Hindi binibilang ang natirang kulang sa 5 cm.',
       AppLanguage.vietnamese: 'Cắt 17 cm thành từng đoạn 5 cm. Phần còn lại không đủ 5 cm thì không tính.',
     },
-    '17÷5=3 あまり2。2人が残るので、もう1台必要です。' => {
+    '17÷5=3 あまり2。2人がのこるので、もう1台必要です。' => {
       AppLanguage.portuguese: '17 ÷ 5 = 3 resto 2. Como 2 pessoas sobram, precisamos de mais 1 carro.',
       AppLanguage.tagalog: '17 ÷ 5 = 3 sobra 2. Dahil 2 tao ang natira, kailangan pa ng 1 kotse.',
       AppLanguage.vietnamese: '17 ÷ 5 = 3 dư 2. Còn 2 người nên cần thêm 1 xe.',
@@ -1352,7 +1361,7 @@ Map<AppLanguage, String> _nativeText(String fallback) {
       AppLanguage.tagalog: 'Hatiin ang 20 sa 6. Ano ang sagot?',
       AppLanguage.vietnamese: 'Chia 20 cho 6. Đáp án nào đúng?',
     },
-    '22÷4=5 あまり2。2人が残るので、もう1台必要です。' => {
+    '22÷4=5 あまり2。2人がのこるので、もう1台必要です。' => {
       AppLanguage.portuguese: '22 ÷ 4 = 5 resto 2. Como 2 pessoas sobram, precisamos de mais 1 carro.',
       AppLanguage.tagalog: '22 ÷ 4 = 5 sobra 2. Dahil 2 tao ang natira, kailangan pa ng 1 kotse.',
       AppLanguage.vietnamese: '22 ÷ 4 = 5 dư 2. Còn 2 người nên cần thêm 1 xe.',
@@ -1377,7 +1386,7 @@ Map<AppLanguage, String> _nativeText(String fallback) {
       AppLanguage.tagalog: '23 ÷ 4 = 5 sobra 3. 5 ang sa bawat isa at 3 ang natira.',
       AppLanguage.vietnamese: '23 ÷ 4 = 5 dư 3. Mỗi người được 5, còn 3.',
     },
-    '29÷6=4 あまり5。5人が残るので、車は5台必要です。' => {
+    '29÷6=4 あまり5。5人がのこるので、車は5台必要です。' => {
       AppLanguage.portuguese: '29 ÷ 6 = 4 resto 5. Como 5 pessoas sobram, precisamos de 5 carros.',
       AppLanguage.tagalog: '29 ÷ 6 = 4 sobra 5. Dahil 5 tao ang natira, 5 kotse ang kailangan.',
       AppLanguage.vietnamese: '29 ÷ 6 = 4 dư 5. Còn 5 người nên cần 5 xe.',
@@ -1407,7 +1416,7 @@ Map<AppLanguage, String> _nativeText(String fallback) {
       AppLanguage.tagalog: 'Hatiin ang 34 sa 5. Ano ang sagot?',
       AppLanguage.vietnamese: 'Chia 34 cho 5. Đáp án nào đúng?',
     },
-    '38÷5=7 あまり3。3人が残るので、もう1グループ必要です。' => {
+    '38÷5=7 あまり3。3人がのこるので、もう1グループ必要です。' => {
       AppLanguage.portuguese: '38 ÷ 5 = 7 resto 3. Como 3 pessoas sobram, precisamos de mais 1 grupo.',
       AppLanguage.tagalog: '38 ÷ 5 = 7 sobra 3. Dahil 3 tao ang natira, kailangan pa ng 1 grupo.',
       AppLanguage.vietnamese: '38 ÷ 5 = 7 dư 3. Còn 3 người nên cần thêm 1 nhóm.',
@@ -1462,7 +1471,7 @@ Map<AppLanguage, String> _nativeText(String fallback) {
       AppLanguage.tagalog: 'Gumagawa tayo ng bag na tig-5. Ilang punong bag ang magagawa?',
       AppLanguage.vietnamese: 'Làm túi đựng 5 cái. Được bao nhiêu túi đầy?',
     },
-    '5人ずつのグループに38人が入ります。残った人も入るには、何グループ必要ですか。' => {
+    '5人ずつのグループに38人が入ります。のこった人も入るには、何グループ必要ですか。' => {
       AppLanguage.portuguese: 'Grupos de 5 pessoas para 38 pessoas. Quantos grupos precisamos para incluir quem sobrou?',
       AppLanguage.tagalog: 'Grupo-grupo ng tig-5 para sa 38 tao. Ilang grupo para maisama ang natira?',
       AppLanguage.vietnamese: 'Nhóm 5 người cho 38 người. Cần bao nhiêu nhóm để người còn lại cũng vào?',
@@ -1502,7 +1511,7 @@ Map<AppLanguage, String> _nativeText(String fallback) {
       AppLanguage.tagalog: 'Ano ang ibig sabihin ng «pantay na mahahati»?',
       AppLanguage.vietnamese: '「Chia vừa khít」nghĩa là gì?',
     },
-    '「商」は、わり算の答えの大きい数です。「あまり」は残った数です。' => {
+    '「商」は、わり算の答えの大きい数です。「あまり」はのこった数です。' => {
       AppLanguage.portuguese: 'O quociente é o número grande da resposta. O resto é o que sobrou.',
       AppLanguage.tagalog: 'Ang quotient ay ang malaking numero sa sagot. Ang sobra ay ang natirang numero.',
       AppLanguage.vietnamese: 'Thương là số lớn trong đáp án phép chia. Số dư là số còn lại.',
@@ -1542,7 +1551,7 @@ Map<AppLanguage, String> _nativeText(String fallback) {
       AppLanguage.tagalog: 'Kulang sa 5 cm ang natira, kaya hindi ito binibilang na lasong 5 cm.',
       AppLanguage.vietnamese: 'Phần còn lại không đủ 5 cm nên không tính là một đoạn ruy-băng 5 cm.',
     },
-    'あまりは、分けたあとに残る数です。' => {
+    'あまりは、分けたあとにのこる数です。' => {
       AppLanguage.portuguese: 'O resto é o número que fica depois de dividir.',
       AppLanguage.tagalog: 'Ang sobra ay ang numerong natitira pagkatapos maghati.',
       AppLanguage.vietnamese: 'Số dư là số còn lại sau khi chia.',
@@ -1592,7 +1601,7 @@ Map<AppLanguage, String> _nativeText(String fallback) {
       AppLanguage.tagalog: '23 kendi na pantay sa 4 tao. Ilan ang sa bawat isa, at ilan ang natira?',
       AppLanguage.vietnamese: '23 viên kẹo chia đều cho 4 người. Mỗi người được bao nhiêu, còn dư bao nhiêu?',
     },
-    'あめ5こを2こずつにします。残るあめは何こですか。' => {
+    'あめ5こを2こずつにします。のこるあめは何こですか。' => {
       AppLanguage.portuguese: 'Há 5 balas em grupos de 2. Quantas balas sobram?',
       AppLanguage.tagalog: '5 kendi na tig-2. Ilang kendi ang matitira?',
       AppLanguage.vietnamese: '5 viên kẹo, nhóm 2 viên. Còn lại bao nhiêu viên?',
@@ -1637,7 +1646,7 @@ Map<AppLanguage, String> _nativeText(String fallback) {
       AppLanguage.tagalog: 'Kapag pantay na mahahati, walang sobra.',
       AppLanguage.vietnamese: 'Khi chia vừa khít thì không có số dư.',
     },
-    'わる数を何回作れるか考えます。残った数を「あまり」として書きます。' => {
+    'わる数を何回作れるか考えます。のこった数を「あまり」として書きます。' => {
       AppLanguage.portuguese: 'Pensamos quantas vezes dá para formar o divisor. O que sobra se escreve como resto.',
       AppLanguage.tagalog: 'Isipin kung ilang beses magagawa ang panghati. Ang natira ay isinusulat na sobra.',
       AppLanguage.vietnamese: 'Nghĩ xem làm được bao nhiêu lần số chia. Số còn lại viết là số dư.',
@@ -1717,12 +1726,12 @@ Map<AppLanguage, String> _nativeText(String fallback) {
       AppLanguage.tagalog: 'Dahil hinati ang lahat ng 34 biskwit nang tig-5, 34 ÷ 5 ang pahayag.',
       AppLanguage.vietnamese: 'Vì chia hết 34 cái bánh thành nhóm 5 nên phép tính là 34 ÷ 5.',
     },
-    '分けたあとに残った数が、あまりです。' => {
+    '分けたあとにのこった数が、あまりです。' => {
       AppLanguage.portuguese: 'O número que fica depois de dividir é o resto.',
       AppLanguage.tagalog: 'Ang numerong natira pagkatapos maghati ay ang sobra.',
       AppLanguage.vietnamese: 'Số còn lại sau khi chia chính là số dư.',
     },
-    '分けたあとに残る数が、あまりです。' => {
+    '分けたあとにのこる数が、あまりです。' => {
       AppLanguage.portuguese: 'O número que resta depois de dividir é o resto.',
       AppLanguage.tagalog: 'Ang numerong natitira pagkatapos maghati ay ang sobra.',
       AppLanguage.vietnamese: 'Số còn lại sau khi chia là số dư.',
@@ -1742,7 +1751,7 @@ Map<AppLanguage, String> _nativeText(String fallback) {
       AppLanguage.tagalog: 'Kung ang natira ay mahahati pa, paano tayo mag-iisip?',
       AppLanguage.vietnamese: 'Khi phần còn lại vẫn chia được nữa thì nghĩ thế nào?',
     },
-    '残るえんぴつの数を聞いています。単位はどれですか。' => {
+    'のこるえんぴつの数を聞いています。単位はどれですか。' => {
       AppLanguage.portuguese: 'Estamos perguntando o número de lápis que sobram. Qual é a unidade?',
       AppLanguage.tagalog: 'Tinatanong kung ilang lapis ang matitira. Ano ang yunit?',
       AppLanguage.vietnamese: 'Đang hỏi số bút chì còn lại. Đơn vị là gì?',

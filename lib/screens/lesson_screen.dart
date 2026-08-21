@@ -1080,7 +1080,7 @@ const _independentHintSupports = [
   ),
   _IndependentHintSupport(
     term: 'あまり',
-    simpleJapanese: '同じ数ずつ分けたあとに残る数です。',
+    simpleJapanese: '同じ数ずつ分けたあとにのこる数です。',
     translations: {
       AppLanguage.portuguese: 'resto / sobra',
       AppLanguage.tagalog: 'sobra / natira',
@@ -6065,7 +6065,7 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
         SupportLine(
           japanese: '3人で同じ数ずつ分けると、1人分は2こで、1このこります。',
           ruby:
-              '3{人|にん}で{同|おな}じ{数|かず}ずつ{分|わ}けると、{1人|ひとり}{分|ぶん}は2こで、1こ{残|のこ}ります。',
+              '3{人|にん}で{同|おな}じ{数|かず}ずつ{分|わ}けると、{1人|ひとり}{分|ぶん}は2こで、1このこります。',
           native: {
             AppLanguage.portuguese:
                 'Dividindo igualmente entre 3 pessoas, cada pessoa recebe 2 e sobra 1.',
@@ -9020,7 +9020,7 @@ const _remainderLearnVocabulary = [
   VocabularyEntry(
     term: 'あまり',
     reading: 'あまり',
-    simpleJapanese: '分けたあとに残る数です。',
+    simpleJapanese: '分けたあとにのこる数です。',
     translations: {AppLanguage.portuguese: 'resto / sobra',
       AppLanguage.tagalog: 'sobra / natira',
       AppLanguage.vietnamese: 'số dư',},
@@ -9048,7 +9048,16 @@ const _remainderLearnVocabulary = [
     category: 'math_language',
   ),
   VocabularyEntry(
-    term: 'のこります',
+    term: 'のこる',
+    surfaces: const [
+      'のこる',
+      'のこります',
+      'のこって',
+      'のこった',
+      'のこり',
+      'のこりました',
+      'のこっている',
+    ],
     reading: 'のこる',
     simpleJapanese: 'まだある、という意味です。',
     translations: {AppLanguage.portuguese: 'sobra / fica',
@@ -9473,7 +9482,7 @@ class _RemainderShareResult extends StatelessWidget {
   Widget build(BuildContext context) {
     const line = SupportLine(
       japanese: '3人に2こずつ分けると、1このこりました。この1こを「あまり」といいます。',
-      ruby: '3{人|にん}に2こずつ{分|わ}けると、1こ{残|のこ}りました。この1こを「あまり」といいます。',
+      ruby: '3{人|にん}に2こずつ{分|わ}けると、1このこりました。この1こを「あまり」といいます。',
       native: {
         AppLanguage.portuguese:
             'Ao dividir 2 para cada uma das 3 pessoas, sobrou 1. Esse 1 é o resto.',
@@ -9682,7 +9691,7 @@ class _RemainderEquationBuilderState extends State<_RemainderEquationBuilder> {
         if ((_each != null || _remainder != null) && !_complete) ...[
           const SizedBox(height: 12),
           const Text(
-            'お皿の中と、残っているいちごをもう一度見てみよう。',
+            'お皿の中と、のこっているいちごをもう一度見てみよう。',
             style: TextStyle(
               fontFamily: AppFonts.interface,
               color: Color(0xFF64748B),
@@ -9698,9 +9707,9 @@ class _RemainderEquationBuilderState extends State<_RemainderEquationBuilder> {
             showNative: _showResultNative,
             onToggleNative: () =>
                 setState(() => _showResultNative = !_showResultNative),
-            japanese: '1人分は2こ、残ったのは1こ。だから、7 ÷ 3 = 2 あまり 1 と書きます。',
+            japanese: '1人分は2こ、のこったのは1こ。だから、7 ÷ 3 = 2 あまり 1 と書きます。',
             ruby:
-                '{1人|ひとり}{分|ぶん}は2こ、{残|のこ}ったのは1こ。だから、7 ÷ 3 = 2 あまり 1 と{書|か}きます。',
+                '{1人|ひとり}{分|ぶん}は2こ、のこったのは1こ。だから、7 ÷ 3 = 2 あまり 1 と{書|か}きます。',
             portuguese:
                 'Cada pessoa recebe 2 e sobra 1. Por isso escrevemos 7 ÷ 3 = 2, resto 1.',
             tagalog:
@@ -9897,7 +9906,7 @@ class _RemainderTimesTableFinderState
                 setState(() => _showResultNative = !_showResultNative),
             japanese: '3 × 2 = 6です。7から6を使うと、1このこります。だから、7 ÷ 3 = 2 あまり 1です。',
             ruby:
-                '3 × 2 = 6です。7から6を{使|つか}うと、1こ{残|のこ}ります。だから、7 ÷ 3 = 2 あまり 1です。',
+                '3 × 2 = 6です。7から6を{使|つか}うと、1このこります。だから、7 ÷ 3 = 2 あまり 1です。',
             portuguese:
                 '3 × 2 = 6. Ao usar 6 dos 7, sobra 1. Por isso, 7 ÷ 3 = 2, resto 1.',
             tagalog:
