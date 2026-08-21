@@ -14714,6 +14714,7 @@ class _DivisionResultCard extends StatelessWidget {
                     context,
                     label: '式の読み方',
                     text: equationReading.japanese,
+                    spokenText: equationReading.japanese,
                   );
                 },
               ),

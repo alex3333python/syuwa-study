@@ -14,6 +14,7 @@ abstract final class AudioCueFactory {
     required String namespace,
     required String label,
     required String text,
+    String? spokenText,
     String? assetPath,
   }) {
     return AudioCue.inline(
@@ -21,6 +22,7 @@ abstract final class AudioCueFactory {
       kind: AudioCueKind.problem,
       label: label,
       text: text,
+      spokenText: spokenText,
       assetPath: assetPath,
     );
   }
@@ -29,6 +31,7 @@ abstract final class AudioCueFactory {
     required String namespace,
     required String label,
     required String text,
+    String? spokenText,
     String? assetPath,
   }) {
     return AudioCue.inline(
@@ -36,6 +39,7 @@ abstract final class AudioCueFactory {
       kind: AudioCueKind.instruction,
       label: label,
       text: text,
+      spokenText: spokenText,
       assetPath: assetPath,
     );
   }
@@ -44,6 +48,7 @@ abstract final class AudioCueFactory {
     required String namespace,
     required String label,
     required String text,
+    String? spokenText,
     String? assetPath,
   }) {
     return AudioCue.inline(
@@ -51,12 +56,14 @@ abstract final class AudioCueFactory {
       kind: AudioCueKind.explanation,
       label: label,
       text: text,
+      spokenText: spokenText,
       assetPath: assetPath,
     );
   }
 
   static AudioCue vocabulary({
     required String term,
+    String? reading,
     String? assetPath,
   }) {
     return AudioCue.inline(
@@ -64,6 +71,7 @@ abstract final class AudioCueFactory {
       kind: AudioCueKind.vocabulary,
       label: term,
       text: term,
+      spokenText: reading,
       assetPath: assetPath,
     );
   }
@@ -71,6 +79,7 @@ abstract final class AudioCueFactory {
   static AudioCue legacy({
     required String label,
     required String text,
+    String? spokenText,
     AudioCueKind kind = AudioCueKind.other,
     String? id,
     String? assetPath,
@@ -80,6 +89,7 @@ abstract final class AudioCueFactory {
         id: id,
         label: label,
         japaneseText: text,
+        spokenText: spokenText,
         kind: kind,
         assetPath: assetPath,
       );
@@ -89,6 +99,7 @@ abstract final class AudioCueFactory {
       kind: kind,
       label: label,
       text: text,
+      spokenText: spokenText,
       assetPath: assetPath,
     );
   }

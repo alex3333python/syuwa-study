@@ -6,13 +6,20 @@ Current behavior:
 
 - `LearningAudio.play(context, cue)` is the main entry point.
 - `LearningAudio.speakJapanese(...)` still works for older call sites and creates a legacy cue.
-- If no recorded file is connected yet, the app falls back to the current semantic announcement behavior.
+- Speech is Japanese TTS (`flutter_tts`, language `ja-JP`), even when the UI language is Portuguese, Tagalog, or Vietnamese.
+- Recorded files under `assets/audio/` are kept for now, but playback uses TTS. Do not delete those files until TTS is confirmed on each platform.
+- If TTS fails, a short snackbar is shown. Screen readers still receive the original Japanese text.
 
-Where to add audio files:
+Spoken text:
 
-- Put future recordings under `assets/audio/`.
+- By default, `japaneseText` is rewritten for TTS (for example `÷` → わる, `8:10` → 8時10分, `8cm` → 8センチメートル).
+- Dictionary buttons should pass `reading` so kanji is not misread: `AudioCueFactory.vocabulary(term: entry.term, reading: entry.reading)`.
+- Call sites can also set `spokenText` when a formula or symbol string needs a dedicated reading.
+
+Where to add audio files (kept until TTS is confirmed):
+
+- Put recordings under `assets/audio/`.
 - Add the file path either directly to the matching `AudioCue` through `assetPath`, or centrally in `AudioCueLibrary.assetPathsById`.
-- Prefer `AudioCueLibrary.assetPathsById` when a recording is reused or when you want to manage many files in one place.
 
 Cue IDs:
 
@@ -29,22 +36,6 @@ LearningAudio.play(
     namespace: 'lesson.supported_instruction',
     label: '操作案内',
     text: line.japanese,
-    assetPath: 'assets/audio/...',
   ),
 );
 ```
-
-Recommended asset mapping:
-
-```dart
-static const Map<String, String> assetPathsById = {
-  'lesson.instruction.operation_guide.1234abcd':
-      'assets/audio/lesson/instruction/example.mp3',
-};
-```
-
-Notes:
-
-- The user-facing label can stay generic, such as `操作案内`.
-- The cue ID is still unique because it is generated from the namespace, kind, label, and exact Japanese text.
-- Dictionary audio should use `AudioCueFactory.vocabulary(term: ...)`, so every word can receive its own recording.

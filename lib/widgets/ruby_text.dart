@@ -754,7 +754,10 @@ class _RubyPiece extends StatelessWidget {
                       onPressed: () {
                         LearningAudio.play(
                           context,
-                          AudioCueFactory.vocabulary(term: entry.term),
+                          AudioCueFactory.vocabulary(
+                            term: entry.term,
+                            reading: entry.reading,
+                          ),
                         );
                       },
                     ),

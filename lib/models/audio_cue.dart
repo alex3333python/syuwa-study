@@ -13,6 +13,7 @@ final class AudioCue {
   final String id;
   final String label;
   final String japaneseText;
+  final String? spokenText;
   final String? assetPath;
   final AudioCueKind kind;
 
@@ -21,6 +22,7 @@ final class AudioCue {
     required this.label,
     required this.japaneseText,
     required this.kind,
+    this.spokenText,
     this.assetPath,
   });
 
@@ -29,6 +31,7 @@ final class AudioCue {
     required AudioCueKind kind,
     required String label,
     required String text,
+    String? spokenText,
     String? assetPath,
   }) {
     return AudioCue(
@@ -40,6 +43,7 @@ final class AudioCue {
       ),
       label: label,
       japaneseText: text,
+      spokenText: spokenText,
       kind: kind,
       assetPath: assetPath,
     );
@@ -51,6 +55,7 @@ final class AudioCue {
       id: id,
       label: label,
       japaneseText: japaneseText,
+      spokenText: spokenText,
       kind: kind,
       assetPath: path,
     );
