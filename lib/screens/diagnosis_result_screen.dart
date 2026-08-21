@@ -161,7 +161,7 @@ class DiagnosisResultScreen extends StatelessWidget {
       case 'multiplication':
         return '同じ数が何人分・何こ分あるかを考えるところ。';
       case 'subtraction':
-        return '残りやちがいを、ひき算で考えるところ。';
+        return 'のこりやちがいを、ひき算で考えるところ。';
       case 'comparison':
         return '「どちらがどれだけ多い・長い」をくらべるところ。';
       case 'fraction':
@@ -173,7 +173,7 @@ class DiagnosisResultScreen extends StatelessWidget {
       case 'school_japanese_each':
         return '「ずつ」という言葉の意味。';
       case 'school_japanese_remaining':
-        return '「残り」という言葉の意味。';
+        return '「のこり」という言葉の意味。';
       case 'school_japanese_more_than':
         return '「より」というくらべる言葉の意味。';
       default:

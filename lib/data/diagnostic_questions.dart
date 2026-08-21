@@ -28,7 +28,7 @@ const List<Question> diagnosticQuestions = [
     id: 1002,
     type: 'multiple-choice',
     unitId: 'addition_subtraction',
-    promptSchoolJa: 'みかんが18こあります。7こ食べると、残りは何こですか。',
+    promptSchoolJa: 'みかんが18こあります。7こ食べると、のこりは何こですか。',
     promptEasyJa: 'みかんが18こあります。7こへります。あと何こありますか。',
     promptNative: {
       AppLanguage.portuguese:
@@ -39,7 +39,7 @@ const List<Question> diagnosticQuestions = [
     },
     choices: ['7', '10', '11', '25'],
     correctAnswer: 2,
-    explanationEasyJa: '「残り」は、ひき算の合図です。18 - 7 = 11です。',
+    explanationEasyJa: '「のこり」は、ひき算の合図です。18 - 7 = 11です。',
     explanationNative: {
       AppLanguage.portuguese: '"Sobram" indica subtração. 18 - 7 = 11.',
       AppLanguage.tagalog:

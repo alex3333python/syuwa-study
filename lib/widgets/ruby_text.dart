@@ -330,7 +330,7 @@ class RubyText extends StatelessWidget {
       case '測って':
       case '測った':
         return '測る';
-      case '残ります':
+      case 'のこります':
       case '残った':
         return '残る';
       case '出発して':
@@ -677,7 +677,7 @@ class _RubyPiece extends StatelessWidget {
         return const [_RubySegment('余', 'あま'), _RubySegment('ります')];
       case '余り':
         return const [_RubySegment('余', 'あま'), _RubySegment('り')];
-      case '残ります':
+      case 'のこります':
         return const [_RubySegment('残', 'のこ'), _RubySegment('ります')];
       case '残った':
         return const [_RubySegment('残', 'のこ'), _RubySegment('った')];

@@ -77,7 +77,7 @@ final List<Lesson> _allMockLessons = [
     levelId: 1,
     type: LessonType.practice,
     title: 'ちがいを求める問題',
-    description: '「より長い」「残り」など、ひき算につながる言葉を確認します。',
+    description: '「より長い」「のこり」など、ひき算につながる言葉を確認します。',
     completed: false,
     locked: true,
     stars: 0,
@@ -125,8 +125,8 @@ final List<Lesson> _allMockLessons = [
     id: 6,
     levelId: 1,
     type: LessonType.practice,
-    title: '残りはいくつ',
-    description: '「残り」「食べる」「使う」などの言葉から、ひき算で考える練習をします。',
+    title: 'のこりはいくつ',
+    description: '「のこり」「食べる」「使う」などの言葉から、ひき算で考える練習をします。',
     completed: false,
     locked: true,
     stars: 0,
@@ -138,8 +138,8 @@ final List<Lesson> _allMockLessons = [
         type: LessonStepType.learn,
         title: '学習しよう',
         explanationSchoolJa:
-            'ひき算は、数がへるときや残りを求めるときに使います。「残りは何こですか」は、はじめの数から使った数をひく合図です。',
-        explanationEasyJa: 'ものがへったときは、ひき算を使います。「残り」は、まだある数のことです。',
+            'ひき算は、数がへるときやのこりを求めるときに使います。「のこりは何こですか」は、はじめの数から使った数をひく合図です。',
+        explanationEasyJa: 'ものがへったときは、ひき算を使います。「のこり」は、まだある数のことです。',
         explanationNative: {
           AppLanguage.portuguese:
               'Use subtração quando a quantidade diminui. "Restam" quer dizer a quantidade que ainda fica.',
@@ -158,7 +158,7 @@ final List<Lesson> _allMockLessons = [
             id: 6001,
             type: 'wordProblem',
             unitId: 'subtraction_remaining',
-            promptSchoolJa: 'りんごが12こあります。4こ食べると、残りは何こですか。',
+            promptSchoolJa: 'りんごが12こあります。4こ食べると、のこりは何こですか。',
             promptEasyJa: 'りんごが12こあります。4こ食べました。まだあるりんごは何こですか。',
             promptNative: {
               AppLanguage.portuguese:
@@ -189,7 +189,7 @@ final List<Lesson> _allMockLessons = [
             id: 6002,
             type: 'wordProblem',
             unitId: 'subtraction_remaining',
-            promptSchoolJa: '色紙が15まいあります。6まい使うと、残りは何まいですか。',
+            promptSchoolJa: '色紙が15まいあります。6まい使うと、のこりは何まいですか。',
             promptEasyJa: '色紙が15まいあります。6まい使いました。まだある色紙は何まいですか。',
             promptNative: {
               AppLanguage.portuguese:
@@ -216,8 +216,8 @@ final List<Lesson> _allMockLessons = [
         type: LessonStepType.summary,
         title: 'まとめ',
         explanationSchoolJa:
-            '「残り」「食べる」「使う」「なくなる」は、数がへる合図です。はじめの数からへった数をひくと、残りが分かります。',
-        explanationEasyJa: '「残り」「食べる」「使う」「なくなる」が出たら、ひき算で考えます。',
+            '「のこり」「食べる」「使う」「なくなる」は、数がへる合図です。はじめの数からへった数をひくと、のこりが分かります。',
+        explanationEasyJa: '「のこり」「食べる」「使う」「なくなる」が出たら、ひき算で考えます。',
         explanationNative: {
           AppLanguage.portuguese:
               'Quando aparecerem palavras como restam, comer, usar ou acabar, pense em subtração.',

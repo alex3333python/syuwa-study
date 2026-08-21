@@ -966,9 +966,9 @@ String _timeIndependentPracticeHint(Question question) {
   if (question.unit != 'time') return '';
 
   return switch (question.type) {
-    'across_hour' => 'まず、次のちょうどの時こくまで何分あるか見てみましょう。そこまで進めたら、残りの分をもう一度進めます。',
+    'across_hour' => 'まず、次のちょうどの時こくまで何分あるか見てみましょう。そこまで進めたら、のこりの分をもう一度進めます。',
     'noon' => '12時をまたぐと、午前から午後に変わります。まず正午まで何分あるかを見てみましょう。',
-    'minutes_after' => '「何分後」は時計を進めます。近いちょうどの時こくまで進めてから、残りの分を考えましょう。',
+    'minutes_after' => '「何分後」は時計を進めます。近いちょうどの時こくまで進めてから、のこりの分を考えましょう。',
     'minutes_before' ||
     'start_time' => '「前」や「何時に出た」は時計を戻して考えます。終わりの時こくから、かかった時間だけ戻しましょう。',
     'compare_time' => '単位がちがうときは、同じ単位にそろえて比べます。1分は60秒です。',
@@ -6063,7 +6063,7 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
           }
         ),
         SupportLine(
-          japanese: '3人で同じ数ずつ分けると、1人分は2こで、1こ残ります。',
+          japanese: '3人で同じ数ずつ分けると、1人分は2こで、1このこります。',
           ruby:
               '3{人|にん}で{同|おな}じ{数|かず}ずつ{分|わ}けると、{1人|ひとり}{分|ぶん}は2こで、1こ{残|のこ}ります。',
           native: {
@@ -9048,13 +9048,13 @@ const _remainderLearnVocabulary = [
     category: 'math_language',
   ),
   VocabularyEntry(
-    term: '残ります',
+    term: 'のこります',
     reading: 'のこる',
     simpleJapanese: 'まだある、という意味です。',
     translations: {AppLanguage.portuguese: 'sobra / fica',
       AppLanguage.tagalog: 'natitira',
       AppLanguage.vietnamese: 'còn lại',},
-    exampleSentence: '1こ残ります。',
+    exampleSentence: '1このこります。',
     category: 'math_language',
   ),
 ];
@@ -9472,7 +9472,7 @@ class _RemainderShareResult extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const line = SupportLine(
-      japanese: '3人に2こずつ分けると、1こ残りました。この1こを「あまり」といいます。',
+      japanese: '3人に2こずつ分けると、1このこりました。この1こを「あまり」といいます。',
       ruby: '3{人|にん}に2こずつ{分|わ}けると、1こ{残|のこ}りました。この1こを「あまり」といいます。',
       native: {
         AppLanguage.portuguese:
@@ -9895,7 +9895,7 @@ class _RemainderTimesTableFinderState
             showNative: _showResultNative,
             onToggleNative: () =>
                 setState(() => _showResultNative = !_showResultNative),
-            japanese: '3 × 2 = 6です。7から6を使うと、1こ残ります。だから、7 ÷ 3 = 2 あまり 1です。',
+            japanese: '3 × 2 = 6です。7から6を使うと、1このこります。だから、7 ÷ 3 = 2 あまり 1です。',
             ruby:
                 '3 × 2 = 6です。7から6を{使|つか}うと、1こ{残|のこ}ります。だから、7 ÷ 3 = 2 あまり 1です。',
             portuguese:
@@ -17763,7 +17763,7 @@ class _SolutionExplanationCardState extends State<_SolutionExplanationCard> {
             children: [
               const Expanded(
                 child: Text(
-                  '解き方',
+                  'とき方',
                   style: TextStyle(
                     color: Color(0xFF2563EB),
                     fontSize: 16,
