@@ -80,7 +80,7 @@ class SettingsScreen extends StatelessWidget {
                       onPressed: onOpenRecords,
                       icon: const Icon(Icons.insights_rounded),
                       label: const Text(
-                        '学習記録を見る',
+                        'きろくを見る',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 15,
@@ -103,8 +103,8 @@ class SettingsScreen extends StatelessWidget {
                       icon: const Icon(Icons.replay_rounded),
                       label: Text(
                         weakQuestionCount == 0
-                            ? '苦手問題はありません'
-                            : '苦手問題を復習（$weakQuestionCount問）',
+                            ? 'ふくしゅうはありません'
+                            : 'ふくしゅう（$weakQuestionCount問）',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 15,
@@ -126,7 +126,7 @@ class SettingsScreen extends StatelessWidget {
                       onPressed: onReset,
                       icon: const Icon(Icons.refresh_rounded),
                       label: const Text(
-                        '進捗をリセット',
+                        'リセット',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 15,

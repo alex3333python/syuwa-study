@@ -441,7 +441,7 @@ class TodayReviewCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
-                          enabled ? '復習する' : 'まだ準備中',
+                          enabled ? 'ふくしゅう' : 'まだ準備中',
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
                             color: badgeTextColor,
@@ -826,7 +826,7 @@ class _ActionBadge extends StatelessWidget {
             ),
             SizedBox(width: 6),
             Text(
-              '復習する',
+              'ふくしゅう',
               style: TextStyle(
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF15803D),
