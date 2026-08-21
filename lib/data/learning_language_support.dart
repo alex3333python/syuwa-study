@@ -111,11 +111,14 @@ String applyLearningRuby(String text) {
       }
     }
 
-    final rule = _rubyRules.firstWhere(
-      (candidate) => text.startsWith(candidate.text, cursor),
-      orElse: () => const _RubyRule('', ''),
-    );
-    if (rule.text.isNotEmpty) {
+    _RubyRule? rule;
+    for (final candidate in _rubyRules) {
+      if (!text.startsWith(candidate.text, cursor)) continue;
+      if (rule == null || candidate.text.length > rule.text.length) {
+        rule = candidate;
+      }
+    }
+    if (rule != null) {
       // Kana-only words can still open the dictionary, but do not need ruby.
       buffer.write(
         _containsKanji.hasMatch(rule.text)
@@ -353,8 +356,8 @@ const _learningTerms = <_LearningTerm>[
   ),
   _LearningTerm(
     term: '何',
-    surfaces: const ['何', 'なに', 'なに？', 'なにですか'],
-    reading: 'なに',
+    surfaces: const ['何', 'なに', 'なに？', 'なにですか', 'なん'],
+    reading: 'なん',
     simpleJapanese: '分からないものや数を聞く言葉です。',
     portuguese: 'o que / qual',
     tagalog: 'ano / alin',
@@ -1186,9 +1189,26 @@ final _rubyRules = <_RubyRule>[
   const _RubyRule('3人', 'さんにん'),
   const _RubyRule('2人', 'ふたり'),
   const _RubyRule('1人', 'ひとり'),
+  const _RubyRule('何こずつ', 'なんこずつ'),
+  const _RubyRule('何時間', 'なんじかん'),
+  const _RubyRule('何時', 'なんじ'),
+  const _RubyRule('何分', 'なんぷん'),
   const _RubyRule('何人', 'なんにん'),
   const _RubyRule('何こ', 'なんこ'),
-  const _RubyRule('何', 'なに'),
+  const _RubyRule('何台', 'なんだい'),
+  const _RubyRule('何本', 'なんぼん'),
+  const _RubyRule('何まい', 'なんまい'),
+  const _RubyRule('何枚', 'なんまい'),
+  const _RubyRule('何ですか', 'なんですか'),
+  const _RubyRule('何kg', 'なんキログラム'),
+  const _RubyRule('何g', 'なんグラム'),
+  const _RubyRule('何km', 'なんキロメートル'),
+  const _RubyRule('何cm', 'なんセンチメートル'),
+  const _RubyRule('何m', 'なんメートル'),
+  const _RubyRule('何t', 'なんトン'),
+  const _RubyRule('数字', 'すうじ'),
+  const _RubyRule('数学', 'すうがく'),
+  const _RubyRule('何', 'なん'),
   const _RubyRule('かけ算', 'かけざん'),
   const _RubyRule('わり算', 'わりざん'),
   const _RubyRule('キログラム', 'きろぐらむ'),

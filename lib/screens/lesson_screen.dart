@@ -13867,7 +13867,7 @@ class _EqualShareInteractiveLearnState
                 onAudio: () => _showAudioPlaceholder(
                   context,
                   '問題文',
-                  widget.problemLines.map((line) => line.japanese).join(' '),
+                  widget.problemLines.map((line) => line.rubyText).join(' '),
                 ),
               ),
             ],
@@ -13913,7 +13913,7 @@ class _EqualShareInteractiveLearnState
                     onAudio: () => _showAudioPlaceholder(
                       context,
                       '正解後の説明',
-                      widget.resultLines.map((line) => line.japanese).join(' '),
+                      widget.resultLines.map((line) => line.rubyText).join(' '),
                     ),
                   )
                 : const SizedBox.shrink(key: ValueKey('empty-result')),

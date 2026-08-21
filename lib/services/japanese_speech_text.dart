@@ -1,3 +1,5 @@
+import '../data/learning_language_support.dart';
+
 /// Turns on-screen Japanese (including math symbols) into text Japanese TTS can read.
 abstract final class JapaneseSpeechText {
   static final _rubyMarkup = RegExp(r'\{([^|{}]+)\|([^{}]+)\}');
@@ -37,7 +39,7 @@ abstract final class JapaneseSpeechText {
   }
 
   static String prepare(String text) {
-    var spoken = text.trim();
+    var spoken = applyLearningRuby(text.trim());
     if (spoken.isEmpty) return '';
 
     spoken = spoken.replaceAllMapped(_rubyMarkup, (match) => match.group(2)!);
