@@ -104,15 +104,6 @@ class LessonMapScreen extends StatelessWidget {
                             ),
                             textAlign: TextAlign.center,
                           ),
-                          SizedBox(height: 8),
-                          Text(
-                            '診断結果に合わせて練習を増やしていきます。',
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: Color(0xFF6B7280),
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
                         ],
                       ),
                     ),

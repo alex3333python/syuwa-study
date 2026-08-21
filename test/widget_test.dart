@@ -10,7 +10,7 @@ void main() {
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
 
-    expect(find.text('言語を選んでください'), findsOneWidget);
+    expect(find.text('ことばをえらぼう'), findsOneWidget);
     expect(find.text('Português'), findsOneWidget);
     expect(find.text('Tagalog'), findsOneWidget);
     expect(find.text('Tiếng Việt'), findsOneWidget);
