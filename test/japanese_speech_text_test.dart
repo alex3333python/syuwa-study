@@ -39,4 +39,22 @@ void main() {
     );
     expect(JapaneseSpeechText.cleanReading('あと / ご'), 'あと、ご');
   });
+
+  test('does not read a numeral twice before 人', () {
+    expect(
+      JapaneseSpeechText.prepare('あまった1{人|ひとり}もすわるので、もう1{台|だい}いります。'),
+      'あまったひとりもすわるので、もう1だいいります。',
+    );
+    expect(
+      JapaneseSpeechText.prepare('3台にすると、9人みんなすわれます。'),
+      allOf(
+        contains('9にん'),
+        isNot(contains('9きゅう')),
+        isNot(contains('きゅうきゅう')),
+      ),
+    );
+    expect(JapaneseSpeechText.prepare('1人分は2こです。'), contains('ひとりぶん'));
+    expect(JapaneseSpeechText.prepare('8人まで'), contains('8にん'));
+    expect(JapaneseSpeechText.prepare('2こずつ'), contains('2こ'));
+  });
 }

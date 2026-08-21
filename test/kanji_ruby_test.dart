@@ -42,6 +42,14 @@ void main() {
     expect(kanjiOnlyRubyMarkup('見つけられます', 'みつけられます'), '{見|み}つけられます');
   });
 
+  test('numbered people keep にん on 人, and 1人 as ひとり', () {
+    expect(kanjiOnlyRubyMarkup('1人', 'ひとり'), '{1人|ひとり}');
+    expect(kanjiOnlyRubyMarkup('1人分', 'ひとりぶん'), '{1人|ひとり}{分|ぶん}');
+    expect(kanjiOnlyRubyMarkup('2人', 'ふたり'), '{2人|ふたり}');
+    expect(kanjiOnlyRubyMarkup('9人', 'きゅうにん'), '9{人|にん}');
+    expect(kanjiOnlyRubyMarkup('3人', 'さんにん'), '3{人|にん}');
+  });
+
   test('same-number phrase keeps かず on 数 only', () {
     final spans = splitKanjiRuby('同じ数ずつ', 'おなじかずずつ');
     expect(spans.map((span) => '${span.text}:${span.ruby}').toList(), [

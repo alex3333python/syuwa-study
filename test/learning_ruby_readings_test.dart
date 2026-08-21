@@ -20,6 +20,8 @@ void main() {
       applyLearningRuby('1人分は何こになりますか。'),
       isNot(contains('なに')),
     );
+    expect(applyLearningRuby('9人'), '9{人|にん}');
+    expect(applyLearningRuby('1人'), '{1人|ひとり}');
   });
 
   test('counter 何 uses なん, while 数字 keeps すうじ', () {
