@@ -33,7 +33,7 @@ class LanguageSelectScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const Text(
-                  '言語を選んでください',
+                  'ことばをえらぼう',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 28,
