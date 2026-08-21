@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../data/audio_cues.dart';
+import '../data/kanji_ruby.dart';
 import '../data/learning_language_support.dart';
 import '../models/app_language.dart';
 import '../models/question.dart';
@@ -518,11 +518,24 @@ class _RubyPiece extends StatelessWidget {
 
   Widget _buildRubyChild() {
     final segments = _splitRubySegments(part.base, part.ruby!);
+    final hasKanjiRuby = segments.any(
+      (segment) => segment.ruby != null && segment.ruby!.isNotEmpty,
+    );
+    if (!hasKanjiRuby) {
+      return Padding(
+        padding: EdgeInsets.only(top: (rubyStyle.fontSize ?? 8) + 2),
+        child: Text(part.base, style: _baseStyle),
+      );
+    }
     if (segments.length == 1) {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(part.ruby!, style: rubyStyle, textAlign: TextAlign.center),
+          Text(
+            segments.first.ruby!,
+            style: rubyStyle,
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 1),
           Text(part.base, style: _baseStyle, textAlign: TextAlign.center),
         ],
@@ -752,7 +765,10 @@ class _RubyPiece extends StatelessWidget {
       case 'ビー玉':
         return const [_RubySegment('ビー'), _RubySegment('玉', 'だま')];
       default:
-        return [_RubySegment(base, ruby)];
+        return [
+          for (final span in splitKanjiRuby(base, ruby))
+            _RubySegment(span.text, span.ruby),
+        ];
     }
   }
 

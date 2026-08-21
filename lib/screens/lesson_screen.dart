@@ -1329,7 +1329,7 @@ class _TimeMainLearnState extends State<_TimeMainLearn> {
     LearningAudio.speakJapanese(
       context,
       label: '時こくと時間',
-      text: _currentPage.problem.japanese,
+      text: _currentPage.problem.rubyText,
     );
   }
 
@@ -1431,7 +1431,6 @@ class _TimeMainLearnState extends State<_TimeMainLearn> {
           _showNative = !_showNative;
         });
       },
-      onAudio: _speak,
       page: _page,
       lastPage: _lastPage,
       onPrevious: _previous,
@@ -1445,6 +1444,16 @@ class _TimeMainLearnState extends State<_TimeMainLearn> {
             showNative: _showNative,
             vocabularyEntries: _timeVocabularyEntries,
             enableLearningSupport: true,
+            actions: _problemSupportActions(
+              language: widget.selectedLanguage,
+              showNative: _showNative,
+              onToggleNative: () {
+                setState(() {
+                  _showNative = !_showNative;
+                });
+              },
+              onAudio: _speak,
+            ),
           ),
           const SizedBox(height: 12),
           _SupportedInstruction(
@@ -1527,7 +1536,7 @@ class _ShortTimeLearnState extends State<_ShortTimeLearn> {
     LearningAudio.speakJapanese(
       context,
       label: '短い時間',
-      text: _pageLines.first.japanese,
+      text: _speechFromSupportLines(_pageLines),
     );
   }
 
@@ -1576,7 +1585,6 @@ class _ShortTimeLearnState extends State<_ShortTimeLearn> {
           _showNative = !_showNative;
         });
       },
-      onAudio: _speak,
       page: _page,
       lastPage: _lastPage,
       onPrevious: () {
@@ -1602,6 +1610,16 @@ class _ShortTimeLearnState extends State<_ShortTimeLearn> {
             showNative: _showNative,
             vocabularyEntries: _timeVocabularyEntries,
             enableLearningSupport: true,
+            actions: _problemSupportActions(
+              language: widget.selectedLanguage,
+              showNative: _showNative,
+              onToggleNative: () {
+                setState(() {
+                  _showNative = !_showNative;
+                });
+              },
+              onAudio: _speak,
+            ),
           ),
           const SizedBox(height: 20),
           switch (_page) {
@@ -1675,7 +1693,7 @@ class _SupportedInstruction extends StatelessWidget {
             AudioCueFactory.instruction(
               namespace: 'lesson.supported_instruction',
               label: '操作案内',
-              text: line.japanese,
+              text: line.rubyText,
             ),
           ),
         ),
@@ -2922,7 +2940,7 @@ class _InlineExplanationSupportState extends State<_InlineExplanationSupport> {
           onAudio: () => LearningAudio.speakJapanese(
             context,
             label: '説明',
-            text: widget.line.japanese,
+            text: widget.line.rubyText,
           ),
         ),
       ),
@@ -3066,7 +3084,7 @@ class _LengthMeasureLearnState extends State<_LengthMeasureLearn> {
     LearningAudio.speakJapanese(
       context,
       label: '長さ',
-      text: _pageLines.first.japanese,
+      text: _speechFromSupportLines(_pageLines),
     );
   }
 
@@ -3159,7 +3177,6 @@ class _LengthMeasureLearnState extends State<_LengthMeasureLearn> {
       selectedLanguage: widget.selectedLanguage,
       showNative: _showNative,
       onToggleNative: () => setState(() => _showNative = !_showNative),
-      onAudio: _speak,
       page: _page,
       lastPage: _lastPage,
       onPrevious: () {
@@ -3189,6 +3206,12 @@ class _LengthMeasureLearnState extends State<_LengthMeasureLearn> {
             showNative: _showNative,
             vocabularyEntries: _lengthVocabularyEntries,
             enableLearningSupport: true,
+            actions: _problemSupportActions(
+              language: widget.selectedLanguage,
+              showNative: _showNative,
+              onToggleNative: () => setState(() => _showNative = !_showNative),
+              onAudio: _speak,
+            ),
           ),
           if (_page == 0) ...[
             const SizedBox(height: 12),
@@ -4787,7 +4810,7 @@ class _KilometerLearnState extends State<_KilometerLearn> {
     LearningAudio.speakJapanese(
       context,
       label: 'キロメートル',
-      text: _pageLines.first.japanese,
+      text: _speechFromSupportLines(_pageLines),
     );
   }
 
@@ -4837,7 +4860,6 @@ class _KilometerLearnState extends State<_KilometerLearn> {
       selectedLanguage: widget.selectedLanguage,
       showNative: _showNative,
       onToggleNative: () => setState(() => _showNative = !_showNative),
-      onAudio: _speak,
       page: currentPage,
       lastPage: _lastPage,
       onPrevious: () {
@@ -4864,6 +4886,12 @@ class _KilometerLearnState extends State<_KilometerLearn> {
             showNative: _showNative,
             vocabularyEntries: _lengthVocabularyEntries,
             enableLearningSupport: true,
+            actions: _problemSupportActions(
+              language: widget.selectedLanguage,
+              showNative: _showNative,
+              onToggleNative: () => setState(() => _showNative = !_showNative),
+              onAudio: _speak,
+            ),
           ),
           const SizedBox(height: 18),
           switch (currentPage) {
@@ -5801,19 +5829,6 @@ class _MultiplicationDivisionLearnState
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
-              _IconSupportActions(
-                language: widget.selectedLanguage,
-                showNative: _showNative,
-                translateLabel: '翻訳',
-                audioLabel: '音声',
-                onToggleNative: () {
-                  setState(() {
-                    _showNative = !_showNative;
-                  });
-                },
-                onAudio: () => _speak(_pageTitle, _plainJapanese),
-              ),
             ],
           ),
           const SizedBox(height: 22),
@@ -5859,10 +5874,50 @@ class _MultiplicationDivisionLearnState
     };
   }
 
-  String get _plainJapanese {
+  List<SupportLine> get _problemLines {
     return switch (_page) {
-      0 => 'かけ算を使って、わり算の答えを見つけよう。わり算とかけ算には、どんなつながりがあるかな。',
-      _ => '同じ3つの数を使って、わり算とかけ算の式を作ることができます。',
+      0 => const [
+        SupportLine(
+          japanese: '12このクッキーを、3人に同じ数ずつ分けてみよう。',
+          ruby: '12このクッキーを、3{人|にん}に{同じ数ずつ|おなじ かずずつ}{分けてみよう|わけてみよう}。',
+          native: {
+            AppLanguage.portuguese:
+                'Vamos dividir 12 biscoitos igualmente entre 3 pessoas.',
+            AppLanguage.tagalog:
+                'Hatiin natin ang 12 biskwit nang pantay sa 3 tao.',
+            AppLanguage.vietnamese:
+                'Hãy chia đều 12 cái bánh quy cho 3 người.',
+          },
+        ),
+      ],
+      _ => const [
+        SupportLine(
+          japanese: '同じ3つの数を使って、わり算とかけ算の式を作ることができます。',
+          ruby:
+              '{同じ|おなじ}3つの{数|かず}を{使って|つかって}、{わり算|わりざん}と{かけ算|かけざん}の{式|しき}を{作る|つくる}ことができます。',
+          native: {
+            AppLanguage.portuguese:
+                'Com os mesmos três números, podemos fazer uma conta de divisão e uma de multiplicação.',
+            AppLanguage.tagalog:
+                'Gamit ang parehong tatlong numero, makakagawa tayo ng dibisyon at multiplikasyon.',
+            AppLanguage.vietnamese:
+                'Với cùng ba số, ta có thể viết phép chia và phép nhân.',
+          },
+        ),
+        SupportLine(
+          japanese: 'わり算の答えは、かけ算を使って見つけられます。',
+          ruby:
+              '{わり算|わりざん}の{答え|こたえ}は、{かけ算|かけざん}を{使って|つかって}{見つけられます|みつけられます}。',
+          native: {
+            AppLanguage.portuguese:
+                'A resposta da divisão pode ser encontrada usando a multiplicação.',
+            AppLanguage.tagalog:
+                'Ang sagot sa dibisyon ay mahanap gamit ang multiplikasyon.',
+            AppLanguage.vietnamese:
+                'Có thể tìm đáp án phép chia nhờ phép nhân.',
+          },
+        ),
+      ],
     };
   }
 
@@ -5873,27 +5928,28 @@ class _MultiplicationDivisionLearnState
     };
   }
 
+  Widget _problemActions() {
+    return _problemSupportActions(
+      language: widget.selectedLanguage,
+      showNative: _showNative,
+      onToggleNative: () {
+        setState(() {
+          _showNative = !_showNative;
+        });
+      },
+      onAudio: () => _speak('問題文', _speechFromSupportLines(_problemLines)),
+    );
+  }
+
   Widget _buildAimPage() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _LearnTextBlock(
-          lines: const [
-            SupportLine(
-              japanese: '12このクッキーを、3人に同じ数ずつ分けてみよう。',
-              ruby: '12このクッキーを、3{人|にん}に{同じ数ずつ|おなじ かずずつ}{分けてみよう|わけてみよう}。',
-              native: {
-                AppLanguage.portuguese:
-                    'Vamos dividir 12 biscoitos igualmente entre 3 pessoas.',
-                AppLanguage.tagalog:
-                    'Hatiin natin ang 12 biskwit nang pantay sa 3 tao.',
-                AppLanguage.vietnamese:
-                    'Hãy chia đều 12 cái bánh quy cho 3 người.',
-              },
-            ),
-          ],
+          lines: _problemLines,
           language: widget.selectedLanguage,
           showNative: _showNative,
+          actions: _problemActions(),
         ),
         const SizedBox(height: 18),
         _InteractiveCookieShare(language: widget.selectedLanguage),
@@ -5906,36 +5962,10 @@ class _MultiplicationDivisionLearnState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _LearnTextBlock(
-          lines: const [
-            SupportLine(
-              japanese: '同じ3つの数を使って、わり算とかけ算の式を作ることができます。',
-              ruby:
-                  '{同じ|おなじ}3つの{数|かず}を{使って|つかって}、{わり算|わりざん}と{かけ算|かけざん}の{式|しき}を{作る|つくる}ことができます。',
-              native: {
-                AppLanguage.portuguese:
-                    'Com os mesmos três números, podemos fazer uma conta de divisão e uma de multiplicação.',
-                AppLanguage.tagalog:
-                    'Gamit ang parehong tatlong numero, makakagawa tayo ng dibisyon at multiplikasyon.',
-                AppLanguage.vietnamese:
-                    'Với cùng ba số, ta có thể viết phép chia và phép nhân.',
-              },
-            ),
-            SupportLine(
-              japanese: 'わり算の答えは、かけ算を使って見つけられます。',
-              ruby:
-                  '{わり算|わりざん}の{答え|こたえ}は、{かけ算|かけざん}を{使って|つかって}{見つけられます|みつけられます}。',
-              native: {
-                AppLanguage.portuguese:
-                    'A resposta da divisão pode ser encontrada usando a multiplicação.',
-                AppLanguage.tagalog:
-                    'Ang sagot sa dibisyon ay mahanap gamit ang multiplikasyon.',
-                AppLanguage.vietnamese:
-                    'Có thể tìm đáp án phép chia nhờ phép nhân.',
-              },
-            ),
-          ],
+          lines: _problemLines,
           language: widget.selectedLanguage,
           showNative: _showNative,
+          actions: _problemActions(),
         ),
         const SizedBox(height: 18),
         _EquationPairPanel(language: widget.selectedLanguage),
@@ -5980,7 +6010,7 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
     LearningAudio.speakJapanese(
       context,
       label: _pageTitle,
-      text: _pageLines.map((line) => line.japanese).join(' '),
+      text: _speechFromSupportLines(_pageLines),
     );
   }
 
@@ -5992,7 +6022,6 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
       selectedLanguage: widget.selectedLanguage,
       showNative: _showNative,
       onToggleNative: () => setState(() => _showNative = !_showNative),
-      onAudio: _speak,
       page: _page,
       lastPage: _lastPage,
       onPrevious: _previous,
@@ -6079,6 +6108,12 @@ class _RemainderDivisionLearnState extends State<_RemainderDivisionLearn> {
           showNative: _showNative,
           vocabularyEntries: _remainderLearnVocabulary,
           enableLearningSupport: true,
+          actions: _problemSupportActions(
+            language: widget.selectedLanguage,
+            showNative: _showNative,
+            onToggleNative: () => setState(() => _showNative = !_showNative),
+            onAudio: _speak,
+          ),
         ),
         const SizedBox(height: 18),
         switch (_page) {
@@ -6127,7 +6162,7 @@ class _RemainderContextLearnState extends State<_RemainderContextLearn> {
     LearningAudio.speakJapanese(
       context,
       label: _pageTitle,
-      text: _pageLines.map((line) => line.japanese).join(' '),
+      text: _speechFromSupportLines(_pageLines),
     );
   }
 
@@ -6139,7 +6174,6 @@ class _RemainderContextLearnState extends State<_RemainderContextLearn> {
       selectedLanguage: widget.selectedLanguage,
       showNative: _showNative,
       onToggleNative: () => setState(() => _showNative = !_showNative),
-      onAudio: _speak,
       page: _page,
       lastPage: _lastPage,
       onPrevious: _previous,
@@ -6234,6 +6268,12 @@ class _RemainderContextLearnState extends State<_RemainderContextLearn> {
           showNative: _showNative,
           vocabularyEntries: _remainderContextVocabulary,
           enableLearningSupport: true,
+          actions: _problemSupportActions(
+            language: widget.selectedLanguage,
+            showNative: _showNative,
+            onToggleNative: () => setState(() => _showNative = !_showNative),
+            onAudio: _speak,
+          ),
         ),
         const SizedBox(height: 18),
         switch (_page) {
@@ -6343,7 +6383,7 @@ class _WeightGramKgLearnState extends State<_WeightGramKgLearn> {
     LearningAudio.speakJapanese(
       context,
       label: '重さ',
-      text: _pageLines.map((line) => line.japanese).join(' '),
+      text: _speechFromSupportLines(_pageLines),
     );
   }
 
@@ -6355,7 +6395,6 @@ class _WeightGramKgLearnState extends State<_WeightGramKgLearn> {
       selectedLanguage: widget.selectedLanguage,
       showNative: _showNative,
       onToggleNative: () => setState(() => _showNative = !_showNative),
-      onAudio: _speak,
       page: _page,
       lastPage: _lastPage,
       onPrevious: () => setState(() {
@@ -6387,6 +6426,12 @@ class _WeightGramKgLearnState extends State<_WeightGramKgLearn> {
             showNative: _showNative,
             vocabularyEntries: _weightVocabularyEntries,
             enableLearningSupport: true,
+            actions: _problemSupportActions(
+              language: widget.selectedLanguage,
+              showNative: _showNative,
+              onToggleNative: () => setState(() => _showNative = !_showNative),
+              onAudio: _speak,
+            ),
           ),
           const SizedBox(height: 18),
           switch (_page) {
@@ -7295,7 +7340,7 @@ class _WeightTonLearnState extends State<_WeightTonLearn> {
     LearningAudio.speakJapanese(
       context,
       label: 'トン',
-      text: _pageLines.map((line) => line.japanese).join(' '),
+      text: _speechFromSupportLines(_pageLines),
     );
   }
 
@@ -7307,7 +7352,6 @@ class _WeightTonLearnState extends State<_WeightTonLearn> {
       selectedLanguage: widget.selectedLanguage,
       showNative: _showNative,
       onToggleNative: () => setState(() => _showNative = !_showNative),
-      onAudio: _speak,
       page: _page,
       lastPage: _lastPage,
       onPrevious: () => setState(() {
@@ -7331,6 +7375,12 @@ class _WeightTonLearnState extends State<_WeightTonLearn> {
             showNative: _showNative,
             vocabularyEntries: _weightVocabularyEntries,
             enableLearningSupport: true,
+            actions: _problemSupportActions(
+              language: widget.selectedLanguage,
+              showNative: _showNative,
+              onToggleNative: () => setState(() => _showNative = !_showNative),
+              onAudio: _speak,
+            ),
           ),
           const SizedBox(height: 18),
           switch (_page) {
@@ -8377,7 +8427,7 @@ class _WeightSupportedResultBox extends StatelessWidget {
                       onAudio: () => LearningAudio.speakJapanese(
                         context,
                         label: '重さの説明',
-                        text: '$title ${explanation.japanese}',
+                        text: '$title ${explanation.rubyText}',
                       ),
                     ),
                   ),
@@ -8843,7 +8893,6 @@ class _RemainderLearnShell extends StatelessWidget {
   final AppLanguage selectedLanguage;
   final bool showNative;
   final VoidCallback onToggleNative;
-  final VoidCallback onAudio;
   final int page;
   final int lastPage;
   final VoidCallback onPrevious;
@@ -8858,7 +8907,6 @@ class _RemainderLearnShell extends StatelessWidget {
     required this.selectedLanguage,
     required this.showNative,
     required this.onToggleNative,
-    required this.onAudio,
     required this.page,
     required this.lastPage,
     required this.onPrevious,
@@ -8906,15 +8954,6 @@ class _RemainderLearnShell extends StatelessWidget {
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              _IconSupportActions(
-                language: selectedLanguage,
-                showNative: showNative,
-                translateLabel: '翻訳',
-                audioLabel: '音声',
-                onToggleNative: onToggleNative,
-                onAudio: onAudio,
               ),
             ],
           ),
@@ -9479,7 +9518,7 @@ class _RemainderShareResult extends StatelessWidget {
                       onAudio: () => LearningAudio.speakJapanese(
                         context,
                         label: 'あまりの説明',
-                        text: line.japanese,
+                        text: line.rubyText,
                       ),
                     ),
                   ),
@@ -10147,7 +10186,7 @@ class _RemainderGreenExplanation extends StatelessWidget {
                   onAudio: () => LearningAudio.speakJapanese(
                     context,
                     label: 'あまりの説明',
-                    text: japanese,
+                    text: line.rubyText,
                   ),
                 ),
               ),
@@ -11456,7 +11495,7 @@ class _RemainderContextSummaryPanelState
                       onAudio: () => LearningAudio.speakJapanese(
                         context,
                         label: 'まとめの説明',
-                        text: _conclusionLine.japanese,
+                        text: _conclusionLine.rubyText,
                       ),
                     ),
                   ),
@@ -11504,11 +11543,13 @@ class _LearnTextBlock extends StatelessWidget {
   final List<SupportLine> lines;
   final AppLanguage language;
   final bool showNative;
+  final Widget? actions;
 
   const _LearnTextBlock({
     required this.lines,
     required this.language,
     required this.showNative,
+    this.actions,
   });
 
   @override
@@ -11519,6 +11560,7 @@ class _LearnTextBlock extends StatelessWidget {
       showNative: showNative,
       vocabularyEntries: _divisionMultiplicationVocabulary,
       enableLearningSupport: true,
+      actions: actions,
     );
   }
 }
@@ -11783,7 +11825,7 @@ class _InteractiveCookieResult extends StatelessWidget {
                       onAudio: () => LearningAudio.speakJapanese(
                         context,
                         label: '分け方の説明',
-                        text: '3人に4こずつ分けられたね。${explanation.japanese}',
+                        text: '3人に4こずつ分けられたね。${explanation.rubyText}',
                       ),
                     ),
                   ),
@@ -12602,7 +12644,7 @@ class _ZeroOneDivisionLearnState extends State<_ZeroOneDivisionLearn> {
                         onAudio: () => LearningAudio.speakJapanese(
                           context,
                           label: '問題文',
-                          text: _scenario.problem,
+                          text: _scenario.problemLine.rubyText,
                         ),
                       ),
                     ),
@@ -13091,7 +13133,7 @@ class _ZeroOneInstruction extends StatelessWidget {
             onAudio: () => LearningAudio.speakJapanese(
               context,
               label: '操作案内',
-              text: line.japanese,
+              text: line.rubyText,
             ),
           ),
         ),
@@ -13619,7 +13661,7 @@ class _ZeroOneResultPanel extends StatelessWidget {
               onAudio: () => LearningAudio.speakJapanese(
                 context,
                 label: '説明',
-                text: scenario.explanation,
+                text: scenario.explanationLine.rubyText,
               ),
             ),
           ),
@@ -13847,27 +13889,26 @@ class _EqualShareInteractiveLearnState
                       vocabularyEntries: widget.vocabularyEntries,
                       fontWeight: FontWeight.w600,
                       enableLearningSupport: true,
+                      actions: _IconSupportActions(
+                        language: widget.selectedLanguage,
+                        showNative: _showProblemNative,
+                        translateLabel: _showProblemNative
+                            ? '日本語で見る'
+                            : '${widget.selectedLanguage.label}で見る',
+                        audioLabel: '問題文の音声',
+                        onToggleNative: () {
+                          setState(() {
+                            _showProblemNative = !_showProblemNative;
+                          });
+                        },
+                        onAudio: () => _showAudioPlaceholder(
+                          context,
+                          '問題文',
+                          _speechFromSupportLines(widget.problemLines),
+                        ),
+                      ),
                     ),
                   ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              _IconSupportActions(
-                language: widget.selectedLanguage,
-                showNative: _showProblemNative,
-                translateLabel: _showProblemNative
-                    ? '日本語で見る'
-                    : '${widget.selectedLanguage.label}で見る',
-                audioLabel: '問題文の音声',
-                onToggleNative: () {
-                  setState(() {
-                    _showProblemNative = !_showProblemNative;
-                  });
-                },
-                onAudio: () => _showAudioPlaceholder(
-                  context,
-                  '問題文',
-                  widget.problemLines.map((line) => line.rubyText).join(' '),
                 ),
               ),
             ],
@@ -14285,6 +14326,7 @@ class _SupportedTextLines extends StatelessWidget {
   final bool enableLearningSupport;
   final bool learningSupportRubyOnly;
   final LearningSupportMode? learningSupportMode;
+  final Widget? actions;
 
   const _SupportedTextLines({
     required this.lines,
@@ -14295,6 +14337,7 @@ class _SupportedTextLines extends StatelessWidget {
     this.enableLearningSupport = false,
     bool learningSupportRubyOnly = false,
     this.learningSupportMode,
+    this.actions,
   }) : learningSupportRubyOnly = learningSupportRubyOnly;
 
   @override
@@ -14303,40 +14346,81 @@ class _SupportedTextLines extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final line in lines) ...[
-          RubyText(
-            text: line.rubyText,
-            vocabularyEntries: vocabularyEntries,
-            language: effectiveLanguage,
-            enableLearningSupport: enableLearningSupport,
-            learningSupportRubyOnly: learningSupportRubyOnly,
-            learningSupportMode: learningSupportMode,
-            style: TextStyle(
-              color: Color(0xFF374151),
-              fontSize: 17,
-              height: 1.35,
-              fontWeight: fontWeight,
-            ),
+        for (var i = 0; i < lines.length; i++) ...[
+          Builder(
+            builder: (context) {
+              final line = lines[i];
+              final text = RubyText(
+                text: line.rubyText,
+                vocabularyEntries: vocabularyEntries,
+                language: effectiveLanguage,
+                enableLearningSupport: enableLearningSupport,
+                learningSupportRubyOnly: learningSupportRubyOnly,
+                learningSupportMode: learningSupportMode,
+                style: TextStyle(
+                  color: Color(0xFF374151),
+                  fontSize: 17,
+                  height: 1.35,
+                  fontWeight: fontWeight,
+                ),
+              );
+              final row = i == 0 && actions != null
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: text),
+                        const SizedBox(width: 8),
+                        actions!,
+                      ],
+                    )
+                  : text;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  row,
+                  if (showNative &&
+                      effectiveLanguage != AppLanguage.japanese &&
+                      line.nativeFor(effectiveLanguage).isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      line.nativeFor(effectiveLanguage),
+                      style: const TextStyle(
+                        color: Color(0xFF64748B),
+                        fontSize: 15,
+                        height: 1.4,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            },
           ),
-          if (showNative &&
-              effectiveLanguage != AppLanguage.japanese &&
-              line.nativeFor(effectiveLanguage).isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              line.nativeFor(effectiveLanguage),
-              style: const TextStyle(
-                color: Color(0xFF64748B),
-                fontSize: 15,
-                height: 1.4,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
           const SizedBox(height: 5),
         ],
       ],
     );
   }
+}
+
+Widget _problemSupportActions({
+  required AppLanguage language,
+  required bool showNative,
+  required VoidCallback onToggleNative,
+  required VoidCallback onAudio,
+}) {
+  return _IconSupportActions(
+    language: language,
+    showNative: showNative,
+    translateLabel: showNative ? '日本語で見る' : '${language.label}で見る',
+    audioLabel: '問題文の音声',
+    onToggleNative: onToggleNative,
+    onAudio: onAudio,
+  );
+}
+
+String _speechFromSupportLines(Iterable<SupportLine> lines) {
+  return lines.map((line) => line.rubyText).join(' ');
 }
 
 class _InlineSupportRow extends StatelessWidget {
@@ -14565,7 +14649,7 @@ class _InstructionStrip extends StatelessWidget {
             _InlineSupportRow(
               crossAxisAlignment: CrossAxisAlignment.center,
               child: RubyText(
-                text: line.japanese,
+                text: line.rubyText,
                 language: language,
                 vocabularyEntries: mergeLearningVocabulary(vocabularyEntries),
                 learningSupportMode: learningSupportMode ??
@@ -14595,7 +14679,7 @@ class _InstructionStrip extends StatelessWidget {
                     AudioCueFactory.instruction(
                       namespace: 'lesson.instruction_strip',
                       label: '操作案内',
-                      text: line.japanese,
+                      text: line.rubyText,
                     ),
                   );
                 },
@@ -14713,8 +14797,7 @@ class _DivisionResultCard extends StatelessWidget {
                   LearningAudio.speakJapanese(
                     context,
                     label: '式の読み方',
-                    text: equationReading.japanese,
-                    spokenText: equationReading.japanese,
+                    text: equationReading.rubyText,
                   );
                 },
               ),

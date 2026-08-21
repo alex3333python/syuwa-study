@@ -1,5 +1,6 @@
 import '../models/app_language.dart';
 import '../models/question.dart';
+import 'kanji_ruby.dart';
 import 'native_text.dart';
 
 /// Shared language scaffolding used only in the supported learning phases.
@@ -122,7 +123,7 @@ String applyLearningRuby(String text) {
       // Kana-only words can still open the dictionary, but do not need ruby.
       buffer.write(
         _containsKanji.hasMatch(rule.text)
-            ? '{${rule.text}|${rule.reading}}'
+            ? kanjiOnlyRubyMarkup(rule.text, rule.reading)
             : rule.text,
       );
       cursor += rule.text.length;
@@ -1108,6 +1109,7 @@ final _rubyRules = <_RubyRule>[
   const _RubyRule('正しい', 'ただしい'),
   const _RubyRule('同じ数ずつ', 'おなじ かずずつ'),
   const _RubyRule('全部の数', 'ぜんぶの かず'),
+  const _RubyRule('分けてみよう', 'わけてみよう'),
   const _RubyRule('分けられます', 'わけられます'),
   const _RubyRule('分けられた', 'わけられた'),
   const _RubyRule('分けられる', 'わけられる'),
@@ -1154,6 +1156,7 @@ final _rubyRules = <_RubyRule>[
   const _RubyRule('読みます', 'よみます'),
   const _RubyRule('読んで', 'よんで'),
   const _RubyRule('読んだ', 'よんだ'),
+  const _RubyRule('見つけられます', 'みつけられます'),
   const _RubyRule('見ます', 'みます'),
   const _RubyRule('見て', 'みて'),
   const _RubyRule('見よう', 'みよう'),
