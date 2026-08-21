@@ -22,8 +22,8 @@ class LessonMapScreen extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          // 明度を大きく落としたターコイズブルー → マリンブルー
-          colors: [Color(0xFF2A5F5C), Color(0xFF0F2F42)],
+          // 白に近い薄いターコイズブルー → 薄いマリンブルー
+          colors: [Color(0xFFD7F3F1), Color(0xFFC5DCE8)],
         ),
       ),
       child: SingleChildScrollView(
