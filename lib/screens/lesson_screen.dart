@@ -3083,7 +3083,7 @@ class _LengthMeasureLearn extends StatefulWidget {
 
 class _LengthMeasureLearnState extends State<_LengthMeasureLearn> {
   int _page = 0;
-  Offset _rulerPosition = const Offset(40, 132);
+  Offset _rulerPosition = const Offset(104, 180);
   double _tapeValue = 0;
   bool _showNative = false;
   bool _showRulerGuideNative = false;
@@ -3304,12 +3304,10 @@ class _InteractiveRulerPanel extends StatelessWidget {
             (rulerPosition.dy - targetTop).abs() < 16;
 
         Offset clampPosition(Offset position) {
-          final maxX = math.max(
-            pencilLeft,
-            boardWidth - usableRulerWidth - 12,
-          );
           return Offset(
-            position.dx.clamp(pencilLeft, maxX).toDouble(),
+            position.dx
+                .clamp(18.0, boardWidth - usableRulerWidth - 18.0)
+                .toDouble(),
             position.dy.clamp(102.0, boardHeight - rulerHeight - 14).toDouble(),
           );
         }
