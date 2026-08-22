@@ -13,7 +13,7 @@ import 'screens/completion_screen.dart';
 import 'screens/diagnosis_result_screen.dart';
 import 'screens/language_select_screen.dart';
 import 'screens/lesson_map_screen.dart';
-import 'screens/lesson_screen.dart';
+import 'screens/lesson_screen.dart' deferred as lesson_screen;
 import 'widgets/header.dart';
 import 'screens/settings_screen.dart';
 import 'screens/records_screen.dart';
@@ -187,9 +187,31 @@ class _HomePageState extends State<HomePage> {
   Map<String, int> weakTagCounts = {};
   Map<String, int> weakUnitCounts = {};
   Map<String, int> weakSectionCounts = {};
+  bool isLoadingLessonLibrary = false;
+  Future<void>? _lessonLibraryLoad;
 
-  void startLesson(Lesson lesson) {
-    setState(() {
+  Future<void> _ensureLessonLibraryLoaded() {
+    return _lessonLibraryLoad ??= lesson_screen.loadLibrary();
+  }
+
+  Future<void> _openLessonScreen(VoidCallback applyState) async {
+    setState(() => isLoadingLessonLibrary = true);
+    try {
+      await _ensureLessonLibraryLoaded();
+      if (!mounted) return;
+      setState(() {
+        isLoadingLessonLibrary = false;
+        applyState();
+      });
+    } catch (error, stackTrace) {
+      debugPrint('Failed to load lesson screen: $error\n$stackTrace');
+      if (!mounted) return;
+      setState(() => isLoadingLessonLibrary = false);
+    }
+  }
+
+  Future<void> startLesson(Lesson lesson) {
+    return _openLessonScreen(() {
       selectedLesson = lesson;
       lessonSessionId++;
       isWeakReviewMode = false;
@@ -602,9 +624,9 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void restartLesson() {
-    if (selectedLesson == null) return;
-    setState(() {
+  Future<void> restartLesson() {
+    if (selectedLesson == null) return Future.value();
+    return _openLessonScreen(() {
       lessonSessionId++;
       currentScreen = 'lesson';
     });
@@ -674,15 +696,15 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void goToNextLesson() {
-    if (selectedLesson == null) return;
+  Future<void> goToNextLesson() {
+    if (selectedLesson == null) return Future.value();
 
     final nextLesson = _nextSectionInUnit(selectedLesson!);
-    if (nextLesson == null) return;
-    if (_isDivisionLessonWaitingForRedesign(nextLesson)) return;
-    if (nextLesson.locked) return;
+    if (nextLesson == null) return Future.value();
+    if (_isDivisionLessonWaitingForRedesign(nextLesson)) return Future.value();
+    if (nextLesson.locked) return Future.value();
 
-    setState(() {
+    return _openLessonScreen(() {
       selectedLesson = nextLesson;
       lessonSessionId++;
       currentScreen = 'lesson';
@@ -718,13 +740,12 @@ class _HomePageState extends State<HomePage> {
         .toList();
   }
 
-  void startWeakReview() {
+  Future<void> startWeakReview() {
     final weakQuestions = getWeakQuestions();
-    isWeakReviewMode = true;
+    if (weakQuestions.isEmpty) return Future.value();
 
-    if (weakQuestions.isEmpty) return;
-
-    setState(() {
+    return _openLessonScreen(() {
+      isWeakReviewMode = true;
       selectedLesson = Lesson(
         id: -2,
         levelId: -1,
@@ -751,17 +772,19 @@ class _HomePageState extends State<HomePage> {
     if (nextLesson.locked) return null;
     if (_isDivisionLessonWaitingForRedesign(nextLesson)) return null;
 
-    return goToNextLesson;
+    return () {
+      unawaited(goToNextLesson());
+    };
   }
 
   bool _isDivisionLessonWaitingForRedesign(Lesson lesson) {
     return false;
   }
 
-  void startReview() {
-    if (resultWrongQuestions.isEmpty) return;
+  Future<void> startReview() {
+    if (resultWrongQuestions.isEmpty) return Future.value();
 
-    setState(() {
+    return _openLessonScreen(() {
       selectedLesson = Lesson(
         id: -1,
         levelId: -1,
@@ -780,14 +803,14 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void startTodayReview() {
+  Future<void> startTodayReview() {
     final reviewTags = weakUnitCounts.isNotEmpty
         ? weakUnitCounts.keys.toSet()
         : weakTagCounts.keys.toSet();
     final questions = QuestionGenerator.reviewQuestionsForTags(reviewTags);
-    if (questions.isEmpty) return;
+    if (questions.isEmpty) return Future.value();
 
-    setState(() {
+    return _openLessonScreen(() {
       selectedLesson = Lesson(
         id: -3,
         levelId: -1,
@@ -816,6 +839,9 @@ class _HomePageState extends State<HomePage> {
   Future<void> startRecommendedLesson(Lesson lesson) async {
     final index = mockLessons.indexWhere((l) => l.id == lesson.id);
     if (index == -1) return;
+
+    await _ensureLessonLibraryLoaded();
+    if (!mounted) return;
 
     setState(() {
       // おすすめから入る場合も、算数チェック済みとして単元ロックを同期する。
@@ -876,11 +902,14 @@ class _HomePageState extends State<HomePage> {
         onSelectLanguage: selectLanguage,
       );
     } else if (currentScreen == 'map') {
-      body = LessonMapScreen(lessons: mockLessons, onStartLesson: startLesson);
+      body = LessonMapScreen(
+        lessons: mockLessons,
+        onStartLesson: (lesson) => unawaited(startLesson(lesson)),
+      );
     } else if (currentScreen == 'review') {
       body = ReviewScreen(
         reviewEnabled: weakUnitCounts.isNotEmpty || weakTagCounts.isNotEmpty,
-        onStartTodayReview: startTodayReview,
+        onStartTodayReview: () => unawaited(startTodayReview()),
       );
     } else if (currentScreen == 'report') {
       body = ReportScreen(
@@ -888,7 +917,7 @@ class _HomePageState extends State<HomePage> {
         weakSectionCounts: weakSectionCounts,
       );
     } else if (currentScreen == 'lesson' && selectedLesson != null) {
-      body = LessonScreen(
+      body = lesson_screen.LessonScreen(
         key: ValueKey('lesson-${selectedLesson!.id}-$lessonSessionId'),
         lesson: selectedLesson!,
         onComplete: completeLesson,
@@ -911,7 +940,9 @@ class _HomePageState extends State<HomePage> {
         onChangeLanguage: goToLanguageSelect,
         onBack: goHome,
         weakQuestionCount: getWeakQuestions().length,
-        onWeakReview: getWeakQuestions().isEmpty ? null : startWeakReview,
+        onWeakReview: getWeakQuestions().isEmpty
+            ? null
+            : () => unawaited(startWeakReview()),
       );
     } else if (currentScreen == 'records') {
       body = RecordsScreen(
@@ -924,14 +955,16 @@ class _HomePageState extends State<HomePage> {
         totalQuestions: resultTotalQuestions,
         correctAnswers: resultCorrectAnswers,
         wrongQuestionCount: resultWrongQuestions.length,
-        onRestart: restartLesson,
+        onRestart: () => unawaited(restartLesson()),
         onHome: goHome,
         onNextLesson: getNextLessonAction(),
-        onReview: resultWrongQuestions.isEmpty ? null : startReview,
+        onReview: resultWrongQuestions.isEmpty
+            ? null
+            : () => unawaited(startReview()),
       );
     }
 
-    return Scaffold(
+    final scaffold = Scaffold(
       bottomNavigationBar: showMainNavigation
           ? NavigationBar(
               selectedIndex: selectedMainTabIndex,
@@ -966,6 +999,36 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
+    );
+
+    if (!isLoadingLessonLibrary) {
+      return scaffold;
+    }
+
+    return Stack(
+      children: [
+        scaffold,
+        Positioned.fill(
+          child: ColoredBox(
+            color: Colors.black.withValues(alpha: 0.18),
+            child: const Center(
+              child: Card(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text('レッスンを読み込んでいます…'),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

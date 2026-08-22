@@ -33,12 +33,17 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Verify web font subsets
-        run: |
-          test -f assets/fonts/gen_interface_jp/subset/standard/GenInterfaceJP-Regular.ttf
+      - name: Prepare web build (skip font download)
+        run: dart run tool/prepare_web_build.dart
+
+      - name: Refresh dependencies after pubspec change
+        run: flutter pub get
 
       - name: Build web
-        run: flutter build web --release --base-href "/syuwa-study/"
+        run: flutter build web --release --base-href "/syuwa-study/" -O4
+
+      - name: Remove unused local CanvasKit bundle
+        run: rm -rf build/web/canvaskit
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
