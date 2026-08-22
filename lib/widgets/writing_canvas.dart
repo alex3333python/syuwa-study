@@ -231,10 +231,13 @@ class _WritingCanvasState extends State<WritingCanvas> {
                     _canvasSize = size;
                     if (_points.isNotEmpty) {
                       _rebuildCompletedPicture();
-                      _requestPaint();
                     }
                   }
 
+                  // ListenableBuilder recreates the painter each revision so the
+                  // latest completedPicture reference is always used. Using only
+                  // CustomPainter(repaint:) keeps a stale Picture and clears ink
+                  // when the active stroke ends.
                   return RepaintBoundary(
                     child: Listener(
                       behavior: HitTestBehavior.opaque,
@@ -246,20 +249,25 @@ class _WritingCanvasState extends State<WritingCanvas> {
                       },
                       onPointerUp: (_) => _endStroke(),
                       onPointerCancel: (_) => _endStroke(),
-                      child: CustomPaint(
-                        isComplex: true,
-                        willChange: true,
-                        painter: _DrawingPainter(
-                          completedPicture: _completedPicture,
-                          activeStrokePoints: _activeStrokePoints,
-                          activeTool: _tool,
-                          canvasSize: size,
-                          penWidth: penWidth,
-                          eraserWidth: eraserWidth,
-                          antiAlias: !kIsWeb,
-                          repaint: _paintRevision,
-                        ),
-                        child: const SizedBox.expand(),
+                      child: ListenableBuilder(
+                        listenable: _paintRevision,
+                        builder: (context, _) {
+                          return CustomPaint(
+                            isComplex: true,
+                            willChange: true,
+                            painter: _DrawingPainter(
+                              completedPicture: _completedPicture,
+                              activeStrokePoints:
+                                  List<Offset>.of(_activeStrokePoints),
+                              activeTool: _tool,
+                              canvasSize: size,
+                              penWidth: penWidth,
+                              eraserWidth: eraserWidth,
+                              antiAlias: !kIsWeb,
+                            ),
+                            child: const SizedBox.expand(),
+                          );
+                        },
                       ),
                     ),
                   );
@@ -478,8 +486,7 @@ class _DrawingPainter extends CustomPainter {
     required this.penWidth,
     required this.eraserWidth,
     required this.antiAlias,
-    required Listenable repaint,
-  }) : super(repaint: repaint);
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -523,7 +530,7 @@ class _DrawingPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _DrawingPainter oldDelegate) {
     return oldDelegate.completedPicture != completedPicture ||
-        oldDelegate.activeStrokePoints != activeStrokePoints ||
+        !listEquals(oldDelegate.activeStrokePoints, activeStrokePoints) ||
         oldDelegate.activeTool != activeTool ||
         oldDelegate.canvasSize != canvasSize ||
         oldDelegate.penWidth != penWidth ||
