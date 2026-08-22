@@ -9,13 +9,15 @@
     if (status) status.textContent = text;
   }
 
+  setStatus('アプリ本体を読み込んでいます…');
+
   _flutter.loader.load({
     config: {
-      // Bundled CanvasKit — works on school networks that block external CDNs.
-      useLocalCanvasKit: true,
+      // Google CDN loads in parallel with app assets; fonts stay bundled in the app.
+      useLocalCanvasKit: false,
     },
     onEntrypointLoaded: async function (engineInitializer) {
-      setStatus('アプリを準備しています…');
+      setStatus('画面を準備しています…');
       const appRunner = await engineInitializer.initializeEngine();
       await appRunner.runApp();
       if (loading) {

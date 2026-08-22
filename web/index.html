@@ -34,6 +34,11 @@
 
   <title>Marela</title>
   <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="preload" href="main.dart.js" as="script">
+  <link rel="preload" href="flutter_bootstrap.js" as="script">
+  <link rel="preload" href="assets/assets/fonts/gen_interface_jp/subset/standard/GenInterfaceJP-Regular.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="assets/assets/fonts/gen_interface_jp/subset/display/GenInterfaceJPDisplay-Regular.ttf" as="font" type="font/ttf" crossorigin>
   <style>
     /* Keep Flutter fullscreen on mobile Safari; reduce double-tap zoom fights. */
     html, body {
@@ -119,7 +124,7 @@
       <img id="loading-wordmark" src="brand/marela_wordmark.png" alt="Marela">
     </div>
     <div class="loading-spinner" aria-hidden="true"></div>
-    <div id="loading-status">読み込み中です。初回は1〜2分かかることがあります。</div>
+    <div id="loading-status">読み込み中です。しばらくお待ちください…</div>
   </div>
   <script src="flutter_bootstrap.js" async></script>
 </body>
