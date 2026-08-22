@@ -33,6 +33,10 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Verify web font subsets
+        run: |
+          test -f assets/fonts/gen_interface_jp/subset/standard/GenInterfaceJP-Regular.ttf
+
       - name: Build web
         run: flutter build web --release --base-href "/syuwa-study/"
 
