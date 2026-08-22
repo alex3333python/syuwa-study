@@ -48,17 +48,68 @@
       -webkit-tap-highlight-color: transparent;
       background-color: #ffffff;
     }
+
+    #loading {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.25rem;
+      background: #ffffff;
+      color: #1a1a1a;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+      transition: opacity 0.35s ease;
+    }
+
+    #loading.loading-hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #loading-logo {
+      width: min(40vw, 180px);
+      height: auto;
+    }
+
+    #loading-title {
+      font-size: clamp(1.5rem, 5vw, 2rem);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: #0082ff;
+    }
+
+    #loading-status {
+      font-size: clamp(0.95rem, 3vw, 1.1rem);
+      color: #555;
+      text-align: center;
+      padding: 0 1.5rem;
+      line-height: 1.5;
+    }
+
+    .loading-spinner {
+      width: 2.5rem;
+      height: 2.5rem;
+      border: 3px solid #e8f4ff;
+      border-top-color: #0082ff;
+      border-radius: 50%;
+      animation: marela-spin 0.9s linear infinite;
+    }
+
+    @keyframes marela-spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
-
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
+  <div id="loading" role="status" aria-live="polite" aria-busy="true">
+    <img id="loading-logo" src="icons/Icon-192.png" alt="" width="192" height="192">
+    <div id="loading-title">Marela</div>
+    <div class="loading-spinner" aria-hidden="true"></div>
+    <div id="loading-status">読み込み中です。初回は1〜2分かかることがあります。</div>
+  </div>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

@@ -65,21 +65,23 @@ flutter:
     - assets/brand/
 
   fonts:
+    # Subset fonts (~400KB each) keep first-load small on iPad Safari / GitHub Pages.
+    # Regenerate with: dart run tool/subset_fonts.dart
     - family: GenInterfaceJP
       fonts:
-        - asset: assets/fonts/gen_interface_jp/standard/GenInterfaceJP-Regular.ttf
+        - asset: assets/fonts/gen_interface_jp/subset/standard/GenInterfaceJP-Regular.ttf
           weight: 400
-        - asset: assets/fonts/gen_interface_jp/standard/GenInterfaceJP-SemiBold.ttf
+        - asset: assets/fonts/gen_interface_jp/subset/standard/GenInterfaceJP-SemiBold.ttf
           weight: 600
-        - asset: assets/fonts/gen_interface_jp/standard/GenInterfaceJP-Bold.ttf
+        - asset: assets/fonts/gen_interface_jp/subset/standard/GenInterfaceJP-Bold.ttf
           weight: 700
     - family: GenInterfaceJPDisplay
       fonts:
-        - asset: assets/fonts/gen_interface_jp/display/GenInterfaceJPDisplay-Regular.ttf
+        - asset: assets/fonts/gen_interface_jp/subset/display/GenInterfaceJPDisplay-Regular.ttf
           weight: 400
-        - asset: assets/fonts/gen_interface_jp/display/GenInterfaceJPDisplay-SemiBold.ttf
+        - asset: assets/fonts/gen_interface_jp/subset/display/GenInterfaceJPDisplay-SemiBold.ttf
           weight: 600
-        - asset: assets/fonts/gen_interface_jp/display/GenInterfaceJPDisplay-Bold.ttf
+        - asset: assets/fonts/gen_interface_jp/subset/display/GenInterfaceJPDisplay-Bold.ttf
           weight: 700
 
   # To add assets to your application, add an assets section, like this:
