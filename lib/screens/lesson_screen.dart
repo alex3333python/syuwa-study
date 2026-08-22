@@ -3083,7 +3083,7 @@ class _LengthMeasureLearn extends StatefulWidget {
 
 class _LengthMeasureLearnState extends State<_LengthMeasureLearn> {
   int _page = 0;
-  Offset _rulerPosition = const Offset(104, 124);
+  Offset _rulerPosition = const Offset(40, 132);
   double _tapeValue = 0;
   bool _showNative = false;
   bool _showRulerGuideNative = false;
@@ -3286,22 +3286,30 @@ class _InteractiveRulerPanel extends StatelessWidget {
       builder: (context, constraints) {
         final boardWidth = constraints.maxWidth;
         const boardHeight = 300.0;
-        const rulerWidth = 520.0;
-        const rulerHeight = 76.0;
-        final usableRulerWidth = math.min(rulerWidth, boardWidth - 36);
-        final cmWidth = usableRulerWidth / 15;
-        final pencilLeft = math.max(32.0, (boardWidth - cmWidth * 8) / 2);
-        final pencilTop = 42.0;
-        final pencilWidth = cmWidth * 8;
+        const rulerMaxWidth = 340.0;
+        const rulerHeight = 64.0;
+        const centimeterCount = 12;
+        const pencilLengthCm = 8;
+        const pencilLeft = 40.0;
+        final usableRulerWidth = math.min(
+          rulerMaxWidth,
+          boardWidth - pencilLeft - 24,
+        );
+        final cmWidth = usableRulerWidth / centimeterCount;
+        final pencilWidth = cmWidth * pencilLengthCm;
+        final pencilTop = 48.0;
         const targetTop = 132.0;
         final isMeasured =
-            (rulerPosition.dx - pencilLeft).abs() < 12 &&
+            (rulerPosition.dx - pencilLeft).abs() < 14 &&
             (rulerPosition.dy - targetTop).abs() < 16;
 
         Offset clampPosition(Offset position) {
-          final maxX = math.max(18.0, boardWidth - usableRulerWidth - 18);
+          final maxX = math.max(
+            pencilLeft,
+            boardWidth - usableRulerWidth - 12,
+          );
           return Offset(
-            position.dx.clamp(18.0, maxX).toDouble(),
+            position.dx.clamp(pencilLeft, maxX).toDouble(),
             position.dy.clamp(102.0, boardHeight - rulerHeight - 14).toDouble(),
           );
         }
@@ -3355,7 +3363,8 @@ class _InteractiveRulerPanel extends StatelessWidget {
                       child: _RealisticRuler(
                         width: usableRulerWidth,
                         height: rulerHeight,
-                        highlightedCentimeters: isMeasured ? 8 : null,
+                        centimeterCount: centimeterCount,
+                        highlightedCentimeters: isMeasured ? pencilLengthCm : null,
                       ),
                     ),
                   ),
@@ -3447,11 +3456,13 @@ class _RealisticRuler extends StatelessWidget {
   final double width;
   final double height;
   final int? highlightedCentimeters;
+  final int centimeterCount;
 
   const _RealisticRuler({
     required this.width,
     required this.height,
     this.highlightedCentimeters,
+    this.centimeterCount = 15,
   });
 
   @override
@@ -3462,6 +3473,7 @@ class _RealisticRuler extends StatelessWidget {
       child: CustomPaint(
         painter: _RealisticRulerPainter(
           highlightedCentimeters: highlightedCentimeters,
+          centimeterCount: centimeterCount,
         ),
         child: const SizedBox.expand(),
       ),
@@ -3471,8 +3483,12 @@ class _RealisticRuler extends StatelessWidget {
 
 class _RealisticRulerPainter extends CustomPainter {
   final int? highlightedCentimeters;
+  final int centimeterCount;
 
-  const _RealisticRulerPainter({this.highlightedCentimeters});
+  const _RealisticRulerPainter({
+    this.highlightedCentimeters,
+    this.centimeterCount = 15,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -3488,8 +3504,7 @@ class _RealisticRulerPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.4,
     );
-    const cmCount = 15;
-    final cm = size.width / cmCount;
+    final cm = size.width / centimeterCount;
 
     if (highlightedCentimeters != null) {
       canvas.drawRect(
@@ -3498,7 +3513,7 @@ class _RealisticRulerPainter extends CustomPainter {
       );
     }
 
-    for (var centimeter = 0; centimeter <= cmCount; centimeter++) {
+    for (var centimeter = 0; centimeter <= centimeterCount; centimeter++) {
       final x = cm * centimeter;
       final isLongMarker = centimeter % 5 == 0;
       final markerColor = isLongMarker
@@ -3556,7 +3571,8 @@ class _RealisticRulerPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _RealisticRulerPainter oldDelegate) {
-    return highlightedCentimeters != oldDelegate.highlightedCentimeters;
+    return highlightedCentimeters != oldDelegate.highlightedCentimeters ||
+        centimeterCount != oldDelegate.centimeterCount;
   }
 }
 

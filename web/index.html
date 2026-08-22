@@ -22,12 +22,16 @@
   <!-- iPad / Safari: correct layout metrics and touch targets -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
+  <!-- Brand assets load before Flutter (highest priority) -->
+  <link rel="preload" href="brand/marela_icon.png" as="image" fetchpriority="high">
+  <link rel="preload" href="brand/marela_wordmark.png" as="image" fetchpriority="high">
+
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Marela">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
@@ -35,12 +39,10 @@
   <title>Marela</title>
   <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-  <link rel="preload" href="main.dart.js" as="script">
   <link rel="preload" href="flutter_bootstrap.js" as="script">
+  <link rel="preload" href="main.dart.js" as="script">
   <link rel="preload" href="assets/assets/fonts/gen_interface_jp/subset/standard/GenInterfaceJP-Regular.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="preload" href="assets/assets/fonts/gen_interface_jp/subset/display/GenInterfaceJPDisplay-Regular.ttf" as="font" type="font/ttf" crossorigin>
   <style>
-    /* Keep Flutter fullscreen on mobile Safari; reduce double-tap zoom fights. */
     html, body {
       height: 100%;
       width: 100%;
@@ -51,7 +53,7 @@
       -webkit-text-size-adjust: 100%;
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
-      background-color: #ffffff;
+      background-color: #f0f9ff;
     }
 
     #loading {
@@ -63,7 +65,7 @@
       align-items: center;
       justify-content: center;
       gap: 1.25rem;
-      background: #ffffff;
+      background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 55%);
       color: #1a1a1a;
       font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
       transition: opacity 0.35s ease;
@@ -80,11 +82,13 @@
       align-items: center;
       justify-content: center;
       gap: 1rem;
+      min-height: 72px;
     }
 
     #loading-brand img {
       display: block;
       height: auto;
+      opacity: 1;
     }
 
     #loading-icon {
@@ -97,7 +101,7 @@
 
     #loading-status {
       font-size: clamp(0.95rem, 3vw, 1.1rem);
-      color: #555;
+      color: #475569;
       text-align: center;
       padding: 0 1.5rem;
       line-height: 1.5;
@@ -106,7 +110,7 @@
     .loading-spinner {
       width: 2.5rem;
       height: 2.5rem;
-      border: 3px solid #e8f4ff;
+      border: 3px solid #dbeafe;
       border-top-color: #0082ff;
       border-radius: 50%;
       animation: marela-spin 0.9s linear infinite;
@@ -120,11 +124,11 @@
 <body>
   <div id="loading" role="status" aria-live="polite" aria-busy="true">
     <div id="loading-brand" aria-label="Marela">
-      <img id="loading-icon" src="brand/marela_icon.png" alt="" width="72" height="72">
-      <img id="loading-wordmark" src="brand/marela_wordmark.png" alt="Marela">
+      <img id="loading-icon" src="brand/marela_icon.png" alt="" width="72" height="72" fetchpriority="high" decoding="sync">
+      <img id="loading-wordmark" src="brand/marela_wordmark.png" alt="Marela" fetchpriority="high" decoding="sync">
     </div>
     <div class="loading-spinner" aria-hidden="true"></div>
-    <div id="loading-status">読み込み中です。しばらくお待ちください…</div>
+    <div id="loading-status">読み込み中です。2回目以降はすぐ開きます。</div>
   </div>
   <script src="flutter_bootstrap.js" async></script>
 </body>
