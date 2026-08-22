@@ -3083,7 +3083,8 @@ class _LengthMeasureLearn extends StatefulWidget {
 
 class _LengthMeasureLearnState extends State<_LengthMeasureLearn> {
   int _page = 0;
-  Offset _rulerPosition = const Offset(104, 180);
+  /// Null until the first layout centers the ruler using its real width.
+  Offset? _rulerPosition;
   double _tapeValue = 0;
   bool _showNative = false;
   bool _showRulerGuideNative = false;
@@ -3270,7 +3271,7 @@ class _LengthMeasureLearnState extends State<_LengthMeasureLearn> {
 }
 
 class _InteractiveRulerPanel extends StatelessWidget {
-  final Offset rulerPosition;
+  final Offset? rulerPosition;
   final ValueChanged<Offset> onChanged;
   final AppLanguage language;
 
@@ -3286,29 +3287,46 @@ class _InteractiveRulerPanel extends StatelessWidget {
       builder: (context, constraints) {
         final boardWidth = constraints.maxWidth;
         const boardHeight = 300.0;
+        const boardPadding = 18.0;
         const rulerMaxWidth = 340.0;
         const rulerHeight = 64.0;
+        // Drawn ruler is 0–12 cm (not a 15 cm school ruler).
         const centimeterCount = 12;
         const pencilLengthCm = 8;
         const pencilLeft = 40.0;
+        final stackWidth = boardWidth - boardPadding * 2;
         final usableRulerWidth = math.min(
           rulerMaxWidth,
-          boardWidth - pencilLeft - 24,
+          stackWidth - 24,
         );
         final cmWidth = usableRulerWidth / centimeterCount;
         final pencilWidth = cmWidth * pencilLengthCm;
         final pencilTop = 48.0;
         const targetTop = 132.0;
+        // Center using the actual 12 cm ruler width inside the padded board.
+        final centeredLeft = (stackWidth - usableRulerWidth) / 2;
+        const initialTop = 180.0;
+        final effectivePosition =
+            rulerPosition ?? Offset(centeredLeft, initialTop);
+
+        if (rulerPosition == null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            onChanged(Offset(centeredLeft, initialTop));
+          });
+        }
+
         final isMeasured =
-            (rulerPosition.dx - pencilLeft).abs() < 14 &&
-            (rulerPosition.dy - targetTop).abs() < 16;
+            (effectivePosition.dx - pencilLeft).abs() < 14 &&
+            (effectivePosition.dy - targetTop).abs() < 16;
 
         Offset clampPosition(Offset position) {
           return Offset(
             position.dx
-                .clamp(18.0, boardWidth - usableRulerWidth - 18.0)
+                .clamp(0.0, math.max(0.0, stackWidth - usableRulerWidth))
                 .toDouble(),
-            position.dy.clamp(102.0, boardHeight - rulerHeight - 14).toDouble(),
+            position.dy
+                .clamp(102.0, boardHeight - boardPadding * 2 - rulerHeight - 14)
+                .toDouble(),
           );
         }
 
@@ -3317,7 +3335,7 @@ class _InteractiveRulerPanel extends StatelessWidget {
           children: [
             Container(
               height: boardHeight,
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.all(boardPadding),
               decoration: BoxDecoration(
                 color: const Color(0xFFF8FAFC),
                 borderRadius: BorderRadius.circular(16),
@@ -3348,21 +3366,24 @@ class _InteractiveRulerPanel extends StatelessWidget {
                     ),
                   ),
                   Positioned(
-                    left: rulerPosition.dx,
-                    top: rulerPosition.dy,
+                    left: effectivePosition.dx,
+                    top: effectivePosition.dy,
                     child: GestureDetector(
                       onPanUpdate: (details) {
                         // A small finger movement should move the ruler far enough
                         // to feel direct on touch screens.
                         onChanged(
-                          clampPosition(rulerPosition + details.delta * 1.7),
+                          clampPosition(
+                            effectivePosition + details.delta * 1.7,
+                          ),
                         );
                       },
                       child: _RealisticRuler(
                         width: usableRulerWidth,
                         height: rulerHeight,
                         centimeterCount: centimeterCount,
-                        highlightedCentimeters: isMeasured ? pencilLengthCm : null,
+                        highlightedCentimeters:
+                            isMeasured ? pencilLengthCm : null,
                       ),
                     ),
                   ),
