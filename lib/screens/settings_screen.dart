@@ -106,7 +106,7 @@ class SettingsScreen extends StatelessWidget {
                             width: double.infinity,
                             child: FilledButton.icon(
                               style: FilledButton.styleFrom(
-                                backgroundColor: const Color(0xFF6BC4BC),
+                                backgroundColor: const Color(0xFF5AB5AD),
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 16,
@@ -132,7 +132,8 @@ class SettingsScreen extends StatelessWidget {
                             width: double.infinity,
                             child: FilledButton.icon(
                               style: FilledButton.styleFrom(
-                                backgroundColor: const Color(0xFFF97316),
+                                backgroundColor: const Color(0xFFFB923C),
+                                foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 16,
                                 ),
@@ -161,7 +162,7 @@ class SettingsScreen extends StatelessWidget {
                             width: double.infinity,
                             child: FilledButton.icon(
                               style: FilledButton.styleFrom(
-                                backgroundColor: const Color(0xFFEF9A9A),
+                                backgroundColor: const Color(0xFFE08888),
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 16,
