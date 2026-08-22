@@ -45,41 +45,44 @@ class LessonMapScreen extends StatelessWidget {
 
                 const SizedBox(height: 48),
 
-                Container(
-                  width: 360,
-                  padding: const EdgeInsets.all(28),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.92),
-                    borderRadius: BorderRadius.circular(28),
-                    border: Border.all(
-                      color: const Color(0xFFE9D5FF),
-                      width: 2,
-                    ),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x16000000),
-                        blurRadius: 24,
-                        offset: Offset(0, 10),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 360),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(28),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.92),
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(
+                        color: const Color(0xFFE9D5FF),
+                        width: 2,
                       ),
-                    ],
-                  ),
-                  child: const Column(
-                    children: [
-                      Icon(
-                        Icons.emoji_events_rounded,
-                        color: Color(0xFFF59E0B),
-                        size: 64,
-                      ),
-                      SizedBox(height: 14),
-                      Text(
-                        '次の単元も準備中',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x16000000),
+                          blurRadius: 24,
+                          offset: Offset(0, 10),
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+                      ],
+                    ),
+                    child: const Column(
+                      children: [
+                        Icon(
+                          Icons.emoji_events_rounded,
+                          color: Color(0xFFF59E0B),
+                          size: 64,
+                        ),
+                        SizedBox(height: 14),
+                        Text(
+                          '次の単元も準備中',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -329,14 +332,15 @@ class TodayReviewCard extends StatelessWidget {
         ? const Color(0xFF166534)
         : const Color(0xFF6B7280);
 
-    return SizedBox(
-      width: 430,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 430),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(28),
           onTap: onTap,
           child: Container(
+            width: double.infinity,
             padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: enabled ? 0.94 : 0.72),

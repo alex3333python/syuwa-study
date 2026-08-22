@@ -2,6 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 /// Shared Japanese TTS engine. Always speaks ja-JP, regardless of UI language.
+///
+/// On Flutter Web (especially Safari / iPad), speechSynthesis often requires a
+/// user gesture before the first utterance. Call [speak] from a tap/button
+/// handler; this service also re-applies ja-JP before each speak on web.
 class JapaneseTts {
   JapaneseTts._();
 
@@ -9,6 +13,7 @@ class JapaneseTts {
 
   FlutterTts? _tts;
   Future<void>? _ready;
+  bool _webUnlocked = false;
 
   Future<void> warmup() => _ensureReady();
 
@@ -22,8 +27,28 @@ class JapaneseTts {
     final tts = _tts;
     if (tts == null) return;
 
-    await tts.stop();
-    await tts.speak(spoken);
+    try {
+      // Safari / iOS WebKit: language can be ignored after init; re-assert.
+      if (kIsWeb) {
+        await tts.setLanguage('ja-JP');
+        if (!_webUnlocked) {
+          // Prime the engine inside the current user-gesture stack.
+          try {
+            await tts.speak(' ');
+            await tts.stop();
+          } catch (_) {
+            // Ignored — first real speak may still succeed after gesture.
+          }
+          _webUnlocked = true;
+        }
+      }
+
+      await tts.stop();
+      await tts.speak(spoken);
+    } catch (error, stackTrace) {
+      debugPrint('Japanese TTS speak failed: $error\n$stackTrace');
+      rethrow;
+    }
   }
 
   Future<void> stop() async {
@@ -61,6 +86,7 @@ class JapaneseTts {
     } catch (error, stackTrace) {
       debugPrint('Japanese TTS init failed: $error\n$stackTrace');
       _tts = null;
+      _ready = null;
     }
   }
 }

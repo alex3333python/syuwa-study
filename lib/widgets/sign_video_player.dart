@@ -11,9 +11,10 @@ class SignVideoPlayer extends StatefulWidget {
 }
 
 class _SignVideoPlayerState extends State<SignVideoPlayer> {
-  late VideoPlayerController _controller;
+  VideoPlayerController? _controller;
   bool isInitialized = false;
   String? errorMessage;
+  int _setupGeneration = 0;
 
   bool get isNetworkVideo =>
       widget.videoUrl.startsWith('http://') ||
@@ -26,30 +27,49 @@ class _SignVideoPlayerState extends State<SignVideoPlayer> {
   }
 
   Future<void> setupVideo() async {
+    final generation = ++_setupGeneration;
+    VideoPlayerController? controller;
+
     try {
-      _controller = isNetworkVideo
+      controller = isNetworkVideo
           ? VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl))
           : VideoPlayerController.asset(widget.videoUrl);
+      _controller = controller;
 
-      await _controller.initialize();
-      await _controller.setLooping(true);
-      await _controller.setVolume(0.0);
-      await _controller.play();
+      await controller.initialize();
+      if (!mounted || generation != _setupGeneration) {
+        await controller.dispose();
+        if (identical(_controller, controller)) {
+          _controller = null;
+        }
+        return;
+      }
 
-      _controller.addListener(() {
+      await controller.setLooping(true);
+      // Muted autoplay is allowed on Safari; keep volume at 0.
+      await controller.setVolume(0.0);
+      await controller.play();
+
+      controller.addListener(() {
         if (mounted) {
           setState(() {});
         }
       });
 
-      if (mounted) {
+      if (mounted && generation == _setupGeneration) {
         setState(() {
           isInitialized = true;
+          errorMessage = null;
         });
       }
     } catch (e) {
-      if (mounted) {
+      await controller?.dispose();
+      if (identical(_controller, controller)) {
+        _controller = null;
+      }
+      if (mounted && generation == _setupGeneration) {
         setState(() {
+          isInitialized = false;
           errorMessage = e.toString();
         });
       }
@@ -58,22 +78,24 @@ class _SignVideoPlayerState extends State<SignVideoPlayer> {
 
   @override
   void dispose() {
-    if (isInitialized) {
-      _controller.dispose();
-    }
+    _setupGeneration++;
+    final controller = _controller;
+    _controller = null;
+    controller?.dispose();
     super.dispose();
   }
 
   Future<void> togglePlay() async {
-    if (!isInitialized) return;
+    final controller = _controller;
+    if (!isInitialized || controller == null) return;
 
-    if (_controller.value.isPlaying) {
-      await _controller.pause();
+    if (controller.value.isPlaying) {
+      await controller.pause();
     } else {
-      await _controller.play();
+      await controller.play();
     }
 
-    setState(() {});
+    if (mounted) setState(() {});
   }
 
   @override
@@ -98,7 +120,8 @@ class _SignVideoPlayerState extends State<SignVideoPlayer> {
       );
     }
 
-    if (!isInitialized) {
+    final controller = _controller;
+    if (!isInitialized || controller == null) {
       return Container(
         height: 220,
         decoration: BoxDecoration(
@@ -124,11 +147,11 @@ class _SignVideoPlayerState extends State<SignVideoPlayer> {
             children: [
               Center(
                 child: AspectRatio(
-                  aspectRatio: _controller.value.aspectRatio,
-                  child: VideoPlayer(_controller),
+                  aspectRatio: controller.value.aspectRatio,
+                  child: VideoPlayer(controller),
                 ),
               ),
-              if (!_controller.value.isPlaying)
+              if (!controller.value.isPlaying)
                 Container(
                   width: 64,
                   height: 64,

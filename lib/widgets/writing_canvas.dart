@@ -101,6 +101,7 @@ class _WritingCanvasState extends State<WritingCanvas> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Text(
@@ -112,39 +113,46 @@ class _WritingCanvasState extends State<WritingCanvas> {
                   ),
                 ),
               ),
-              _ToolButton(
-                selected: _tool == _CanvasTool.pen,
-                icon: Icons.edit_rounded,
-                label: 'ペン',
-                onTap: () => _setTool(_CanvasTool.pen),
-              ),
-              const SizedBox(width: 10),
-              _ToolButton(
-                selected: _tool == _CanvasTool.eraser,
-                icon: Icons.cleaning_services_rounded,
-                label: '消しゴム',
-                onTap: () => _setTool(_CanvasTool.eraser),
-              ),
-              const SizedBox(width: 10),
-              _ToolButton(
-                selected: false,
-                icon: Icons.delete_outline_rounded,
-                label: '全消去',
-                onTap: _points.isEmpty ? null : _clear,
-              ),
-              if (widget.showCloseButton) ...[
-                const SizedBox(width: 10),
-                IconButton.filled(
-                  onPressed: widget.onClose,
-                  icon: const Icon(Icons.close_rounded),
-                  tooltip: '閉じる',
-                  style: IconButton.styleFrom(
-                    backgroundColor: const Color(0xFF111827),
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(52, 52),
-                  ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  alignment: WrapAlignment.end,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    _ToolButton(
+                      selected: _tool == _CanvasTool.pen,
+                      icon: Icons.edit_rounded,
+                      label: 'ペン',
+                      onTap: () => _setTool(_CanvasTool.pen),
+                    ),
+                    _ToolButton(
+                      selected: _tool == _CanvasTool.eraser,
+                      icon: Icons.cleaning_services_rounded,
+                      label: '消しゴム',
+                      onTap: () => _setTool(_CanvasTool.eraser),
+                    ),
+                    _ToolButton(
+                      selected: false,
+                      icon: Icons.delete_outline_rounded,
+                      label: '全消去',
+                      onTap: _points.isEmpty ? null : _clear,
+                    ),
+                    if (widget.showCloseButton)
+                      IconButton.filled(
+                        onPressed: widget.onClose,
+                        icon: const Icon(Icons.close_rounded),
+                        tooltip: '閉じる',
+                        style: IconButton.styleFrom(
+                          backgroundColor: const Color(0xFF111827),
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size(52, 52),
+                        ),
+                      ),
+                  ],
                 ),
-              ],
+              ),
             ],
           ),
           const SizedBox(height: 14),

@@ -143,6 +143,8 @@ class MyApp extends StatelessWidget {
           ),
         ),
         useMaterial3: true,
+        materialTapTargetSize: MaterialTapTargetSize.padded,
+        visualDensity: VisualDensity.standard,
       ),
       home: const HomePage(),
     );
@@ -328,12 +330,23 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> selectLanguage(AppLanguage language) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('selected_language', language.storageValue);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('selected_language', language.storageValue);
+    } catch (error, stackTrace) {
+      debugPrint('Failed to save language: $error\n$stackTrace');
+    }
 
+    if (!mounted) return;
     setState(() {
       selectedLanguage = language;
       currentScreen = 'map';
+    });
+  }
+
+  void goToLanguageSelect() {
+    setState(() {
+      currentScreen = 'language';
     });
   }
 
@@ -402,34 +415,39 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> saveProgress() async {
-    final prefs = await SharedPreferences.getInstance();
+    try {
+      final prefs = await SharedPreferences.getInstance();
 
-    for (final lesson in mockLessons) {
-      await prefs.setBool('lesson_${lesson.id}_completed', lesson.completed);
-      await prefs.setInt('lesson_${lesson.id}_stars', lesson.stars);
-      await prefs.setBool('lesson_${lesson.id}_locked', lesson.locked);
-    }
+      for (final lesson in mockLessons) {
+        await prefs.setBool('lesson_${lesson.id}_completed', lesson.completed);
+        await prefs.setInt('lesson_${lesson.id}_stars', lesson.stars);
+        await prefs.setBool('lesson_${lesson.id}_locked', lesson.locked);
+      }
 
-    await prefs.setInt('user_xp', xp);
-    await prefs.setInt('user_streak', streak);
-    await prefs.setStringList(
-      'weak_question_ids',
-      weakQuestionIds.map((id) => id.toString()).toList(),
-    );
-    await prefs.setStringList(
-      'weak_tag_counts',
-      _encodeCountMap(weakTagCounts),
-    );
-    await prefs.setStringList(
-      'weak_reason_counts',
-      _encodeCountMap(weakReasonCounts),
-    );
-
-    if (lastPlayedDate != null) {
-      await prefs.setString(
-        'last_played_date',
-        lastPlayedDate!.toIso8601String(),
+      await prefs.setInt('user_xp', xp);
+      await prefs.setInt('user_streak', streak);
+      await prefs.setStringList(
+        'weak_question_ids',
+        weakQuestionIds.map((id) => id.toString()).toList(),
       );
+      await prefs.setStringList(
+        'weak_tag_counts',
+        _encodeCountMap(weakTagCounts),
+      );
+      await prefs.setStringList(
+        'weak_reason_counts',
+        _encodeCountMap(weakReasonCounts),
+      );
+
+      if (lastPlayedDate != null) {
+        await prefs.setString(
+          'last_played_date',
+          lastPlayedDate!.toIso8601String(),
+        );
+      }
+    } catch (error, stackTrace) {
+      // Safari private mode / storage quota can reject localStorage writes.
+      debugPrint('Failed to save progress: $error\n$stackTrace');
     }
   }
 
@@ -503,61 +521,74 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> loadProgress() async {
-    final prefs = await SharedPreferences.getInstance();
+    try {
+      final prefs = await SharedPreferences.getInstance();
 
-    for (int i = 0; i < mockLessons.length; i++) {
-      final lesson = mockLessons[i];
+      for (int i = 0; i < mockLessons.length; i++) {
+        final lesson = mockLessons[i];
 
-      final completed =
-          prefs.getBool('lesson_${lesson.id}_completed') ?? lesson.completed;
-      final stars = prefs.getInt('lesson_${lesson.id}_stars') ?? lesson.stars;
+        final completed =
+            prefs.getBool('lesson_${lesson.id}_completed') ?? lesson.completed;
+        final stars = prefs.getInt('lesson_${lesson.id}_stars') ?? lesson.stars;
 
-      mockLessons[i] = _copyLesson(
-        lesson,
-        completed: completed,
-        stars: stars,
-        locked: lesson.locked,
-      );
-    }
-
-    _syncLearningUnitLocks();
-
-    final savedXp = prefs.getInt('user_xp');
-    final savedStreak = prefs.getInt('user_streak');
-    final savedLastPlayed = prefs.getString('last_played_date');
-    final savedWeakIds = prefs.getStringList('weak_question_ids');
-    final savedWeakTagCounts = prefs.getStringList('weak_tag_counts');
-    final savedWeakReasonCounts = prefs.getStringList('weak_reason_counts');
-    final savedLanguage = prefs.getString('selected_language');
-
-    setState(() {
-      if (savedXp != null) {
-        xp = savedXp;
+        mockLessons[i] = _copyLesson(
+          lesson,
+          completed: completed,
+          stars: stars,
+          locked: lesson.locked,
+        );
       }
 
-      if (savedStreak != null) {
-        streak = savedStreak;
-      }
+      _syncLearningUnitLocks();
 
-      if (savedLastPlayed != null) {
-        lastPlayedDate = DateTime.tryParse(savedLastPlayed);
-      }
+      final savedXp = prefs.getInt('user_xp');
+      final savedStreak = prefs.getInt('user_streak');
+      final savedLastPlayed = prefs.getString('last_played_date');
+      final savedWeakIds = prefs.getStringList('weak_question_ids');
+      final savedWeakTagCounts = prefs.getStringList('weak_tag_counts');
+      final savedWeakReasonCounts = prefs.getStringList('weak_reason_counts');
+      final savedLanguage = prefs.getString('selected_language');
 
-      if (savedWeakIds != null) {
-        weakQuestionIds = savedWeakIds.map((id) => int.parse(id)).toList();
-      }
+      if (!mounted) return;
+      setState(() {
+        if (savedXp != null) {
+          xp = savedXp;
+        }
 
-      weakTagCounts = _decodeCountMap(savedWeakTagCounts);
-      weakReasonCounts = _decodeCountMap(savedWeakReasonCounts);
+        if (savedStreak != null) {
+          streak = savedStreak;
+        }
 
-      if (savedLanguage != null) {
-        selectedLanguage = AppLanguageLabel.fromStorageValue(savedLanguage);
-      } else {
+        if (savedLastPlayed != null) {
+          lastPlayedDate = DateTime.tryParse(savedLastPlayed);
+        }
+
+        if (savedWeakIds != null) {
+          weakQuestionIds = [
+            for (final id in savedWeakIds)
+              if (int.tryParse(id) != null) int.parse(id),
+          ];
+        }
+
+        weakTagCounts = _decodeCountMap(savedWeakTagCounts);
+        weakReasonCounts = _decodeCountMap(savedWeakReasonCounts);
+
+        if (savedLanguage != null) {
+          selectedLanguage = AppLanguageLabel.fromStorageValue(savedLanguage);
+        } else {
+          currentScreen = 'language';
+        }
+
+        isLoading = false;
+      });
+    } catch (error, stackTrace) {
+      debugPrint('Failed to load progress: $error\n$stackTrace');
+      if (!mounted) return;
+      setState(() {
         currentScreen = 'language';
-      }
-
-      isLoading = false;
-    });
+        isLoading = false;
+      });
+    }
   }
 
   void restartLesson() {
@@ -569,12 +600,17 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> resetProgress() async {
-    final prefs = await SharedPreferences.getInstance();
+    try {
+      final prefs = await SharedPreferences.getInstance();
 
-    // ① 保存データを全削除
-    await prefs.clear();
-    await prefs.setString('selected_language', selectedLanguage.storageValue);
+      // ① 保存データを全削除
+      await prefs.clear();
+      await prefs.setString('selected_language', selectedLanguage.storageValue);
+    } catch (error, stackTrace) {
+      debugPrint('Failed to reset progress storage: $error\n$stackTrace');
+    }
 
+    if (!mounted) return;
     // ② アプリ内の状態を初期値に戻す
     setState(() {
       for (int i = 0; i < mockLessons.length; i++) {
@@ -859,6 +895,7 @@ class _HomePageState extends State<HomePage> {
       body = SettingsScreen(
         onReset: confirmAndReset,
         onOpenRecords: goToRecords,
+        onChangeLanguage: goToLanguageSelect,
         onBack: goHome,
         weakQuestionCount: getWeakQuestions().length,
         onWeakReview: getWeakQuestions().isEmpty ? null : startWeakReview,
