@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'data/mock_data.dart';
 import 'logic/diagnosis_engine.dart';
 import 'logic/question_generator.dart';
+import 'logic/weak_signal_mapper.dart';
 import 'models/answer_record.dart';
 import 'models/app_language.dart';
 import 'models/lesson.dart';
@@ -184,7 +185,8 @@ class _HomePageState extends State<HomePage> {
   List<Question> resultWrongQuestions = [];
   List<int> weakQuestionIds = [];
   Map<String, int> weakTagCounts = {};
-  Map<String, int> weakReasonCounts = {};
+  Map<String, int> weakUnitCounts = {};
+  Map<String, int> weakSectionCounts = {};
 
   void startLesson(Lesson lesson) {
     setState(() {
@@ -211,10 +213,7 @@ class _HomePageState extends State<HomePage> {
     final nextDiagnosisResult = isDiagnosis
         ? DiagnosisEngine.analyze(wrongQuestions, answerRecords)
         : null;
-    recordWeakSignals(answerRecords);
-    if (nextDiagnosisResult != null) {
-      _mergeDiagnosisSignals(nextDiagnosisResult);
-    }
+    recordWeakSignals(answerRecords, lesson: selectedLesson);
 
     setState(() {
       resultStars = stars;
@@ -263,29 +262,35 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void recordWeakSignals(List<AnswerRecord> answerRecords) {
+  void recordWeakSignals(
+    List<AnswerRecord> answerRecords, {
+    Lesson? lesson,
+  }) {
+    final sessionLessonId = lesson?.id;
+
     for (final record in answerRecords.where((record) => !record.isCorrect)) {
-      for (final tag in record.question.tags) {
+      final question = record.question;
+
+      for (final tag in question.tags) {
         weakTagCounts[tag] = (weakTagCounts[tag] ?? 0) + 1;
       }
 
-      final unitId = record.question.unitId.trim();
-      if (unitId.isNotEmpty) {
-        weakTagCounts[unitId] = (weakTagCounts[unitId] ?? 0) + 1;
+      final unitId = WeakSignalMapper.diagnosticUnitIdForQuestion(
+        question,
+        sessionLessonId: sessionLessonId,
+      );
+      if (unitId != null) {
+        weakUnitCounts[unitId] = (weakUnitCounts[unitId] ?? 0) + 1;
       }
 
-      final reason = record.mistakeReason;
-      if (reason != null) {
-        final key = reason.storageValue;
-        weakReasonCounts[key] = (weakReasonCounts[key] ?? 0) + 1;
+      final sectionLessonId = WeakSignalMapper.sectionLessonIdForQuestion(
+        question,
+        sessionLessonId: sessionLessonId,
+      );
+      if (sectionLessonId != null) {
+        final key = '$sectionLessonId';
+        weakSectionCounts[key] = (weakSectionCounts[key] ?? 0) + 1;
       }
-    }
-  }
-
-  void _mergeDiagnosisSignals(DiagnosisResult result) {
-    for (final entry in result.mistakeReasonCounts.entries) {
-      final key = entry.key.storageValue;
-      weakReasonCounts[key] = (weakReasonCounts[key] ?? 0) + entry.value;
     }
   }
 
@@ -435,8 +440,12 @@ class _HomePageState extends State<HomePage> {
         _encodeCountMap(weakTagCounts),
       );
       await prefs.setStringList(
-        'weak_reason_counts',
-        _encodeCountMap(weakReasonCounts),
+        'weak_unit_counts',
+        _encodeCountMap(weakUnitCounts),
+      );
+      await prefs.setStringList(
+        'weak_section_counts',
+        _encodeCountMap(weakSectionCounts),
       );
 
       if (lastPlayedDate != null) {
@@ -546,7 +555,8 @@ class _HomePageState extends State<HomePage> {
       final savedLastPlayed = prefs.getString('last_played_date');
       final savedWeakIds = prefs.getStringList('weak_question_ids');
       final savedWeakTagCounts = prefs.getStringList('weak_tag_counts');
-      final savedWeakReasonCounts = prefs.getStringList('weak_reason_counts');
+      final savedWeakUnitCounts = prefs.getStringList('weak_unit_counts');
+      final savedWeakSectionCounts = prefs.getStringList('weak_section_counts');
       final savedLanguage = prefs.getString('selected_language');
 
       if (!mounted) return;
@@ -571,7 +581,8 @@ class _HomePageState extends State<HomePage> {
         }
 
         weakTagCounts = _decodeCountMap(savedWeakTagCounts);
-        weakReasonCounts = _decodeCountMap(savedWeakReasonCounts);
+        weakUnitCounts = _decodeCountMap(savedWeakUnitCounts);
+        weakSectionCounts = _decodeCountMap(savedWeakSectionCounts);
 
         if (savedLanguage != null) {
           selectedLanguage = AppLanguageLabel.fromStorageValue(savedLanguage);
@@ -628,7 +639,8 @@ class _HomePageState extends State<HomePage> {
 
       xp = 0;
       weakTagCounts = {};
-      weakReasonCounts = {};
+      weakUnitCounts = {};
+      weakSectionCounts = {};
       diagnosisResult = null;
       weakQuestionIds = [];
 
@@ -769,9 +781,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   void startTodayReview() {
-    final questions = QuestionGenerator.reviewQuestionsForTags(
-      weakTagCounts.keys.toSet(),
-    );
+    final reviewTags = weakUnitCounts.isNotEmpty
+        ? weakUnitCounts.keys.toSet()
+        : weakTagCounts.keys.toSet();
+    final questions = QuestionGenerator.reviewQuestionsForTags(reviewTags);
     if (questions.isEmpty) return;
 
     setState(() {
@@ -866,13 +879,13 @@ class _HomePageState extends State<HomePage> {
       body = LessonMapScreen(lessons: mockLessons, onStartLesson: startLesson);
     } else if (currentScreen == 'review') {
       body = ReviewScreen(
-        reviewEnabled: weakTagCounts.isNotEmpty,
+        reviewEnabled: weakUnitCounts.isNotEmpty || weakTagCounts.isNotEmpty,
         onStartTodayReview: startTodayReview,
       );
     } else if (currentScreen == 'report') {
       body = ReportScreen(
-        weakTagCounts: weakTagCounts,
-        weakReasonCounts: weakReasonCounts,
+        weakUnitCounts: weakUnitCounts,
+        weakSectionCounts: weakSectionCounts,
       );
     } else if (currentScreen == 'lesson' && selectedLesson != null) {
       body = LessonScreen(
