@@ -72,16 +72,25 @@
       pointer-events: none;
     }
 
-    #loading-logo {
-      width: min(40vw, 180px);
+    #loading-brand {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    #loading-brand img {
+      display: block;
       height: auto;
     }
 
-    #loading-title {
-      font-size: clamp(1.5rem, 5vw, 2rem);
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      color: #0082ff;
+    #loading-icon {
+      width: min(18vw, 72px);
+    }
+
+    #loading-wordmark {
+      width: min(42vw, 200px);
     }
 
     #loading-status {
@@ -108,8 +117,10 @@
 </head>
 <body>
   <div id="loading" role="status" aria-live="polite" aria-busy="true">
-    <img id="loading-logo" src="icons/Icon-192.png" alt="" width="192" height="192">
-    <div id="loading-title">Marela</div>
+    <div id="loading-brand" aria-label="Marela">
+      <img id="loading-icon" src="brand/marela_icon.png" alt="" width="72" height="72">
+      <img id="loading-wordmark" src="brand/marela_wordmark.png" alt="Marela">
+    </div>
     <div class="loading-spinner" aria-hidden="true"></div>
     <div id="loading-status">読み込み中です。初回は30秒ほどかかることがあります。</div>
   </div>

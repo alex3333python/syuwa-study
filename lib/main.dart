@@ -15,6 +15,7 @@ import 'screens/language_select_screen.dart';
 import 'screens/lesson_map_screen.dart';
 import 'screens/lesson_screen.dart' deferred as lesson_screen;
 import 'widgets/header.dart';
+import 'widgets/marela_loading_view.dart';
 import 'screens/settings_screen.dart';
 import 'screens/records_screen.dart';
 import 'screens/report_screen.dart';
@@ -892,7 +893,11 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        body: MarelaLoadingView(
+          message: 'データを読み込んでいます…',
+        ),
+      );
     }
     Widget body;
 
