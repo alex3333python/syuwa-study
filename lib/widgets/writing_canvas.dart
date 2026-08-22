@@ -228,14 +228,11 @@ class _WritingCanvasState extends State<WritingCanvas> {
                 builder: (context, constraints) {
                   final size = Size(constraints.maxWidth, constraints.maxHeight);
                   if (_canvasSize != size) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (!mounted || _canvasSize == size) return;
-                      setState(() => _canvasSize = size);
-                      if (_points.isNotEmpty) {
-                        _rebuildCompletedPicture();
-                        _requestPaint();
-                      }
-                    });
+                    _canvasSize = size;
+                    if (_points.isNotEmpty) {
+                      _rebuildCompletedPicture();
+                      _requestPaint();
+                    }
                   }
 
                   return RepaintBoundary(
@@ -331,6 +328,8 @@ abstract final class _StrokeRenderer {
   }) {
     Path? path;
     _CanvasTool? pathTool;
+    Offset? pathStart;
+    var pathHasLine = false;
 
     void flushPath() {
       if (path == null || pathTool == null) return;
@@ -342,9 +341,21 @@ abstract final class _StrokeRenderer {
         eraserUsesClear: eraserUsesClear,
         antiAlias: antiAlias,
       );
-      canvas.drawPath(path!, paint);
+      if (!pathHasLine && pathStart != null && pathTool == _CanvasTool.pen) {
+        canvas.drawCircle(
+          pathStart!,
+          penWidth / 2,
+          Paint()
+            ..color = paint.color
+            ..isAntiAlias = antiAlias,
+        );
+      } else {
+        canvas.drawPath(path!, paint);
+      }
       path = null;
       pathTool = null;
+      pathStart = null;
+      pathHasLine = false;
     }
 
     for (var i = start; i < end; i++) {
@@ -355,6 +366,7 @@ abstract final class _StrokeRenderer {
       }
 
       if (path == null) {
+        pathStart = current.offset;
         path = Path()..moveTo(current.offset!.dx, current.offset!.dy);
         pathTool = current.tool;
         continue;
@@ -362,12 +374,14 @@ abstract final class _StrokeRenderer {
 
       if (pathTool != current.tool) {
         flushPath();
+        pathStart = current.offset;
         path = Path()..moveTo(current.offset!.dx, current.offset!.dy);
         pathTool = current.tool;
         continue;
       }
 
       path!.lineTo(current.offset!.dx, current.offset!.dy);
+      pathHasLine = true;
     }
 
     flushPath();
