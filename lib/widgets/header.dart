@@ -22,51 +22,48 @@ class Header extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Flexible(child: _MarelaBrandMark()),
-          const SizedBox(width: 8),
-          Flexible(
-            fit: FlexFit.loose,
+          Expanded(
             child: Align(
-              alignment: Alignment.centerRight,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        // Teal — distinct from the old streak (orange), XP (yellow),
-                        // and level (indigo) pills.
-                        color: const Color(0xFFF0FDFA),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        language.label,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF0F766E),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  IconButton(
-                    tooltip: '設定',
-                    icon: const Icon(Icons.settings_rounded),
-                    iconSize: 26,
-                    constraints: const BoxConstraints(
-                      minWidth: 48,
-                      minHeight: 48,
-                    ),
-                    onPressed: onSettingsTap,
-                  ),
-                ],
+              alignment: Alignment.centerLeft,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: const _MarelaBrandMark(),
               ),
             ),
+          ),
+          const SizedBox(width: 12),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0FDFA),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  language.label,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0F766E),
+                  ),
+                ),
+              ),
+              IconButton(
+                tooltip: '設定',
+                icon: const Icon(Icons.settings_rounded),
+                iconSize: 26,
+                constraints: const BoxConstraints(
+                  minWidth: 48,
+                  minHeight: 48,
+                ),
+                onPressed: onSettingsTap,
+              ),
+            ],
           ),
         ],
       ),
@@ -82,28 +79,24 @@ class _MarelaBrandMark extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       label: 'Marela',
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        alignment: Alignment.centerLeft,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset(
-              'assets/brand/marela_icon.png',
-              width: 52,
-              height: 52,
-              fit: BoxFit.contain,
-              filterQuality: FilterQuality.high,
-            ),
-            const SizedBox(width: 12),
-            Image.asset(
-              'assets/brand/marela_wordmark.png',
-              height: 36,
-              fit: BoxFit.contain,
-              filterQuality: FilterQuality.high,
-            ),
-          ],
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Image.asset(
+            'assets/brand/marela_icon.png',
+            width: 52,
+            height: 52,
+            fit: BoxFit.contain,
+            filterQuality: FilterQuality.high,
+          ),
+          const SizedBox(width: 12),
+          Image.asset(
+            'assets/brand/marela_wordmark.png',
+            height: 36,
+            fit: BoxFit.contain,
+            filterQuality: FilterQuality.high,
+          ),
+        ],
       ),
     );
   }

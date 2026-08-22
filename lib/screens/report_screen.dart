@@ -45,7 +45,7 @@ class ReportScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  '正誤、問題タグから見た支援メモです。',
+                  '正誤、問題タグ、本人が選んだ「むずかしかった理由」から見た支援メモです。',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Color(0xFF6B7280), height: 1.4),
                 ),
@@ -115,9 +115,21 @@ class ReportScreen extends StatelessWidget {
     Map<String, int> counts, {
     int limit = 5,
   }) {
-    final entries = counts.entries.toList()
+    final entries = counts.entries
+        .where((entry) => _isLearnerFacingTag(entry.key))
+        .toList()
       ..sort((a, b) => b.value.compareTo(a.value));
     return entries.take(limit).toList();
+  }
+
+  bool _isLearnerFacingTag(String tag) {
+    switch (tag) {
+      case 'grade3':
+      case 'math':
+      case 'subject':
+        return false;
+    }
+    return true;
   }
 
   MistakeReason? _topReason() {
@@ -228,20 +240,25 @@ class ReportScreen extends StatelessWidget {
   String _tagLabel(String tag) {
     switch (tag) {
       case 'division':
+      case 'grade3_division':
         return 'わり算';
       case 'remainder':
       case 'remainder_calculation':
+      case 'grade3_division_remainder':
         return 'あまりのあるわり算';
       case 'time':
       case 'elapsed_time':
       case 'minutes_after':
+      case 'grade3_time':
         return '時こくと時間';
       case 'length':
       case 'kilometer':
+      case 'grade3_length':
         return '長さ';
       case 'weight':
       case 'kilogram':
       case 'gram':
+      case 'grade3_weight':
         return '重さ';
       case 'unit':
         return '単位';
