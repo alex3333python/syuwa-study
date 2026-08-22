@@ -23,13 +23,13 @@ class WritingCanvas extends StatefulWidget {
 class _WritingCanvasState extends State<WritingCanvas> {
   static const double penWidth = 5;
   static const double eraserWidth = 80;
-  static const double _minPointDistanceSquared = 16;
 
   final List<_CanvasPoint> _points = [];
   final ValueNotifier<int> _paintRevision = ValueNotifier<int>(0);
   ui.Picture? _completedPicture;
   _CanvasTool _tool = _CanvasTool.pen;
-  int _activeStrokeStart = 0;
+  Path? _activePath;
+  Size _canvasSize = Size.zero;
 
   @override
   void dispose() {
@@ -40,8 +40,8 @@ class _WritingCanvasState extends State<WritingCanvas> {
 
   void _startStroke(Offset point) {
     final wasEmpty = _points.isEmpty;
-    _activeStrokeStart = _points.length;
     _points.add(_CanvasPoint(point, _tool));
+    _activePath = Path()..moveTo(point.dx, point.dy);
     _requestPaint();
     if (wasEmpty) {
       setState(() {});
@@ -49,13 +49,16 @@ class _WritingCanvasState extends State<WritingCanvas> {
   }
 
   void _appendPoint(Offset point) {
-    final previousPoint = _points.isEmpty ? null : _points.last.offset;
+    if (_points.isEmpty) return;
+
+    final previousPoint = _points.last.offset;
     if (previousPoint != null &&
-        (point - previousPoint).distanceSquared < _minPointDistanceSquared) {
+        (point - previousPoint).distanceSquared < 1.5) {
       return;
     }
 
     _points.add(_CanvasPoint(point, _tool));
+    _activePath?.lineTo(point.dx, point.dy);
     _requestPaint();
   }
 
@@ -63,8 +66,8 @@ class _WritingCanvasState extends State<WritingCanvas> {
     if (_points.isEmpty || _points.last.offset == null) return;
 
     _points.add(_CanvasPoint.separator());
+    _activePath = null;
     _rebuildCompletedPicture();
-    _activeStrokeStart = _points.length;
     _requestPaint();
   }
 
@@ -74,7 +77,7 @@ class _WritingCanvasState extends State<WritingCanvas> {
     _points.clear();
     _completedPicture?.dispose();
     _completedPicture = null;
-    _activeStrokeStart = 0;
+    _activePath = null;
     _requestPaint();
     setState(() {});
   }
@@ -83,10 +86,41 @@ class _WritingCanvasState extends State<WritingCanvas> {
     _paintRevision.value++;
   }
 
+  bool _containsEraser(List<_CanvasPoint> points) {
+    for (final point in points) {
+      if (point.offset != null && point.tool == _CanvasTool.eraser) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   void _rebuildCompletedPicture() {
+    if (_canvasSize == Size.zero) return;
+
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
-    _StrokeRenderer.drawAll(canvas, _points);
+    final bounds = Offset.zero & _canvasSize;
+    final useClearEraser = _containsEraser(_points);
+
+    if (useClearEraser) {
+      canvas.saveLayer(bounds, Paint());
+    }
+
+    _StrokeRenderer.drawRange(
+      canvas,
+      _points,
+      0,
+      _points.length,
+      penWidth: penWidth,
+      eraserWidth: eraserWidth,
+      eraserUsesClear: useClearEraser,
+    );
+
+    if (useClearEraser) {
+      canvas.restore();
+    }
+
     _completedPicture?.dispose();
     _completedPicture = recorder.endRecording();
   }
@@ -178,7 +212,7 @@ class _WritingCanvasState extends State<WritingCanvas> {
           Container(
             height: widget.height,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Colors.white.withValues(alpha: 0.32),
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
                 color: const Color(0xFFE5E7EB).withValues(alpha: 0.42),
@@ -187,25 +221,48 @@ class _WritingCanvasState extends State<WritingCanvas> {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(18),
-              child: RepaintBoundary(
-                child: Listener(
-                  behavior: HitTestBehavior.opaque,
-                  onPointerDown: (event) => _startStroke(event.localPosition),
-                  onPointerMove: (event) => _appendPoint(event.localPosition),
-                  onPointerUp: (_) => _endStroke(),
-                  onPointerCancel: (_) => _endStroke(),
-                  child: CustomPaint(
-                    painter: _DrawingPainter(
-                      completedPicture: _completedPicture,
-                      points: _points,
-                      activeStrokeStartIndex: _activeStrokeStart,
-                      repaint: _paintRevision,
-                      penWidth: penWidth,
-                      eraserWidth: eraserWidth,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final size = Size(constraints.maxWidth, constraints.maxHeight);
+                  if (_canvasSize != size) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (!mounted || _canvasSize == size) return;
+                      setState(() => _canvasSize = size);
+                      if (_points.isNotEmpty) {
+                        _rebuildCompletedPicture();
+                        _requestPaint();
+                      }
+                    });
+                  }
+
+                  return RepaintBoundary(
+                    child: Listener(
+                      behavior: HitTestBehavior.opaque,
+                      onPointerDown: (event) =>
+                          _startStroke(event.localPosition),
+                      onPointerMove: (event) =>
+                          _appendPoint(event.localPosition),
+                      onPointerUp: (_) => _endStroke(),
+                      onPointerCancel: (_) => _endStroke(),
+                      child: ListenableBuilder(
+                        listenable: _paintRevision,
+                        builder: (context, _) {
+                          return CustomPaint(
+                            painter: _DrawingPainter(
+                              completedPicture: _completedPicture,
+                              activePath: _activePath,
+                              activeTool: _tool,
+                              canvasSize: size,
+                              penWidth: penWidth,
+                              eraserWidth: eraserWidth,
+                            ),
+                            child: const SizedBox.expand(),
+                          );
+                        },
+                      ),
                     ),
-                    child: const SizedBox.expand(),
-                  ),
-                ),
+                  );
+                },
               ),
             ),
           ),
@@ -258,10 +315,6 @@ class _CanvasPoint {
 }
 
 abstract final class _StrokeRenderer {
-  static void drawAll(Canvas canvas, List<_CanvasPoint> points) {
-    drawRange(canvas, points, 0, points.length, penWidth: 5, eraserWidth: 80);
-  }
-
   static void drawRange(
     Canvas canvas,
     List<_CanvasPoint> points,
@@ -269,79 +322,140 @@ abstract final class _StrokeRenderer {
     int end, {
     required double penWidth,
     required double eraserWidth,
+    required bool eraserUsesClear,
   }) {
-    for (var i = start; i < end - 1; i++) {
-      final current = points[i];
-      final next = points[i + 1];
-      if (current.offset == null) continue;
+    Path? path;
+    _CanvasTool? pathTool;
 
-      final isEraser = current.tool == _CanvasTool.eraser;
-      final width = isEraser ? eraserWidth : penWidth;
-      final color = isEraser ? Colors.white : const Color(0xFF111827);
+    void flushPath() {
+      if (path == null || pathTool == null) return;
 
-      if (next.offset == null) {
-        canvas.drawCircle(
-          current.offset!,
-          width / 2,
-          Paint()
-            ..color = color
-            ..style = PaintingStyle.fill,
-        );
-      } else {
-        canvas.drawLine(
-          current.offset!,
-          next.offset!,
-          Paint()
-            ..color = color
+      final Paint paint;
+      if (pathTool == _CanvasTool.eraser) {
+        if (eraserUsesClear) {
+          paint = Paint()
+            ..blendMode = BlendMode.clear
             ..style = PaintingStyle.stroke
             ..strokeCap = StrokeCap.round
             ..strokeJoin = StrokeJoin.round
-            ..strokeWidth = width,
-        );
+            ..strokeWidth = eraserWidth
+            ..isAntiAlias = true;
+        } else {
+          paint = Paint()
+            ..color = Colors.white.withValues(alpha: 0.32)
+            ..style = PaintingStyle.stroke
+            ..strokeCap = StrokeCap.round
+            ..strokeJoin = StrokeJoin.round
+            ..strokeWidth = eraserWidth
+            ..isAntiAlias = true;
+        }
+      } else {
+        paint = Paint()
+          ..color = const Color(0xFF111827)
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round
+          ..strokeWidth = penWidth
+          ..isAntiAlias = true;
       }
+
+      canvas.drawPath(path!, paint);
+      path = null;
+      pathTool = null;
     }
+
+    for (var i = start; i < end; i++) {
+      final current = points[i];
+      if (current.offset == null) {
+        flushPath();
+        continue;
+      }
+
+      if (path == null) {
+        path = Path()..moveTo(current.offset!.dx, current.offset!.dy);
+        pathTool = current.tool;
+        continue;
+      }
+
+      if (pathTool != current.tool) {
+        flushPath();
+        path = Path()..moveTo(current.offset!.dx, current.offset!.dy);
+        pathTool = current.tool;
+        continue;
+      }
+
+      path!.lineTo(current.offset!.dx, current.offset!.dy);
+    }
+
+    flushPath();
   }
 }
 
 class _DrawingPainter extends CustomPainter {
   final ui.Picture? completedPicture;
-  final List<_CanvasPoint> points;
-  final int activeStrokeStartIndex;
+  final Path? activePath;
+  final _CanvasTool activeTool;
+  final Size canvasSize;
   final double penWidth;
   final double eraserWidth;
 
+  static final Paint _penPaint = Paint()
+    ..color = const Color(0xFF111827)
+    ..style = PaintingStyle.stroke
+    ..strokeCap = StrokeCap.round
+    ..strokeJoin = StrokeJoin.round
+    ..isAntiAlias = true;
+
+  static final Paint _eraserClearPaint = Paint()
+    ..blendMode = BlendMode.clear
+    ..style = PaintingStyle.stroke
+    ..strokeCap = StrokeCap.round
+    ..strokeJoin = StrokeJoin.round
+    ..isAntiAlias = true;
+
   _DrawingPainter({
     required this.completedPicture,
-    required this.points,
-    required this.activeStrokeStartIndex,
-    required Listenable repaint,
+    required this.activePath,
+    required this.activeTool,
+    required this.canvasSize,
     required this.penWidth,
     required this.eraserWidth,
-  }) : super(repaint: repaint);
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
+    final hasActiveEraser =
+        activePath != null && activeTool == _CanvasTool.eraser;
+
+    if (hasActiveEraser) {
+      final bounds = Offset.zero & canvasSize;
+      canvas.saveLayer(bounds, Paint());
+      if (completedPicture != null) {
+        canvas.drawPicture(completedPicture!);
+      }
+      canvas.drawPath(
+        activePath!,
+        _eraserClearPaint..strokeWidth = eraserWidth,
+      );
+      canvas.restore();
+      return;
+    }
+
     if (completedPicture != null) {
       canvas.drawPicture(completedPicture!);
     }
 
-    if (activeStrokeStartIndex < points.length) {
-      _StrokeRenderer.drawRange(
-        canvas,
-        points,
-        activeStrokeStartIndex,
-        points.length,
-        penWidth: penWidth,
-        eraserWidth: eraserWidth,
-      );
+    if (activePath != null) {
+      canvas.drawPath(activePath!, _penPaint..strokeWidth = penWidth);
     }
   }
 
   @override
   bool shouldRepaint(covariant _DrawingPainter oldDelegate) {
     return oldDelegate.completedPicture != completedPicture ||
-        oldDelegate.points != points ||
-        oldDelegate.activeStrokeStartIndex != activeStrokeStartIndex ||
+        oldDelegate.activePath != activePath ||
+        oldDelegate.activeTool != activeTool ||
+        oldDelegate.canvasSize != canvasSize ||
         oldDelegate.penWidth != penWidth ||
         oldDelegate.eraserWidth != eraserWidth;
   }
