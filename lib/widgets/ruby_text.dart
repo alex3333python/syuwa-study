@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../data/audio_cues.dart';
@@ -6,6 +8,7 @@ import '../data/learning_language_support.dart';
 import '../models/app_language.dart';
 import '../models/question.dart';
 import '../services/audio_service.dart';
+import '../services/favorite_vocabulary_store.dart';
 import 'lesson_language_scope.dart';
 
 /// Makes the intent of learning support explicit at each call site.
@@ -796,82 +799,101 @@ class _RubyPiece extends StatelessWidget {
               24,
               MediaQuery.viewInsetsOf(context).bottom + 24,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+            child: ListenableBuilder(
+              listenable: FavoriteVocabularyStore.instance,
+              builder: (context, _) {
+                final isFavorite =
+                    FavoriteVocabularyStore.instance.isFavorite(entry.term);
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Flexible(
-                      child: Text(
-                        entry.term,
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w900,
-                          color: Color(0xFF111827),
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    _VocabularyAudioButton(
-                      onPressed: () {
-                        LearningAudio.play(
-                          context,
-                          AudioCueFactory.vocabulary(
-                            term: entry.term,
-                            reading: entry.reading,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            entry.term,
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFF111827),
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        );
-                      },
+                        ),
+                        const SizedBox(width: 10),
+                        _VocabularyAudioButton(
+                          onPressed: () {
+                            LearningAudio.play(
+                              context,
+                              AudioCueFactory.vocabulary(
+                                term: entry.term,
+                                reading: entry.reading,
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                        _VocabularyFavoriteButton(
+                          isFavorite: isFavorite,
+                          onPressed: () {
+                            unawaited(
+                              FavoriteVocabularyStore.instance.toggle(entry),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                    if (entry.reading.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        entry.reading,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 18),
+                    _VocabularyBlock(title: '意味', text: entry.simpleJapanese),
+                    if (sheetLanguage != AppLanguage.japanese &&
+                        nativeMeaning.isNotEmpty &&
+                        nativeMeaning != entry.simpleJapanese &&
+                        !looksLikeJapaneseGloss(nativeMeaning)) ...[
+                      const SizedBox(height: 14),
+                      _VocabularyBlock(
+                        title: '$nativeLabelで',
+                        text: nativeMeaning,
+                      ),
+                    ],
+                    if (entry.exampleSentence.isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      _VocabularyBlock(
+                        title: '例文',
+                        text: entry.exampleSentence,
+                      ),
+                    ],
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: FilledButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          '閉じる',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
-                ),
-                if (entry.reading.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    entry.reading,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF6B7280),
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 18),
-                _VocabularyBlock(title: '意味', text: entry.simpleJapanese),
-                if (sheetLanguage != AppLanguage.japanese &&
-                    nativeMeaning.isNotEmpty &&
-                    nativeMeaning != entry.simpleJapanese &&
-                    !looksLikeJapaneseGloss(nativeMeaning)) ...[
-                  const SizedBox(height: 14),
-                  _VocabularyBlock(
-                    title: '$nativeLabelで',
-                    text: nativeMeaning,
-                  ),
-                ],
-                if (entry.exampleSentence.isNotEmpty) ...[
-                  const SizedBox(height: 14),
-                  _VocabularyBlock(title: '例文', text: entry.exampleSentence),
-                ],
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 54,
-                  child: FilledButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text(
-                      '閉じる',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+                );
+              },
             ),
           ),
         );
@@ -904,6 +926,48 @@ class _VocabularyAudioButton extends StatelessWidget {
           iconSize: 20,
           color: const Color(0xFF374151),
           icon: const Icon(Icons.volume_up_rounded),
+        ),
+      ),
+    );
+  }
+}
+
+class _VocabularyFavoriteButton extends StatelessWidget {
+  final bool isFavorite;
+  final VoidCallback onPressed;
+
+  const _VocabularyFavoriteButton({
+    required this.isFavorite,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: Material(
+        color: isFavorite ? const Color(0xFFFFFBEB) : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: BorderSide(
+            color: isFavorite
+                ? const Color(0xFFFDE68A)
+                : const Color(0xFFE5E7EB),
+          ),
+        ),
+        child: IconButton(
+          tooltip: isFavorite ? 'お気に入り解除' : 'お気に入り',
+          onPressed: onPressed,
+          constraints: const BoxConstraints.tightFor(width: 40, height: 40),
+          padding: EdgeInsets.zero,
+          iconSize: 22,
+          color: isFavorite
+              ? const Color(0xFFD97706)
+              : const Color(0xFF9CA3AF),
+          icon: Icon(
+            isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
+          ),
         ),
       ),
     );

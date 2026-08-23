@@ -22,6 +22,7 @@ import 'screens/report_screen.dart';
 import 'screens/review_screen.dart';
 import 'models/question.dart';
 import 'theme/app_fonts.dart';
+import 'services/favorite_vocabulary_store.dart';
 import 'services/japanese_tts_service.dart';
 
 Future<void> main() async {
@@ -610,6 +611,8 @@ class _HomePageState extends State<HomePage> {
       final savedWeakSectionCounts = prefs.getStringList('weak_section_counts');
       final savedLanguage = prefs.getString('selected_language');
 
+      await FavoriteVocabularyStore.instance.ensureLoaded();
+
       if (!mounted) return;
       setState(() {
         if (savedXp != null) {
@@ -670,6 +673,9 @@ class _HomePageState extends State<HomePage> {
       // ① 保存データを全削除
       await prefs.clear();
       await prefs.setString('selected_language', selectedLanguage.storageValue);
+      // Reload favorites after wipe so the in-memory list clears too.
+      FavoriteVocabularyStore.instance.resetLoadGate();
+      await FavoriteVocabularyStore.instance.ensureLoaded();
     } catch (error, stackTrace) {
       debugPrint('Failed to reset progress storage: $error\n$stackTrace');
     }
@@ -942,6 +948,7 @@ class _HomePageState extends State<HomePage> {
       body = ReviewScreen(
         reviewEnabled: weakUnitCounts.isNotEmpty || weakTagCounts.isNotEmpty,
         onStartTodayReview: () => unawaited(startTodayReview()),
+        language: selectedLanguage,
       );
     } else if (currentScreen == 'report') {
       body = ReportScreen(
