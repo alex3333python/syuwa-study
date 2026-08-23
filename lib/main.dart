@@ -169,6 +169,17 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  /// Prefetch the deferred lesson chunk after the map is usable so the first
+  /// lesson tap does not wait on a large JS download.
+  void _prefetchLessonLibrarySoon() {
+    unawaited(
+      Future<void>.delayed(const Duration(milliseconds: 350), () {
+        if (!mounted) return;
+        unawaited(_ensureLessonLibraryLoaded());
+      }),
+    );
+  }
+
   // streak and experience (xp) are still tracked for later UI re-enable.
   String currentScreen = 'map';
   int streak = 0;
@@ -198,15 +209,30 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _openLessonScreen(VoidCallback applyState) async {
-    setState(() => isLoadingLessonLibrary = true);
-    try {
-      await _ensureLessonLibraryLoaded();
+    final loadFuture = _ensureLessonLibraryLoaded();
+    // Only show the blocking overlay if the deferred chunk is still loading
+    // after a short beat (prefetch usually finishes this before the tap).
+    var overlayVisible = false;
+    final overlayTimer = Timer(const Duration(milliseconds: 100), () {
       if (!mounted) return;
       setState(() {
-        isLoadingLessonLibrary = false;
+        isLoadingLessonLibrary = true;
+        overlayVisible = true;
+      });
+    });
+
+    try {
+      await loadFuture;
+      overlayTimer.cancel();
+      if (!mounted) return;
+      setState(() {
+        if (overlayVisible || isLoadingLessonLibrary) {
+          isLoadingLessonLibrary = false;
+        }
         applyState();
       });
     } catch (error, stackTrace) {
+      overlayTimer.cancel();
       debugPrint('Failed to load lesson screen: $error\n$stackTrace');
       if (!mounted) return;
       setState(() => isLoadingLessonLibrary = false);
@@ -617,6 +643,7 @@ class _HomePageState extends State<HomePage> {
 
         isLoading = false;
       });
+      _prefetchLessonLibrarySoon();
     } catch (error, stackTrace) {
       debugPrint('Failed to load progress: $error\n$stackTrace');
       if (!mounted) return;
@@ -624,6 +651,7 @@ class _HomePageState extends State<HomePage> {
         currentScreen = 'language';
         isLoading = false;
       });
+      _prefetchLessonLibrarySoon();
     }
   }
 
@@ -843,10 +871,7 @@ class _HomePageState extends State<HomePage> {
     final index = mockLessons.indexWhere((l) => l.id == lesson.id);
     if (index == -1) return;
 
-    await _ensureLessonLibraryLoaded();
-    if (!mounted) return;
-
-    setState(() {
+    await _openLessonScreen(() {
       // おすすめから入る場合も、算数チェック済みとして単元ロックを同期する。
       final diagnosisIndex = mockLessons.indexWhere((l) => l.id == 1);
       if (diagnosisIndex != -1 && !mockLessons[diagnosisIndex].completed) {
