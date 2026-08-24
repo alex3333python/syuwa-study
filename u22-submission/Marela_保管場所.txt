@@ -1,0 +1,60 @@
+U-22プログラミング・コンテスト2026 提出資料
+作品名: Marela
+作品URL（Web）: https://alex3333python.github.io/syuwa-study/
+
+※ストレージID（26U22****）が届いたら、提出ファイル名を次のようにリネームしてください。
+  26U22****_Marela.zip
+  26U22****_保管場所.txt
+
+
+==================================================
+1. プログラムファイル一式（実行ファイル含む）
+==================================================
+
+【公開URL】
+https://alex3333python.github.io/syuwa-study/
+ログイン不要です。ブラウザで開いて動作確認できます。
+
+【zip内の実行ファイル】
+保存場所: Marela/build/web/
+起動ファイル: Marela/build/web/index.html
+
+審査用に、次のコマンドでビルドしたWeb成果物を同梱しています。
+  flutter build web --release --base-href "/"
+
+ローカルで動かす場合の例:
+  cd Marela/build/web
+  python3 -m http.server 8080
+  ブラウザで http://localhost:8080/ を開く
+
+
+==================================================
+2. ソースコード一式
+==================================================
+
+プログラムファイル一式のzipの中にソースコードも含まれているため、
+ソースコード一式は分けて提出していません。
+
+【制作者が記述したソースコードの保存場所】
+Marela/lib/                  アプリ本体（Dart）
+  lib/main.dart              エントリポイント
+  lib/screens/               画面
+  lib/widgets/               UI部品
+  lib/logic/                 診断・出題ロジック
+  lib/data/                  教材・言語データ
+  lib/models/                データモデル
+  lib/services/              TTS・音声・お気に入り等
+  lib/theme/                 色・フォント
+Marela/web/                  Webエントリ（index.html など）
+Marela/pubspec.yaml          依存関係
+Marela/assets/               画像・フォント（subset）・音声
+  ※実行に使うフォントは assets/fonts/gen_interface_jp/subset/ です。
+    生成元のフルフォントは容量のため未同梱です（実行には不要）。
+Marela/test/                 テスト
+Marela/tool/                 フォントサブセット用スクリプト
+Marela/docs/                 補足ドキュメント
+
+ソースから起動する場合:
+  cd Marela
+  flutter pub get
+  flutter run -d chrome
